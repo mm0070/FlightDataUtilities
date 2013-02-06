@@ -7,6 +7,7 @@ Provides utilities for handling conversions between units of flight data.
 
 # FIXME: Default unit change - 'dots' should be 'dot'?
 # FIXME: Default unit change - 'mB' should be 'mbar' or 'mb'?
+# FIXME: Default unit change - 'nm' should be 'NM' or 'nmi'?
 
 ##############################################################################
 # Constants
@@ -98,16 +99,16 @@ CONVERSION_MULTIPLIERS = {
     },
     # Speed:
     'kt': {
-        'mph': 0.514444 / 0.44704,
-        'fpm': 0.514444 / 0.00508,
+        'mph': 1.150778454,
+        'fpm': 101.268503937,
     },
     'mph': {
-        'kt': 0.44704 / 0.514444,
-        'fpm': 0.44704 / 0.00508,
+        'kt': 0.868976993,
+        'fpm': 88.0,
     },
     'fpm': {
-        'kt': 0.00508 / 0.514444,
-        'mph': 0.00508 / 0.44704,
+        'kt': 0.009874739,
+        'mph': 0.011363636,
     },
     # Time:
     'h': {
@@ -290,6 +291,7 @@ def convert(value, unit, output):
     :rtype: numeric
     :raises: ValueError -- if any of the units are not known.
     '''
+    unit = normalise(unit)
     try:
         if unit in CONVERSION_FUNCTIONS:
             return function(unit, output)(value)
