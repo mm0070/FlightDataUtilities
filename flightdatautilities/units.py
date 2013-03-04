@@ -296,6 +296,9 @@ def convert(value, unit, output):
     :raises: ValueError -- if any of the units are not known.
     '''
     unit = normalise(unit)
+    output = normalise(output)
+    if unit == output:
+        return value
     try:
         if unit in CONVERSION_FUNCTIONS:
             return function(unit, output)(value)
