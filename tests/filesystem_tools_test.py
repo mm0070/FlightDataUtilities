@@ -29,8 +29,6 @@ class TestFilesystemTools(unittest.TestCase):
         # Ignore list
         self.ignore_list = ['ignore_me']
         
-        # Filesystem tool object
-        self.fs_tool = fst.FilesystemTools()
         self.non_bz2_filename = os.path.join(os.path.dirname(__file__), "test_data",
                                                              "many_files")
         self.bz2_filename = self.non_bz2_filename + ".tar.bz2"
@@ -53,20 +51,21 @@ class TestFilesystemTools(unittest.TestCase):
         for f in self.flist + [self.bz2_filename]:
             if os.path.isfile(f):
                 os.remove(f)
-            
-    def test_tarbz2(self):
-        fn = fst.tarbz2(self.non_bz2_filename, self.flist)
-        many_files_tar_bz2 = self.bz2_filename
-        self.assertEqual(fn, self.bz2_filename)
-        self.assertTrue(os.path.isfile(self.bz2_filename))
-        bz2_file_obj = open(self.bz2_filename, "rb")
-        bz2_file_header = bz2_file_obj.read(2)
-        bz2_file_obj.close()
-        self.assertEqual(bz2_file_header, "BZ")
     
-    def test_tarbz2_extension(self):
-        fn = fst.tarbz2(self.non_bz2_filename, self.flist)
-        self.assertEqual(fn, self.non_bz2_filename + ".tar.bz2")
+    # TODO: Move out tests.
+    #def test_tarbz2(self):
+        #fn = fst.tarbz2(self.non_bz2_filename, self.flist)
+        #many_files_tar_bz2 = self.bz2_filename
+        #self.assertEqual(fn, self.bz2_filename)
+        #self.assertTrue(os.path.isfile(self.bz2_filename))
+        #bz2_file_obj = open(self.bz2_filename, "rb")
+        #bz2_file_header = bz2_file_obj.read(2)
+        #bz2_file_obj.close()
+        #self.assertEqual(bz2_file_header, "BZ")
+    
+    #def test_tarbz2_extension(self):
+        #fn = fst.tarbz2(self.non_bz2_filename, self.flist)
+        #self.assertEqual(fn, self.non_bz2_filename + ".tar.bz2")
 
     def test_find_patterns_in_file(self):
         file_with_pattern = os.path.join(os.path.dirname(__file__), 'test_data', 'pattern_exists.txt')
@@ -220,8 +219,6 @@ class TestFilesystemTools(unittest.TestCase):
         test_file_obj.write("uncompressed")
         test_file_obj.close()
         self.assertTrue(fst.is_file_bzipped(test_file_path))
-        
-        
         
 
 if __name__ == '__main__':

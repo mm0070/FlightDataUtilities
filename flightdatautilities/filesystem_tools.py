@@ -20,7 +20,6 @@ import os
 import platform
 import shutil
 import subprocess
-import sys
 import unittest
 import tarfile
 import time
@@ -321,27 +320,6 @@ if platform.system() == 'Windows':
         return p.wait()
     
     format_filesystem = windows_format_filesystem
-
-
-def open_device(device):
-    try:
-        if platform.system() == 'Windows':
-            fd = os.open(device, os.O_RDWR | os.O_BINARY)
-        else:
-            fd = os.open(device, os.O_RDWR)
-    except OSError, err:
-        print "Error: could not open the output file '%s'" % err
-        raise
-
-    # Return the file decriptor
-    return fd
-
-
-def close_device(fd):
-    # Windows does not have os.fsync()
-    if platform.system() == 'Linux':
-        os.fsync(fd)
-    os.close(fd)
     
 
 def copy_file(orig_path, dest_dir=None, postfix='_copy'):
@@ -439,7 +417,8 @@ def normalise_path(path):
     if not normalised_path.endswith("/"):
         normalised_path += '/'
     return split_path(normalised_path)
-        
+
+
 def is_paths_equal(path1,path2):
     """Mainly for windows where path can be represented
     in two forms C:/abc/def or C:\\abc\\def. In such case
@@ -471,18 +450,7 @@ def pretty_size(size):
         if size > lim:
             continue
         else:
-            return round(size/float(lim/2**10),2).__str__()+suf
-
-
-def read_in_chunks(file_object, chunk_size=1048576):
-    """Lazy function (generator) to read a file piece by piece.
-    Default chunk size: 1MB.
-    """
-    while True:
-        data = file_object.read(chunk_size)
-        if not data:
-            break
-        yield data
+            return round(size/float(lim/2**10),2).__str__() + suf
 
 
 def sha_hash_file(file_path_in):
@@ -503,60 +471,6 @@ def sha_hash_file(file_path_in):
     # hexdigest example:
     #'eb83d9e68a16c072307e8f5165ad56ac70fa6c4f8524b684077b46216194909c'
     return h.hexdigest()
-
-
-def make_image(path,size,dst_path,callback=None):
-    """:param callback: callback(float)
-       :type callack: function"""
-    position = 0
-    block_size = 4*1024*1024
-    fd = open_device(path)
-    compressor = bz2.BZ2Compressor()
-    with open(dst_path,'wb') as dst:
-        while True:
-            left = size - position
-            if left<block_size:
-                block_size = 4096 if left>4096 else 512
-            position += block_size
-            try:
-                data = os.read(fd,block_size)
-                if not data: 
-                    break
-                
-                compressed_data = compressor.compress(data)
-                dst.write(compressed_data)
-                if callback: callback((100.0*position)/size)
-            except OSError:
-                if left>size/20:
-                    raise
-                else:
-                    break
-        data = compressor.flush()
-        dst.write(data)
-        close_device(fd)
-
-
-def bz2_write_in_chunks(file_path_in_or_file_obj, file_path_out):
-    """ Writes a compressed file in chunks to the output destination in binary.
-    Returns the number of bytes written (compressed).
-    """
-    output_fhandle = bz2.BZ2File(file_path_out, mode='wb')
-    try:
-        file_path_in_or_file_obj + ''
-        file_obj = open(file_path_in_or_file_obj, 'rb')
-    except TypeError:
-        # assumed file object, use existing open file
-        file_obj = file_path_in_or_file_obj
-        # ensure we're at the start of the device
-        file_obj.seek(0)
-    try:
-        # write out all the data
-        for piece in read_in_chunks(file_obj):
-            output_fhandle.write(piece)
-    finally:
-        file_obj.close()
-    output_fhandle.close()
-    return os.path.getsize(file_path_out)
 
 
 def bz2_decompress(bz2_file_path, output_file_path=None):
@@ -587,279 +501,6 @@ def zip_compress(file_path_in):
     a.write(file_path_in, os.path.split(file_path_in)[-1])
     a.close()
     return archive
-
-
-def tarbz2(tar_file_path, file_list, ext='.tar.bz2'):
-    '''
-    Tars all files in file_list and Bz2 compresses the output.
-    Returns the filename.
-    appends extension ext if it is not in the tar_file_path.
-    '''
-    if not tar_file_path.endswith(ext):
-        tar_file_path += ext
-    tar_archive = tarfile.open(tar_file_path, 'w:bz2')
-    try:
-        for item in file_list:
-            tar_archive.add(item)
-    finally:
-        tar_archive.close()
-    return tar_file_path
-
-
-class FilesystemTools(object):
-    def get_all_files(self, regex_list, source_list, copy_dir, delay=10,
-                      retain_depth=1, delete=True):
-        '''
-        This is an example method for watching directories in a list.
-        Please be careful using this in any production code, it's not
-        built for purpose!
-        '''
-        self.files = {}
-
-        try:
-            #while True:
-            self.files.clear()
-            result = self.monitor(regex_list, source_list)
-            cur_time = time.time()
-
-            # Build dictionary of files and timestamps
-            for item in result:
-                for file in item:
-                    self.files[file] = os.path.getmtime(file)
-
-            # Check timestamp against current time
-            for item in self.files:
-                directory = self.get_directory(item, retain_depth)
-                filename = self.get_filename(item)
-                print "Filenames:", filename
-                path = copy_dir + directory
-                self.make_structure(path)
-                
-                if self.files[item] < (cur_time - delay):
-                    dest_file = copy_dir + directory + filename
-                    if not os.path.exists(dest_file):
-                        shutil.copyfile(item, dest_file)
-                        good_copy = self.check_file_integ(item, dest_file)
-                        if good_copy:
-                            print "Found new file:", filename, "-->", dest_file
-                            # The files don't always want deleting
-                            # (e.g. on a CD)
-                            if delete == True:
-                                self.delete_file(item)
-                        else:
-                            print ("Found new file:", filename, "-->",
-                                   dest_file, "File copy failed!")
-                    else:
-                        print "File", item, "already exists! Skipping"
-
-        except KeyboardInterrupt:
-            print "Quitting"
-            sys.exit(0)
-    
-    def delete_file(self, filepath):
-        os.remove(filepath)
-
-    def get_directory(self, path, depth):
-        '''
-        This method will get the directory structure <depth> directories
-        deep from the top (the file).
-        
-        E.g. if the path is:
-        
-        /foo/bar/wibble/meep.txt
-        
-        and the user wants bar/wibble/meep.txt then the call is:
-        get_directory(path, 2)
-        '''
-        dir_split = path.split('/')
-        depth += 1
-        # Don't find the last item
-        up_to = len(dir_split) - 1
-        directory_struct = dir_split[-depth:up_to]
-        return '/'.join(directory_struct) + '/'
-
-    def get_filename(self, path):
-        path_split = path.split('/')[-1]
-        return path_split
-    
-    def make_structure(self, path):
-        '''
-        Makes a file structure if it doesn't already exist
-        Taken from http://code.activestate.com/recipes/82465/ since it's a
-        nice way of recursivly making all parent directories
-        '''
-        if os.path.isdir(path):
-            pass
-        else:
-            head, tail = os.path.split(path)
-            if head and not os.path.isdir(head):
-                self.make_structure(head)
-            if tail:
-                os.mkdir(path)
-
-    def rmdir(self, path, ignore=[]):
-        '''
-        Remove directories. Allow user to enter directories to ignore into
-        ignore list.
-        '''
-        # Replace non absolute directories with their absolute values
-        for direc in ignore:
-            if not os.path.isabs(direc):
-                ignore.append(os.path.join(path, direc))
-                ignore.remove(direc)
-        
-        tree = list(os.walk(path))
-        tree.reverse()
-        for branch in tree:
-            # Allow removal of empty directories not in ignore list
-            if os.path.abspath(branch[0]) not in ignore and not branch[-1]:
-                try:
-                    os.rmdir(branch[0])
-                except OSError:
-                    continue
-
-    def remove_all_with_ignore(self, path, ignore=[]):
-        '''
-        This function will remove all files and directories in path,
-        with the exception of any directories named in ignore.
-        
-        Directories in ignore may be relative (to the path) or absolute
-        '''
-        abs_path = os.path.abspath(path)
-        self.remove_all_files(abs_path, ignore=ignore)
-        self.rmdir(abs_path, ignore=ignore)
-
-    def remove_structure(self, path, depth):
-        '''
-        Removes directory structure from base point path. Directory
-        structure must be empty.
-        '''
-        if depth == 0:
-            return True
-        
-        if os.path.isdir(path):
-            head, tail = os.path.split(path)
-            print "Head:", head
-            print "Tail:", tail
-            if head and os.path.isdir(head):
-                os.rmdir(path)
-                # New but untested
-            elif head and os.path.isfile(head):
-                os.remove(path)
-            if tail:
-                self.remove_structure(head, depth - 1)
-        else:
-            print "No such path:", path
-
-    def remove_all(self, path):
-        '''
-        Remove all files and directories in a path (including the path base)
-        '''
-        print "Starting removal"
-        self.remove_all_files(path)
-        print "Finished removing files"
-        shutil.rmtree(path)
-        #os.removedirs(path)
-
-    def remove_all_files(self, path, ignore=[], file_ignore=[]):
-        '''
-        Remove all files in a directory structure
-        '''
-        # Replace non absolute directories with their absolute values
-        for direc in ignore:
-            if not os.path.isabs(direc):
-                ignore.append(os.path.join(path, direc))
-                ignore.remove(direc)
-            if os.path.isfile(direc):
-                file_ignore.append(os.path.basename(direc))
-                
-        listing = os.listdir(path)
-        for item in listing:
-            item_name = os.path.join(path, item)
-            if os.path.isfile(item_name) and not item in file_ignore:
-                os.remove(item_name)
-            elif os.path.isdir(item_name) and item_name not in ignore:
-                self.remove_all_files(item_name, file_ignore=file_ignore)
-
-    def get_dir(self, path):
-        '''
-        Returns the directory tree starting from point path
-        '''
-        dir_tree = os.walk(path)
-        return dir_tree
-    
-#    def find_directories(self, tree):
-#        """ Test method. Not for production code.
-#        """
-#        dirs = []
-#        for item in tree:
-#            for file in item[-1]:
-#                m = re.search('(.)+\.tsc$', file)
-#                if m:
-#                    temp_name = m.group(0)
-#                    text_file = (os.path.abspath(item[0]) + '/' + \
-#                                 temp_name.split('.')[0] + '.txt')
-#                    if os.path.exists(text_file):
-#                        dirs.append(text_file)
-#                    dir = os.path.abspath(item[0]) + '/' + m.group(0)
-#                    dirs.append(dir)
-#        return dirs
-
-    def find_files(self, regex_list, tree):
-        dirs = []
-        for item in tree:
-            # Look at the filename
-            for file in item[-1]:
-                # Check each file against all required regexps
-                for regex in regex_list:
-                    s_result = regex.search(file)
-                    if s_result:
-                        dir = os.path.abspath(item[0]) + '/' + s_result.group(0)
-                        dirs.append(dir)
-        return dirs
-
-#    def get_data_files(self, dirs):
-#        copy_dir = './test_copy/'
-#        # Copy all files in dirs to a directory
-#        for dir in dirs:
-#            dir_split = dir.split('/')
-#            directory = dir_split[-2]
-#            filename = dir_split[-1]
-#            path = copy_dir + directory
-#            if not os.path.exists(path):
-#                os.mkdir(path)
-#            dest_file = copy_dir + directory + '/' + filename
-#            shutil.copyfile(dir, dest_file)
-
-    def monitor(self, regex_list, path):
-        # Do monitoring stuff and then yield
-        if type(path is not list):
-            path = list(path)
-        for source in path:
-            tree = self.get_dir(source)
-            result = self.find_files(regex_list, tree)
-            yield result
-
-    def check_file_integ(self, source_file, dest_file):
-        """ Check integrety of copied file against original before deletion
-        """
-        fd_source = open(source_file, 'r')
-        fd_dest = open(dest_file, 'r')
-        
-        # Get source file hash
-        fd_source_result = fd_source.read() 
-        hash_source = hashlib.sha1(fd_source_result).hexdigest()
-        fd_source.close()
-        
-        # Get dest file hash
-        fd_dest_result = fd_dest.read() 
-        hash_dest = hashlib.sha1(fd_dest_result).hexdigest()
-        fd_dest.close()
-        
-        if hash_source == hash_dest:
-            return True
-        else:
-            return False
 
 
 def mime_type(file_path):
@@ -938,6 +579,42 @@ def is_file_of_type(file_path, file_obj_class):
 
 def is_file_bzipped(file_path):
     return is_file_of_type(file_path, bz2.BZ2File)
+
+
+def bz2_write_in_chunks(file_path_in_or_file_obj, file_path_out):
+    '''
+    Writes a compressed file in chunks to the output destination in binary.
+    Returns the number of bytes written (compressed).
+    '''
+    output_fhandle = bz2.BZ2File(file_path_out, mode='wb')
+    try:
+        file_path_in_or_file_obj + ''
+        file_obj = open(file_path_in_or_file_obj, 'rb')
+    except TypeError:
+        # assumed file object, use existing open file
+        file_obj = file_path_in_or_file_obj
+        # ensure we're at the start of the device
+        file_obj.seek(0)
+    try:
+        # write out all the data
+        for piece in read_in_chunks(file_obj):
+            output_fhandle.write(piece)
+    finally:
+        file_obj.close()
+    output_fhandle.close()
+    return os.path.getsize(file_path_out)
+
+
+def read_in_chunks(file_object, chunk_size=1048576):
+    '''
+    Lazy function (generator) to read a file piece by piece.
+    Default chunk size: 1MB.
+    '''
+    while True:
+        data = file_object.read(chunk_size)
+        if not data:
+            break
+        yield data
     
 
 if __name__ == '__main__':
