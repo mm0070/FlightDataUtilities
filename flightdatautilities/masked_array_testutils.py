@@ -21,18 +21,15 @@ __revision__ = "$Revision: 3529 $"
 __date__ = "$Date: 2007-11-13 10:01:14 +0200 (Tue, 13 Nov 2007) $"
 
 
-import operator
-
 import numpy as np
-from numpy import ndarray,float_
+from numpy import float_
 import numpy.core.umath as umath
 from numpy.testing import *
 import numpy.testing.utils as utils
 
 ##from numpy import mask_or,getmask,masked_array,nomask,masked,filled,\
                  ##equal, less
-from numpy.ma import mask_or,getmask,masked_array,nomask,masked,filled,\
-                 equal, less
+from numpy.ma import mask_or,getmask,masked_array,nomask,masked,filled
 
 
 #------------------------------------------------------------------------------
