@@ -14,312 +14,13 @@
 
 import bz2
 import hashlib
-import logging
 import mimetypes
 import os
 import platform
 import shutil
 import subprocess
 import unittest
-import tarfile
-import time
 import zipfile
-
-
-if platform.system() == "Linux":
-    
-    from grp import getgrnam    
-    from pwd import getpwnam
-    
-    try:
-        import dbus
-    except ImportError:
-        pass
-    
-    
-    def chown(file_path, username, group_name):
-        '''
-        Change ownership of a file using username and group name rather than
-        uid and gid. Raises key error if either username or group name do not exist
-        on the system.
-        '''
-        uid = getpwnam(username)[2]
-        gid = getgrnam(group_name)[2]
-        os.chown(file_path, uid, gid)    
-    
-    
-    def run_mkfs(device_name, fstype, options):
-        formatted_options = ' '.join("-%s %s" % (option, value)
-                                     for option, value in options.items())
-        formatted_command = "mkfs.%s %s %s" % (fstype, formatted_options,
-                                               device_name)
-        # Sometimes this method freezes executing the next line
-        logging.info(
-            "Running command to make a filesystem on the device",
-            formatted_command)
-        # Sleep for a few seconds to let the new partition settle
-        time.sleep(5)
-        # We were using subprocess to run this command. However, we have
-        # switched for now as subprocess.Popen was blocking and never creating
-        # a proc object. This meant that a process was getting created but
-        # never dying and never allowing us to get any information about it or
-        # ability to kill it. The os.system command appears to get rid of this
-        # issue. It would be preferable at some point to find out why subprocess
-        # was failing in such a way and fix it since os.system is pretty much
-        # depreciated.
-        result = os.system(formatted_command)
-        
-        if result == -15:
-            raise IOError('Formatting timed out.')
-        elif result != 0:
-            raise IOError('Formatting failed.')
-    
-    
-    def system_partition(device):
-        '''
-        :returns: Filesystem location of new partition.
-        '''
-        result_sfdisk = run_sfdisk(device)
-        if result_sfdisk != 0:
-            raise IOError('Partitioning failed.')
-        
-        rescan_return = run_sfdisk_rescan(device)
-        if rescan_return != 0:
-            raise IOError('Partitioning failed.')
-        
-        return device + '1'
-        
-        # Q: Should we be running mkfs automatically?
-        #new_partition = drive + '1'
-        #result_mkfs = run_mkfs(new_partition, fstype, options)
-        #if result_mkfs == 'timed_out':
-            #return result_mkfs
-        #elif result_mkfs != 0:
-            #return 1
-        #return 0
-    
-    
-    def run_sfdisk(drive):
-        '''
-        sfdisk must be run as root.
-        '''
-        command_string = """sfdisk %s << EOF
-;
-EOF
-""" % drive
-        proc = subprocess.Popen(command_string, shell=True)
-        return proc.wait()       
-    
-    
-    def run_sfdisk_rescan(drive):
-        '''
-        sfdisk must be run as root.
-        '''
-        command_string = "sfdisk -R %s" % drive
-        proc = subprocess.Popen(command_string, shell=True)
-        return proc.wait()
-        
-    
-    def linux_format_filesystem(device, filesystem_type):
-        '''
-        Use devicekit to delete the partitions, if any, and then recreate them.
-        
-        :raises IOError: If formatting fails.
-        '''
-        # Since DeviceKit formatting is simpler and more self-contained, use it
-        # if the filesystem type/options are supported via a "device_kit_fstype"
-        # key, corresponding to a DeviceKit fstype to be passed into the
-        # PartitionCreate method. If this key does not exist, the only other
-        # supported formatting key is "mkfs_fstype", which will be the OS
-        # command called in the form "mkfs.vfat" for the key "vfat".
-        # Options for this command can be specified via the "mkfs_options" key.
-        filesystem = {
-            "FAT12": {
-                'device_kit': {
-                    'partition_code': '01',
-                    'max_size': 32 * 1024 * 1024,
-                    },
-                'mkfs': {
-                    'fstype': 'vfat',
-                    'options': {"F": 12},
-                    },
-                },
-            "FAT16": {
-                'device_kit': {
-                    'partition_code': '06',
-                    'max_size': 2 * 1024 * 1024 * 1024,
-                    },
-                'mkfs': {
-                    'fstype': 'vfat',
-                    'options': {"F":16},
-                    },
-                },
-            "FAT32": {
-                'device_kit': {
-                    'partition_code': '0x0B',
-                    'fstype': 'vfat',
-                    'max_size': 8 * 1024 * 1024 * 1024, # without LBA   
-                    },
-                },
-            "EXT3": {
-                'device_kit': {
-                    'partition_code': '0x0B',
-                    'fstype': 'vfat',
-                    'max_size': 8 * 1024 * 1024 * 1024, # without LBA                     
-                },
-            },
-        }[filesystem_type]
-        
-        bus = dbus.SystemBus()
-        dbus_name = device.dbus_name
-        proxy = bus.get_object('org.freedesktop.DeviceKit.Disks',
-                               '/org/freedesktop/DeviceKit/Disks')
-        # Q: Is dbus.Inteface required?
-        dbus.Interface(proxy, "org.freedesktop.DeviceKit.Disks")
-        cur_dev = bus.get_object('org.freedesktop.DeviceKit.Disks',
-                                 dbus_name)
-        device_int = dbus.Interface(
-            cur_dev,
-            'org.freedesktop.DeviceKit.Disks.Device')
-        
-        # Unmount the device if it is mounted.
-        for child_device in device.dbus_child_dev_name:
-            child_device_name = bus.get_object(
-                'org.freedesktop.DeviceKit.Disks', child_device) 
-            child_dev_int = dbus.Interface(
-                child_device_name, 'org.freedesktop.DeviceKit.Disks.Device') 
-            try:
-                child_dev_int.FilesystemUnmount(dbus.Array([], 's'))
-            except dbus.DBusException as err:
-                if err.get_dbus_message() == 'Device is not mounted':
-                    logging.warning(
-                        'Device %s was not mounted. Attempting to continue '
-                        'with formatting', child_device)
-                    pass
-                else:
-                    raise
-        
-        cur_dev_prop = dbus.Interface(cur_dev,
-                                      'org.freedesktop.DBus.Properties')
-        
-        if cur_dev_prop.Get('org.freedesktop.DeviceKit.Disks.Device',
-                            'device-is-mounted'):
-            try:
-                device_int.FilesystemUnmount(dbus.Array([], 's'))
-            except dbus.DBusException as err:
-                logging.error(
-                    'Could not unmount device %s. Formatting will be attempted '
-                    'regardless but expect an exception to be raised. Error '
-                    'was: %s', device, err)
-        
-        # Recreate the partition table.
-        device_int.PartitionTableCreate('none', [])
-        try:
-            device_int.PartitionTableCreate('mbr', [])
-        except dbus.DBusException as err:
-            logging.warning("Failed to create partition table on disk %s, "
-                            "trying again using system tools", device.location)
-            try:
-                system_partition(device.location)
-            except IOError:
-                logging.error("Failed to partition device! Device is %s",
-                              device.location)
-                raise
-        
-        device_kit = filesystem['device_kit']
-        dev_prop = dbus.Interface(cur_dev, 'org.freedesktop.DBus.Properties')
-        size = dev_prop.Get('org.freedesktop.DeviceKit.Disks.Device',
-                            'device-size')
-        max_size = filesystem.get('max_size')
-        
-        if max_size and size >= max_size:
-            size = max_size
-        
-        device_kit_fstype = device_kit.get('fstype', '')
-        
-        try:
-            device_name = device_int.PartitionCreate(
-                0, size, device_kit['partition_code'], '', [], [],
-                device_kit_fstype, [])
-            
-        except dbus.DBusException, err:
-            logging.warning("Failed to create partition on disk %s, trying "
-                            "again using system tools", device.location)
-            device_name = system_partition(device.location)
-            ##if sys_part_result != 0:
-                ### Something went wrong and we failed to partition drive
-                ##logging.error("Failed to partition device! Device is %s",
-                              ##device.location)
-                ##if sys_part_result == 'timed_out':
-                    ##return sys_part_result
-                ##else:
-                    ##return 1
-            ##return 0
-    
-        for counter in range(3):
-            try:
-                device = bus.get_object(
-                    'org.freedesktop.DeviceKit.Disks', device_name)
-                dev_prop = dbus.Interface(
-                    device, 'org.freedesktop.DBus.Properties')
-                device_name = dev_prop.Get(
-                    "org.freedesktop.DeviceKit.Disks.Device", "device-file")
-                break
-            except dbus.DBusException, err:
-                # Try again if an error happens
-                logging.warning("Formatting failed on try number: %s",
-                                counter)
-                time.sleep(0.5)
-                continue
-        else:
-            logging.critical("Formatting Failed on device %s!", device)
-            raise IOError('Formatting failed.')
-        
-        if not device_kit_fstype and 'mkfs' in filesystem:
-            # The partition has been created, but not formatted by device kit.
-            try:
-                run_mkfs(device_name, filesystem['mkfs']['fstype'],
-                         options=filesystem['mkfs']['options'])
-            except IOError:
-                logging.error(
-                    "Failed to make filesystem on device! Device is %s",
-                    device.location)
-                raise
-
-    format_filesystem = linux_format_filesystem
-
-
-if platform.system() == 'Windows':
-    
-    def windows_format_filesystem(device, filesystem_type):
-        '''
-        Formts drive on Widnows.
-        :param drive_letter: Drive letter with colon - C:.
-        :type drive_letter: str
-        :param format_type: String with format type: FAT16, FAT32, NTFS.
-        :type format_type: str
-        :return: None
-        :rtype: None
-        '''
-        # Expected format is C: but \\.\C: 
-        # also contains drive letter.
-        assert filesystem_type in ['FAT16', 'FAT32', 'NTFS'], \
-               "Wrong format - '%s'!" % filesystem_type
-        drive_letter = device.location
-        if len(drive_letter) > 2:
-            drive_letter = drive_letter[-2:]
-        if filesystem_type == 'FAT16':
-            filesystem_type = 'FAT'
-        command = 'format %s /Q /FS:%s' % (drive_letter,filesystem_type)    
-        p = subprocess.Popen(command,
-                             shell=True,
-                             stdin=subprocess.PIPE,
-                             stdout=subprocess.PIPE,
-                             stderr=subprocess.STDOUT)
-        p.communicate('\ny\n\n')
-        return p.wait()
-    
-    format_filesystem = windows_format_filesystem
     
 
 def copy_file(orig_path, dest_dir=None, postfix='_copy'):
@@ -347,34 +48,7 @@ def copy_file(orig_path, dest_dir=None, postfix='_copy'):
         os.remove(copy_path)
     shutil.copy(orig_path, copy_path)
     return copy_path
-    
-    
-def break_windows_file_system_lock(logical_location,physical_drive):
-    fd = open_device(logical_location)
-    _block_size = 512
-    _data = '\x00' * _block_size
-    _size = 10*1024*1024
-    try:
-        while _size>0:
-            os.write(fd,_data)
-            _size -= _block_size
-    except Exception, err:
-        logging.exception("Initialising windows exception - expected on device with filesystem. - %s", err)
-    finally:
-        os.close(fd)
-    time.sleep(5)
-    
-    fd = open_device(physical_drive)
-    _size = 10*1024*1024
-    try:
-        while _size>0:
-            os.write(fd,_data)
-            _size -= _block_size
-    except Exception:
-        logging.exception("Initialising windows exception - expected on device with filesystem.")
-    finally:
-        os.close(fd)
-    time.sleep(5)
+
 
 def split_path(path):
     head,tail = os.path.split(path)
@@ -384,11 +58,13 @@ def split_path(path):
         head,tail = os.path.split(head)
     return [head] + path_list
 
+
 def join_path(path_list):
     path = ''
     for element in path_list:
         path = os.path.join(path,element)
     return path
+
 
 def dir_path(path):
     """List all files recursivly in path
@@ -402,6 +78,7 @@ def dir_path(path):
             file_path = os.path.join(path,_file)
             file_list.append(file_path)
     return file_list
+
 
 def is_in_subdir(path,_file):
     if len(path)>=len(_file):
@@ -430,7 +107,8 @@ def is_paths_equal(path1,path2):
         return normalise_path(path1) == normalise_path(path2)
     else:
         raise NotImplementedError
-    
+
+
 class IsPathEqualTest(unittest.TestCase):
     def test_simple(self):
         self.assertTrue(is_paths_equal("C:/abc/def","C:\\abc\\def"))
