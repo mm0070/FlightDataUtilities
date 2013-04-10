@@ -56,7 +56,7 @@ def main(file_obj, words_to_read):
         logger.info('Found complete %d wps frame at word %d (byte %d).', wps,
                     word_index, word_index * 2)
         return
-    logger.info('Could not find synchronised flight data.', wps, word_index)
+    logger.info('Could not find synchronised flight data.')
 
 
 if __name__ == '__main__':
