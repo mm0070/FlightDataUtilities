@@ -60,7 +60,7 @@ family_flap_map = {
     # A59NM, Flap selections, SF0 (clean), SF1 (9 degs), SF2 (flap20), SF3 (40
     # degs)
     'F7X': (0, 9, 20, 40),
-    'F70': (0, 8, 15, 25, 42),
+    'F28': (0, 8, 15, 25, 42),
     'G-IV': (0, 10, 20, 39),  # A12EA
     'G-V': (0, 10, 20, 39),  # A12EA
     'G550': (0, 10, 20, 39),  # A12EA
