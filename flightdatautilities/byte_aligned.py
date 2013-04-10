@@ -18,7 +18,7 @@ def main(file_obj, words_to_read):
     words = np.fromfile(file_obj, dtype=np.short, count=words_to_read)
     
     for word_index, word in enumerate(words[:words_to_read - max(SUPPORTED_WPS)]):
-        for pattern in SYNC_PATTERNS.values():
+        for pattern_name, pattern in SYNC_PATTERNS.items():
             try:
                 pattern_index = pattern.index(word)
                 logger.debug('Found first sync word.')
@@ -53,8 +53,8 @@ def main(file_obj, words_to_read):
         else:
             continue
         
-        logger.info('Found complete %d wps frame at word %d (byte %d).', wps,
-                    word_index, word_index * 2)
+        logger.info('Found complete %d wps frame at word %d (byte %d) with %s sync pattern.',
+                    wps, word_index, word_index * 2, pattern_name)
         return
     logger.info('Could not find synchronised flight data.')
 
