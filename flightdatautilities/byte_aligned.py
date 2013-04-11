@@ -59,6 +59,11 @@ def main(file_obj, words_to_read):
 
 
 if __name__ == '__main__':
+    print 'FlightDataInspector (c) Copyright 2013 Flight Data Services, Ltd.'
+    print '  - Powered by POLARIS'
+    print '  - http://www.flightdatacommunity.com'
+    print ''
+
     parser = argparse.ArgumentParser()
 
     parser.add_argument('file_path')
