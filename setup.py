@@ -40,6 +40,12 @@ setup(
     extras_require=requirements.extras_require,
     dependency_links=requirements.dependency_links,
     test_suite='nose.collector',
+    entry_points={
+        'console_scripts': [
+            'FlightDataInspector = flightdatautilities.byte_aligned:main',
+        ],
+        'gui_scripts' : [],
+    },    
 )
 
 ################################################################################
