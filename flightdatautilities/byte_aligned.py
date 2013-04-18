@@ -11,7 +11,7 @@ logger.setLevel(logging.INFO)
 SYNC_PATTERNS = {'Standard': (0x0247, 0x05B8, 0x0A47, 0x0DB8),
                  'Reversed': (0x0E24, 0x01DA, 0x0E25, 0x01DB)}
 
-SUPPORTED_WPS = [64, 128, 256, 512, 1024]
+SUPPORTED_WPS = [64, 128, 256, 512, 1024, 2048]
 
 
 def inspect(file_obj, words_to_read):
@@ -67,7 +67,7 @@ def main():
     parser = argparse.ArgumentParser()
 
     parser.add_argument('file_path')
-    parser.add_argument('--words', action='store', default=8192, type=int,
+    parser.add_argument('--words', action='store', default=16384, type=int,
                         help='Number of words to read from the file.')
 
     args = parser.parse_args()
