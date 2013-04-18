@@ -69,8 +69,13 @@ def main():
     parser.add_argument('file_path')
     parser.add_argument('--words', action='store', default=8192, type=int,
                         help='Number of words to read from the file.')
+    parser.add_argument('--debug', action='store_true',
+                        help='Enable debug logging.')
 
     args = parser.parse_args()
+
+    if args.debug:
+        logger.setLevel(logging.DEBUG)
 
     with open(args.file_path, 'rb') as file_obj:
         inspect(file_obj, args.words)
