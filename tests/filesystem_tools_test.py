@@ -16,7 +16,7 @@ class TestFilesystemTools(unittest.TestCase):
     def _create_tmp_test_data_dir(self):
         if not os.path.exists(self._tmp_test_data_dir):
             os.mkdir(self._tmp_test_data_dir)
-    
+
     def setUp(self):
         # Make path for all tests
         test_data_path = os.path.join(os.path.dirname(__file__), 'test_data')
@@ -28,12 +28,11 @@ class TestFilesystemTools(unittest.TestCase):
             os.makedirs(os.path.join(self.path, 'ignore_me'))
         # Ignore list
         self.ignore_list = ['ignore_me']
-        
+
         self.non_bz2_filename = os.path.join(os.path.dirname(__file__), "test_data",
                                                              "many_files")
         self.bz2_filename = self.non_bz2_filename + ".tar.bz2"
-                                         
-        
+
         self._tmp_test_data_dir = os.path.join(test_data_path,
                                                "tmp_feel_free_to_remove")
         self._create_tmp_test_data_dir()
@@ -42,16 +41,16 @@ class TestFilesystemTools(unittest.TestCase):
         for f in self.flist:
             with open(f, 'w') as fh:
                 fh.write(f*10)
-        
+
     def tearDown(self):
         if os.path.exists(self._tmp_test_data_dir):
             shutil.rmtree(self._tmp_test_data_dir)
-        
+
         # perform cleanup
         for f in self.flist + [self.bz2_filename]:
             if os.path.isfile(f):
                 os.remove(f)
-    
+
     # TODO: Move out tests.
     #def test_tarbz2(self):
         #fn = fst.tarbz2(self.non_bz2_filename, self.flist)
@@ -62,7 +61,7 @@ class TestFilesystemTools(unittest.TestCase):
         #bz2_file_header = bz2_file_obj.read(2)
         #bz2_file_obj.close()
         #self.assertEqual(bz2_file_header, "BZ")
-    
+
     #def test_tarbz2_extension(self):
         #fn = fst.tarbz2(self.non_bz2_filename, self.flist)
         #self.assertEqual(fn, self.non_bz2_filename + ".tar.bz2")
@@ -73,7 +72,7 @@ class TestFilesystemTools(unittest.TestCase):
             fh.writelines(['some_thing',
                            'another_thing',
                            'yet_another_item'])
-        
+
         self.assertEqual(fst.find_patterns_in_file(file_with_pattern, ['thing']),
                          ['thing'])
         self.assertEqual(fst.find_patterns_in_file(file_with_pattern, ['another_']),
@@ -99,11 +98,11 @@ class TestFilesystemTools(unittest.TestCase):
             self.assertTrue(branch[-1] != [])
 
         # Remove them
-        self.fs_tool.remove_all_files(self.path)
+        fst.remove_all_files(self.path)
         new_tree = list(os.walk(self.path))
         for branch in new_tree:
             self.assertTrue(branch[-1] == [])
-    
+
     def test_remove_all_files_ignore(self):
         """ Remove all files
         """
@@ -116,7 +115,7 @@ class TestFilesystemTools(unittest.TestCase):
             self.assertTrue(branch[-1] != [])
 
         # Remove them
-        self.fs_tool.remove_all_files(self.path, ignore=self.ignore_list)
+        fst.remove_all_files(self.path, ignore=self.ignore_list)
         print "remove_all_files, ignoring:", self.ignore_list
         new_tree = list(os.walk(self.path))
         print "new_tree:", new_tree
@@ -135,7 +134,7 @@ class TestFilesystemTools(unittest.TestCase):
         """
         # Remove all test files
         self._remove_files()
-        self.fs_tool.rmdir(self.path)
+        fst.rmdir(self.path)
         new_tree = list(os.walk(self.path))
         self.assertEquals(len(new_tree), 0)
 
@@ -145,7 +144,7 @@ class TestFilesystemTools(unittest.TestCase):
         """
         # Remove all test files
         self._remove_files()
-        self.fs_tool.rmdir(self.path, ignore=self.ignore_list)
+        fst.rmdir(self.path, ignore=self.ignore_list)
         new_tree = list(os.walk(self.path))
         self.assertEquals(len(new_tree), 2)
         self.assertEquals(new_tree[-1][0], os.path.join(self.path, 'ignore_me')) 
@@ -161,24 +160,24 @@ class TestFilesystemTools(unittest.TestCase):
         # Check that there's a file in the first entry so we know the files are
         # there
         self.assertTrue(old_tree[0][-1])
-        
+
         # Try and remove directories
-        self.fs_tool.rmdir(self.path)
-        
+        fst.rmdir(self.path)
+
         # Get new tree and test
         new_tree = list(os.walk(self.path))
         self.assertEquals(old_tree, new_tree)
 
     def test_remove_all_with_ignore(self):
-        self.fs_tool.rmdir = mock.Mock()
-        self.fs_tool.remove_all_files = mock.Mock()
-        
-        self.fs_tool.remove_all_with_ignore(self.path, ignore=self.ignore_list)
-        
+        fst.rmdir = mock.Mock()
+        fst.remove_all_files = mock.Mock()
+
+        fst.remove_all_with_ignore(self.path, ignore=self.ignore_list)
+
         # Assert expected things were called
-        self.assertTrue(self.fs_tool.rmdir.called)
-        self.assertTrue(self.fs_tool.remove_all_files.called)
-        
+        self.assertTrue(fst.rmdir.called)
+        self.assertTrue(fst.remove_all_files.called)
+
 
     def _make_files(self):
         """ Just to make some test files
@@ -203,7 +202,7 @@ class TestFilesystemTools(unittest.TestCase):
                 os.remove(os.path.join(self.path, 'remove_me1', 'remove_me2', name))
             if os.path.exists(os.path.join(self.path, 'ignore_me', name)):
                 os.remove(os.path.join(self.path, 'ignore_me', name))
-                
+
     def test_is_file_bzipped(self):
         # Create test file.
         self._create_tmp_test_data_dir()
@@ -219,7 +218,7 @@ class TestFilesystemTools(unittest.TestCase):
         test_file_obj.write("uncompressed")
         test_file_obj.close()
         self.assertTrue(fst.is_file_bzipped(test_file_path))
-        
+
 
 if __name__ == '__main__':
     TestFilesystemTools('test_remove_all_with_ignore').run()
