@@ -7,7 +7,7 @@ try:
 except ImportError:
     import unittest
 
-from utilities.struct_type import Struct
+from flightdatautilities.struct_type import Struct
 
 
 class TestStruct(unittest.TestCase):
