@@ -1,84 +1,222 @@
-"""
-2012.01.12
-----------
-Created referencing previous code and checked over by FDS engine room.
-"""
-
+# -*- coding: utf-8 -*-
 #############################################################################
 
-"FLAP SELECTIONS"
+'''
+Flight Data Utilities: Aircraft Configuration Information
+'''
+
+#############################################################################
+# Flap Selections
 
 # Notes:
+#
+# Todo:
 # - B757 ACMS dataframe uses FLAP_LEVER - create a test case with this data
 # - B777 Records using many discrete positions, use that! (create a multi-part
 # parameter which scales FLAP_15 discrete by 15!
 
-# Reference numbers are from FAA specification documentation.
 
-series_flap_map = {
-    # TODO: Review max for -200 (28deg) -210 (33deg)
-    'ATR72-200': (0, 15, 30, 45),
-    'ATR72-500': (0, 15, 28, 33),  # Q: Confirm values
-    'DHC-8 Series 100': (0, 5, 15, 35),
-    'DHC-8 Series 200': (0, 5, 15, 35),  # A13NM TODO Check -200 flap settings
-    'DHC-8 Series 300': (0, 5, 10, 15, 35),  # A13NM
-    'DHC-8 Series 400': (0, 5, 10, 15, 35),  # A13NM
-    'ATR42-200': (0, 15, 30, 45),  # A53EU -200, -300
-    'ATR42-300': (0, 15, 30, 45),  # A53EU -200, -300
-    'ATR42-500': (0, 15, 25, 35),  # A53EU, -500
-    '1900': (0, 10, 20, 35),   # Beechcraft
-    '1900C': (0, 10, 20, 35),  # Beechcraft
-    '1900D': (0, 17.5, 35),    # Beechcraft
+FLAP_SERIES_MAP = {
+    'A300B2': (0, 8, 15, 25),                   # FAA TCDS A35EU Rev 26
+    'A300B2K': (0, 8, 15, 25),                  # FAA TCDS A35EU Rev 26
+    'A300B4(F)': (0, 8, 15, 25),                # FAA TCDS A35EU Rev 26
+    'A300F4': (0, 15, 20, 40),                  # FAA TCDS A35EU Rev 26
+    'ATR42-200': (0, 15, 30, 45),               # FAA TCDS A53EU Rev 21 (45 = Emergency)
+    'ATR42-300': (0, 15, 30, 45),               # FAA TCDS A53EU Rev 21 (45 = Emergency)
+    'ATR42-320': (0, 15, 30, 45),               # FAA TCDS A53EU Rev 21 (45 = Emergency)
+    'ATR42-500': (0, 15, 25, 35),               # FAA TCDS A53EU Rev 21 (35 = Effective 33)
+    'ATR72-100': (0, 15, 28),                   # FAA TCDS A53EU Rev 21
+    'ATR72-200': (0, 15, 28),                   # FAA TCDS A53EU Rev 21
+    'ATR72-210': (0, 15, 33),                   # FAA TCDS A53EU Rev 21 (-500 is -212A!)
+    'DHC-8-100': (0, 5, 15, 35),                # FAA TCDS A13NM Rev 20
+    'DHC-8-200': (0, 5, 15, 35),                # FAA TCDS A13NM Rev 20
+    'DHC-8-300': (0, 5, 10, 15, 35),            # FAA TCDS A13NM Rev 20
+    'DHC-8-400': (0, 5, 10, 15, 35),            # FAA TCDS A13NM Rev 20
 }
 
-family_flap_map = {
-    'A300': (0, 15, 20, 40),  # A35EU
-    #'A300': (0, 8, 15, 25), # !!!!!! (AGK),A35EU
-    'A310': (0, 15, 20, 40),  # A35EU
-    'A318': (0, 10, 15, 20, 40),  # A28NM
-    'A319': (0, 10, 15, 20, 40),  # A28NM
-    'A320': (0, 10, 15, 20, 35),  # A28NM
-    'A321': (0, 10, 14, 21, 25),  # A28NM
-    'A330': (0, 8, 14, 22, 32),  # A46NM
-    'BAE 146': (0, 18, 24, 30, 33),  # A49EU
-    'B737 Classic': (0, 1, 2, 5, 10, 15, 25, 30, 40),  # A16WE
-    'B737 NG': (0, 1, 2, 5, 10, 15, 25, 30, 40),  # A16WE
-    'B747': (0, 1, 5, 10, 20, 25, 30),  # A20WE
-    'B757': (0, 1, 5, 15, 20, 25, 30),  # A2NM
-    'B767': (0, 1, 5, 15, 20, 25, 30),  # A1NM
-    'B777': (0, 1, 5, 15, 20, 25, 30),  # T00001SE
-    'CL604': (0, 20, 30, 45),  # A21EA
-    'CL850': (0, 8, 20, 30, 45),  # A21EA
-    # A21EA  Some variants of the -200 do not have the flap 8 setting
-    'CRJ 100/200': (0, 8, 20, 30, 45),
-    'CRJ 700': (0, 1, 8, 20, 30, 45),  # A21EA
-    'CRJ 900': (0, 1, 8, 20, 30, 45),  # A21EA
-    # Flap 18 not available on all aircarft - T00011AT
-    'ERJ-135/145': (0, 9, 18, 22, 45),
-    # Flap lever = 1, 2, 3, 4, 5, full - A57NM
-    'ERJ-170/175': (0, 5, 10, 20, 35),
-    # Flap lever = 1, 2, 3, 4, 5, full - A57NM
-    'ERJ-190/195': (0, 7, 10, 20, 37),
-    # 'ED48A200': (0, 10, 15, 20, 40),  # ???
-    # A59NM, Flap selections, SF0 (clean), SF1 (9 degs), SF2 (flap20), SF3 (40
-    # degs)
-    'F7X': (0, 9, 20, 40),
-    'F28': (0, 8, 15, 25, 42),
-    'G-IV': (0, 10, 20, 39),  # A12EA
-    'G-V': (0, 10, 20, 39),  # A12EA
-    'G550': (0, 10, 20, 39),  # A12EA
-    'GLOBAL': (0, 1, 8, 20, 30, 45),  # T00003NY
-    'L382': (0, 50, 100),  # 100% = 36 degs A1SO
-    'MD-11': (0, 15, 22, 25, 28, 35, 50),  # A22WE
-    # These flap settings apply to MD 81,82,83,87 and 88. There are
-    'DC-9': (0, 11, 15, 28, 40),
-    # variable flap positions between 0 and 11 and again between 15 and 24.
-    'RJ85': (0, 18, 24, 30, 33),  # A49EU
+
+FLAP_FAMILY_MAP = {
+    'A310': (0, 15, 20, 40),                            # FAA TCDS A35EU Rev 26
+    'A318': (0, 10, 15, 20, 40),                        # FAA TCDS A28NM Rev 11
+    'A319': (0, 10, 15, 20, 40),                        # FAA TCDS A28NM Rev 11
+    'A320': (0, 10, 15, 20, 35),                        # FAA TCDS A28NM Rev 11
+    'A321': (0, 10, 14, 21, 25),                        # FAA TCDS A28NM Rev 11
+    ####'A330': (0, 8, 14, 22, 32),                         # FAA TCDS A46NM Rev ??
+    'BAE 146': (0, 18, 24, 30, 33),                     # FAA TCDS A49EU Rev ??
+    'B737 Classic': (0, 1, 2, 5, 10, 15, 25, 30, 40),   # FAA TCDS A16WE Rev ??
+    'B737 NG': (0, 1, 2, 5, 10, 15, 25, 30, 40),        # FAA TCDS A16WE Rev ??
+    'B747': (0, 1, 5, 10, 20, 25, 30),                  # FAA TCDS A20WE Rev ??
+    'B757': (0, 1, 5, 15, 20, 25, 30),                  # FAA TCDS A2NM Rev ??
+    'B767': (0, 1, 5, 15, 20, 25, 30),                  # FAA TCDS A1NM Rev ??
+    'B777': (0, 1, 5, 15, 20, 25, 30),                  # FAA TCDS T00001SE Rev ??
+    'CL604': (0, 20, 30, 45),                           # FAA TCDS A21EA Rev ??
+    'CL850': (0, 8, 20, 30, 45),                        # FAA TCDS A21EA Rev ??
+    'CRJ 100/200': (0, 8, 20, 30, 45),                  # FAA TCDS A21EA Rev ??; No flap 8 on some aircraft?
+    'CRJ 700': (0, 1, 8, 20, 30, 45),                   # FAA TCDS A21EA Rev ??
+    'CRJ 900': (0, 1, 8, 20, 30, 45),                   # FAA TCDS A21EA Rev ??
+    'ERJ-135/145': (0, 9, 18, 22, 45),                  # FAA TCDS T00011AT Rev ??; No flap 18 on some aircraft?
+    'ERJ-170/175': (0, 5, 10, 20, 35),                  # FAA TCDS A57NM Rev ??
+    'ERJ-190/195': (0, 7, 10, 20, 37),                  # FAA TCDS A57NM Rev ??
+    ####'ED48A200': (0, 10, 15, 20, 40),                    # FAA TCDS ????? Rev ??
+    'F7X': (0, 9, 20, 40),                              # FAA TCDS A59NM Rev 1
+    'F28': (0, 8, 15, 25, 42),                          # FAA TCDS A20EU Rev 14
+    'G-IV': (0, 10, 20, 39),                            # FAA TCDS A12EA Rev ??
+    'G-V': (0, 10, 20, 39),                             # FAA TCDS A12EA Rev ??
+    'G550': (0, 10, 20, 39),                            # FAA TCDS A12EA Rev ??
+    'GLOBAL': (0, 1, 8, 20, 30, 45),                    # FAA TCDS T00003NY Rev ??
+    'L382': (0, 50, 100),                               # FAA TCDS A1SO Rev 16 (100% = 36)
+    'MD-11': (0, 15, 22, 25, 28, 35, 50),               # FAA TCDS A22WE Rev ??
+    'DC-9': (0, 11, 15, 28, 40),                        # FAA TCDS ????? Rev ??
+    'RJ85': (0, 18, 24, 30, 33),                        # FAA TCDS A49EU Rev ?? (Variable between 0-11, 15-24)
 }
+
+
+#############################################################################
+# Slat Selections
+
+
+SLAT_SERIES_MAP = {
+    'A300B2': (0, 20, 25),      # FAA TCDS A35EU Rev 26; FIXME: B2-203!
+    'A300B2K': (0, 16, 25),     # FAA TCDS A35EU Rev 26
+    'A300B4(F)': (0, 16, 25),   # FAA TCDS A35EU Rev 26
+    'A300F4': (0, 15, 30),      # FAA TCDS A35EU Rev 26
+}
+
+
+SLAT_FAMILY_MAP = {
+    'A318': (0, 18, 22, 27),    # FAA TCDS A28NM Rev 11
+    'A319': (0, 18, 22, 27),    # FAA TCDS A28NM Rev 11
+    'A320': (0, 18, 22, 27),    # FAA TCDS A28NM Rev 11
+    'A321': (0, 18, 22, 27),    # FAA TCDS A28NM Rev 11
+    ####'A330': (0, 16, 20, 23),    # FAA TCDS A46NM Rev ??
+}
+
+
+#############################################################################
+# Aileron Selections
+
+
+AILERON_SERIES_MAP = {
+}
+
+
+AILERON_FAMILY_MAP = {
+    ####'A330': (0, 5, 10),     # FAA TCDS A46NM Rev ??
+}
+
+
+#############################################################################
+# Conf Selections
+
+# Notes:
+# - The series conf map will take precedence over the family conf map.
+# - If using flap and slat to determine conf, only create a tuple of length 2
+# - Each entry is of the form -- indication: (slat, flap)
+
+
+CONF_SERIES_MAP = {
+    'A340-200': {
+        '0': (0, 0),         # FAA TCDS A43NM Rev 7
+        '1': (20, 0),        # FAA TCDS A43NM Rev 7
+        '1+F': (20, 17),     # FAA TCDS A43NM Rev 7 (1+F = ECAM Indication)
+        '2': (24, 22),       # FAA TCDS A43NM Rev 7
+        '3': (24, 26),       # FAA TCDS A43NM Rev 7
+        'Full': (24, 32),    # FAA TCDS A43NM Rev 7
+    },
+    'A340-300': {
+        '0': (0, 0),         # FAA TCDS A43NM Rev 7
+        '1': (20, 0),        # FAA TCDS A43NM Rev 7
+        '1+F': (20, 17),     # FAA TCDS A43NM Rev 7 (1+F = ECAM Indication)
+        '2': (24, 22),       # FAA TCDS A43NM Rev 7
+        '3': (24, 26),       # FAA TCDS A43NM Rev 7
+        'Full': (24, 32),    # FAA TCDS A43NM Rev 7
+    },
+    'A340-500': {
+        '0': (0, 0),         # FAA TCDS A43NM Rev 7
+        '1': (20, 0),        # FAA TCDS A43NM Rev 7
+        '1+F': (20, 17),     # FAA TCDS A43NM Rev 7 (1+F = ECAM Indication)
+        '2': (23, 22),       # FAA TCDS A43NM Rev 7
+        '3': (23, 29),       # FAA TCDS A43NM Rev 7
+        'Full': (23, 34),    # FAA TCDS A43NM Rev 7
+    },
+    'A340-600': {
+        '0': (0, 0),         # FAA TCDS A43NM Rev 7
+        '1': (20, 0),        # FAA TCDS A43NM Rev 7
+        '1+F': (20, 17),     # FAA TCDS A43NM Rev 7 (1+F = ECAM Indication)
+        '2': (23, 22),       # FAA TCDS A43NM Rev 7
+        '3': (23, 29),       # FAA TCDS A43NM Rev 7
+        'Full': (23, 34),    # FAA TCDS A43NM Rev 7
+    },
+}
+
+
+CONF_FAMILY_MAP = {
+    'A318': {
+        '0': (0, 0),         # FAA TCDS A28NM Rev 11
+        '1': (18, 0),        # FAA TCDS A28NM Rev 11
+        '1+F': (18, 10),     # FAA TCDS A28NM Rev 11 (1+F = ECAM Indication)
+        '2': (22, 15),       # FAA TCDS A28NM Rev 11
+        '3': (22, 20),       # FAA TCDS A28NM Rev 11
+        'Full': (27, 40),    # FAA TCDS A28NM Rev 11
+    },
+    'A319': {
+        '0': (0, 0),         # FAA TCDS A28NM Rev 11
+        '1': (18, 0),        # FAA TCDS A28NM Rev 11
+        '1+F': (18, 10),     # FAA TCDS A28NM Rev 11 (1+F = ECAM Indication)
+        '2': (22, 15),       # FAA TCDS A28NM Rev 11
+        '3': (22, 20),       # FAA TCDS A28NM Rev 11
+        'Full': (27, 40),    # FAA TCDS A28NM Rev 11
+    },
+    'A320': {
+        '0': (0, 0),         # FAA TCDS A28NM Rev 11
+        '1': (18, 0),        # FAA TCDS A28NM Rev 11
+        '1+F': (18, 10),     # FAA TCDS A28NM Rev 11 (1+F = ECAM Indication)
+        '2': (22, 15),       # FAA TCDS A28NM Rev 11
+        '3': (22, 20),       # FAA TCDS A28NM Rev 11
+        'Full': (27, 35),    # FAA TCDS A28NM Rev 11
+    },
+    'A321': {
+        '0': (0, 0),         # FAA TCDS A28NM Rev 11
+        '1': (18, 0),        # FAA TCDS A28NM Rev 11
+        '1+F': (18, 10),     # FAA TCDS A28NM Rev 11 (1+F = ECAM Indication)
+        '2': (22, 14),       # FAA TCDS A28NM Rev 11
+        '3': (22, 21),       # FAA TCDS A28NM Rev 11
+        'Full': (27, 25),    # FAA TCDS A28NM Rev 11
+    },
+    ####'A330': {
+    ####    '0': (0, 0, 0),          # FAA TCDS A46NM Rev ??
+    ####    '1': (16, 0, 0),         # FAA TCDS A46NM Rev ??
+    ####    '1+F': (16, 8, 5),       # FAA TCDS A46NM Rev ??
+    ####    '2': (20, 8, 10),        # FAA TCDS A46NM Rev ??
+    ####    '3': (20, 14, 10),       # FAA TCDS A46NM Rev ??
+    ####    '4': (23, 14, 10),       # FAA TCDS A46NM Rev ??
+    ####    '5': (23, 22, 10),       # FAA TCDS A46NM Rev ??
+    ####    'Full': (23, 32, 10),    # FAA TCDS A46NM Rev ??
+    ####},
+}
+
+
+#############################################################################
+# Accessors
+
+
+def get_flap_detents():
+    '''
+    Get all flap combinations from all supported aircraft types
+
+    :returns: list of detent values
+    :rtype: list
+    '''
+    all_detents = set()
+    for detents in FLAP_SERIES_MAP.itervalues():
+        all_detents.update(detents)
+    for detents in FLAP_FAMILY_MAP.itervalues():
+        all_detents.update(detents)
+    return sorted(all_detents)
 
 
 def get_flap_map(series=None, family=None):
-    """
+    '''
     Accessor for fetching flap mapping parameters.
 
     :param series: Aircraft series e.g. B737-300
@@ -88,43 +226,17 @@ def get_flap_map(series=None, family=None):
     :raises: KeyError if no mapping found
     :returns: list of detent values
     :rtype: list
-    """
-    if series in series_flap_map:
-        return series_flap_map[series]
-    elif family in family_flap_map:
-        return family_flap_map[family]
-    else:
-        raise KeyError("No flap mapping for Series '%s' Family '%s'" % (
-            series, family))
-    
-    
-def get_flap_detents():
     '''
-    Get all flap combinations from all supported aircraft types
-    '''
-    all_detents = set()
-    for detents in series_flap_map.itervalues():
-        all_detents.update(detents)
-    for detents in family_flap_map.itervalues():
-        all_detents.update(detents)
-    return sorted(all_detents)
-        
-
-#############################################################################
-
-"SLAT SELECTIONS"
-
-series_slat_map = {
-
-}
-
-family_slat_map = {
-    'A330': (0, 16, 20, 23),
-}
+    if series in FLAP_SERIES_MAP:
+        return FLAP_SERIES_MAP[series]
+    if family in FLAP_FAMILY_MAP:
+        return FLAP_FAMILY_MAP[family]
+    raise KeyError("No flap mapping for series '%s', family '%s'." % \
+        (series, family))
 
 
 def get_slat_map(series=None, family=None):
-    """
+    '''
     Accessor for fetching slat mapping parameters.
 
     :param series: Aircraft series e.g. B737-300
@@ -134,31 +246,17 @@ def get_slat_map(series=None, family=None):
     :raises: KeyError if no mapping found
     :returns: list of detent values
     :rtype: list
-    """
-    if series in series_slat_map:
-        return series_slat_map[series]
-    elif family in family_slat_map:
-        return family_slat_map[family]
-    else:
-        raise KeyError("No slat mapping for Series '%s' Family '%s'" % (
-            series, family))
-
-
-#############################################################################
-
-"AILERON SELECTIONS"
-
-series_aileron_map = {
-
-}
-
-family_aileron_map = {
-    'A330': (0, 5, 10),
-}
+    '''
+    if series in SLAT_SERIES_MAP:
+        return SLAT_SERIES_MAP[series]
+    if family in SLAT_FAMILY_MAP:
+        return SLAT_FAMILY_MAP[family]
+    raise KeyError("No slat mapping for series '%s', family '%s'." % \
+        (series, family))
 
 
 def get_aileron_map(series=None, family=None):
-    """
+    '''
     Accessor for fetching aileron mapping parameters.
 
     :param series: Aircraft series e.g. B737-300
@@ -168,59 +266,17 @@ def get_aileron_map(series=None, family=None):
     :raises: KeyError if no mapping found
     :returns: list of detent values
     :rtype: list
-    """
-    if series in series_aileron_map:
-        return series_aileron_map[series]
-    elif family in family_aileron_map:
-        return family_aileron_map[family]
-    else:
-        raise KeyError("No aileron mapping for Series '%s' Family '%s'" % (
-            series, family))
-
-#############################################################################
-
-"AIRBUS CONF SELECTIONS"
-
-# Notes:
-# - Series conf will be used over Family conf settings
-# - If using flap and slat to determine conf, only create a tuple of length 2
-
-series_conf_map = {
-    # this will take precidence over series_conf_map
-}
-
-family_conf_map = {
-    'A330': {
-        #state: (indication, slat, flap, aileron)
-        '0'   : (0, 0, 0),
-        '1'   : (16, 0, 0),
-        '1+F' : (16, 8, 5),
-        '2'   : (20, 8, 10),
-        '3'   : (20, 14, 10),
-        '4'   : (23, 14, 10),
-        '5'   : (23, 22, 10),
-        'Full': (23, 32, 10),
-        },
-
-    'A320': {
-        '0'   : (0, 0, 0),
-        '1'   : (18, 0, 0),
-        '1+F' : (18, 10, 0),
-        '2'   : (22, 14, 0),
-        '3'   : (22, 21, 0),
-        'Full': (27, 25, 0),
-        },
-
-    #'A300': {
-        ##state: (slat, flap) - no aileron used for calculation
-        #0: (0, 0),
-        #1: (16, 0),
-    #}
-}
+    '''
+    if series in AILERON_SERIES_MAP:
+        return AILERON_SERIES_MAP[series]
+    if family in AILERON_FAMILY_MAP:
+        return AILERON_FAMILY_MAP[family]
+    raise KeyError("No aileron mapping for series '%s', family '%s'" % \
+        (series, family))
 
 
 def get_conf_map(series=None, family=None):
-    """
+    '''
     Accessor for fetching conf mapping parameters.
 
     Return is a dictionary of state: tuple where tuple can contain either
@@ -233,11 +289,14 @@ def get_conf_map(series=None, family=None):
     :raises: KeyError if no mapping found
     :returns: conf mapping
     :rtype: dict
-    """
-    if series in series_conf_map:
-        return series_conf_map[series]
-    elif family in family_conf_map:
-        return family_conf_map[family]
-    else:
-        raise KeyError("No conf mapping for Series '%s' Family '%s'" % (
-            series, family))
+    '''
+    if series in CONF_SERIES_MAP:
+        return CONF_SERIES_MAP[series]
+    if family in CONF_FAMILY_MAP:
+        return CONF_FAMILY_MAP[family]
+    raise KeyError("No conf mapping for series '%s', family '%s'." % \
+        (series, family))
+
+
+#############################################################################
+# vim:et:ft=python:nowrap:sts=4:sw=4:ts=4
