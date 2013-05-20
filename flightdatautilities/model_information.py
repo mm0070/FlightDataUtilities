@@ -73,17 +73,12 @@ FLAP_FAMILY_MAP = {
     'G550': (0, 10, 20, 39),                            # FAA TCDS A12EA Rev ?? FIXME
     'GLOBAL': (0, 1, 8, 20, 30, 45),                    # FAA TCDS T00003NY Rev ?? FIXME
     'L382': (0, 50, 100),                               # FAA TCDS A1SO Rev 16 (100% = 36)
-<<<<<<< HEAD
-    'MD-11': (0, 15, 22, 25, 28, 35, 50),               # FAA TCDS A22WE Rev ??
+    'MD-11': (0, 15, 22, 25, 28, 35, 50),               # FAA TCDS A22WE Rev 12
     'DC-9': (0, 11, 15, 28, 40),                        # FAA TCDS ????? Rev ??
-    'RJ85': (0, 18, 24, 30, 33),                        # FAA TCDS A49EU Rev ?? (Variable between 0-11, 15-24)
+    'RJ85': (0, 18, 24, 30, 33),                        # FAA TCDS A49EU Rev 17
 
     'test': (5.5, 10.1, 20.9),                          # test_derive_fractional_settings
 
-=======
-    'MD-11': (0, 15, 22, 25, 28, 35, 50),               # FAA TCDS A22WE Rev 12
-    'RJ85': (0, 18, 24, 30, 33),                        # FAA TCDS A49EU Rev 17
->>>>>>> 6895cce2db3a69ae6466d5df903d936a9b202a16
 }
 
 
