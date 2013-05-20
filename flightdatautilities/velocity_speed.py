@@ -49,6 +49,14 @@ logger = logging.getLogger(__name__)
 
 class VelocitySpeed(object):
     '''
+    Provides a base implementation of a velocity speed lookup table.
+
+    There are a number of flags that can be set to configure the table:
+
+    - interpolate -- whether to interpolate between table values.
+    - minimum_speed -- the absolute minimum speed.
+    - source -- reference to the documentation or source of lookup table.
+    - weight_unit -- the unit for all of the weights in the table.
     '''
 
     __meta__ = ABCMeta
@@ -56,7 +64,7 @@ class VelocitySpeed(object):
     interpolate = False
     minimum_speed = None
     source = None
-    weight_unit = 'kg'  # Can be one of 'lb', 'kg', 't'.
+    weight_unit = 'kg'  # Can be one of 'lb', 'kg', 't' or None.
 
     tables = {
         'v2': {'weight': ()},
@@ -64,18 +72,32 @@ class VelocitySpeed(object):
     }
 
     @property
-    def reference_settings(self):
-        ref_settings = self.tables['vref'].keys()
-        ref_settings.remove('weight')
-        return ref_settings
+    def v2_settings(self):
+        '''
+        Provides a list of available flap/conf settings for V2.
+
+        :returns: a list of flap/conf settings.
+        :rtype: list
+        '''
+        settings = self.tables['v2'].keys()
+        if 'weight' in settings:
+            settings.remove('weight')
+        return sorted(settings)
 
     @property
-    def v2_settings(self):
-        v2_settings = self.tables['v2'].keys()
-        v2_settings.remove('weight')
-        return v2_settings
+    def vref_settings(self):
+        '''
+        Provides a list of available flap/conf settings for Vref.
 
-    def v2(self, weight, setting):
+        :returns: a list of flap/conf settings.
+        :rtype: list
+        '''
+        settings = self.tables['vref'].keys()
+        if 'weight' in settings:
+            settings.remove('weight')
+        return sorted(settings)
+
+    def v2(self, setting, weight=None):
         '''
         Look up a value for V2.
 
@@ -84,18 +106,18 @@ class VelocitySpeed(object):
         None will be returned if weight is outside of the table range or no
         entries are available in the table for the provided flap/conf value.
 
-        :param weight: Weight of the aircraft.
-        :type weight: float
         :param setting: Flap or conf setting to use in lookup.
         :type setting: string
+        :param weight: Weight of the aircraft.
+        :type weight: float
         :returns: V2 value or None.
         :rtype: float
         :raises: KeyError -- when table or flap/conf settings is not found.
         :raises: ValueError -- when weight units cannot be converted.
         '''
-        return self._get_velocity_speed(self.tables['v2'], weight, setting)
+        return self._get_velocity_speed(self.tables['v2'], setting, weight)
 
-    def vref(self, weight, setting):
+    def vref(self, setting, weight=None):
         '''
         Look up a value for Vref.
 
@@ -104,18 +126,18 @@ class VelocitySpeed(object):
         None will be returned if weight is outside of the table range or no
         entries are available in the table for the provided flap/conf value.
 
-        :param weight: Weight of the aircraft.
-        :type weight: float
         :param setting: Flap or conf setting to use in lookup.
         :type setting: string
+        :param weight: Weight of the aircraft.
+        :type weight: float
         :returns: Vref value or None.
         :rtype: float
         :raises: KeyError -- when table or flap/conf settings is not found.
         :raises: ValueError -- when weight units cannot be converted.
         '''
-        return self._get_velocity_speed(self.tables['vref'], weight, setting)
+        return self._get_velocity_speed(self.tables['vref'], setting, weight)
 
-    def _get_velocity_speed(self, lookup, weight, setting):
+    def _get_velocity_speed(self, lookup, setting, weight=None):
         '''
         Looks up the velocity speed in the provided lookup table.
 
@@ -126,23 +148,27 @@ class VelocitySpeed(object):
 
         :param lookup: The velocity speed lookup table.
         :type lookup: dict
-        :param weight: Weight of the aircraft.
-        :type weight: float
         :param setting: Flap or conf setting to use in lookup.
         :type setting: string
+        :param weight: Weight of the aircraft.
+        :type weight: float
         :returns: A velocity speed value or None.
         :rtype: float
         :raises: KeyError -- when flap/conf settings is not found.
         :raises: ValueError -- when weight units cannot be converted.
         '''
-        # Convert the aircraft weight to match the lookup table:
-        weight = units.convert(weight, 'kg', self.weight_unit)
-
         if setting not in lookup:
             msg = "Velocity speed table '%s' has no entry for flap/conf '%s'."
             arg = (self.__class__.__name__, setting)
             logger.error(msg, *arg)
             raise KeyError(msg % arg)
+
+        # If table which doesn't have weights return fixed value:
+        if self.weight_unit is None:
+            return lookup[setting]
+
+        # Convert the aircraft weight to match the lookup table:
+        weight = units.convert(weight, 'kg', self.weight_unit)
 
         wt = lookup['weight']
         if not min(wt) <= weight <= max(wt) or weight is np.ma.masked:
@@ -322,7 +348,7 @@ class B737_800(VelocitySpeed):
 # FIXME: This is only applicable to RR RB211-535E4 engines!
 class B757_200_RB211_535(VelocitySpeed):
     '''
-    Velocity speed tables for Boeing B757-200 with Rolls Royce 
+    Velocity speed tables for Boeing B757-200 with Rolls Royce
     RB211-535E4 engines.
     '''
     interpolate = True
@@ -342,16 +368,18 @@ class B757_200_RB211_535(VelocitySpeed):
         },
     }
 
+
 class B757_200_RB211_535C_37(VelocitySpeed):
     '''
-    Velocity speed tables for Boeing B757-200 with Rolls Royce 
+    Velocity speed tables for Boeing B757-200 with Rolls Royce
     RB211-535C-37 engines.
     '''
     interpolate = True
-    source = 'Customer 20 ticket #243'
+    source = 'FDS Customer #20; Support Ticket #243'
     weight_unit = 't'
     tables = {
-        'v2': { # TODO: this is copy of 575 v2 table above, update once v2 table received.
+        # TODO: Copy of 575 v2 table above, update once v2 table received:
+        'v2': {
             'weight': (  62,   64,   66,   68,  70,  72,  74,  76,  78,  80,  82,  84,  86,  88,  90,  92,  94,  96,  98, 100, 102, 104, 106, 108, 110, 112, 114, 116),
                    5: (None, None, None, None, 130, 132, 134, 135, 137, 139, 141, 142, 144, 146, 147, 149, 150, 152, 154, 155, 157, 158, 159, 161, 163, 165, 166, 168),
                   15: ( 124,  124,  124,  124, 123, 125, 126, 128, 130, 131, 133, 135, 136, 138, 140, 141, 143, 144, 146, 147, 149, 151, 152, 153, 154, 156, 157, 159),
@@ -458,12 +486,13 @@ class B767_300_PW4000_94(VelocitySpeed):
         },
     }
 
+
 class F28_0070(VelocitySpeed):
     '''
     Velocity speed tables for Fokker F28-0070 (Fokker 70).
     '''
     interpolate = True
-    source = ''
+    source = ''  # FIXME: Populate this attribute.
     weight_unit = 't'
     tables = {
         'v2': {
@@ -480,11 +509,30 @@ class F28_0070(VelocitySpeed):
         },
     }
 
+
+class Beechcraft_1900D(VelocitySpeed):
+    '''
+    Velocity speed tables for Beechcraft 1900D.
+    '''
+    source = 'FDS Customer #121'
+    weight_unit = None  # Table only contains fixed values.
+    tables = {
+        # Note: Mid-range for temperatures +20°C to +40°C, S>L> to 6000ft PA.
+        #       Lowest V2 = 103 kts @ 10000ft PA, 14000 lb, 30°C
+        #       Highest V2 = 123 kts @ flap 0, MAUW 17120 lb, n/a °C
+        'v2': {0: 125, 17.5: 114},
+        # Note: Mid-range for temperatures +20°C to +40°C, S>L> to 6000ft PA.
+        #       Lowest VREF = 93 kts
+        #       Highest VREF = 115 kts @ MLW 16000 lb
+        'vref': {35: 97},
+    }
+
+
 ##############################################################################
 # Constants
 
+
 VELOCITY_SPEED_MAP = {
-    # All combinations listed
     # Boeing
     ('B737-300', None): B737_300,
     ('B737-300(QC)', None): B737_300,
@@ -512,9 +560,12 @@ VELOCITY_SPEED_MAP = {
     ('B767-300(ER)', 'PW4000-94'): B767_300_PW4000_94,
     ('B767-300F(ER)', 'PW4000-94'): B767_300_PW4000_94,
     ('B767-300(ER/F)', 'PW4000-94'): B767_300_PW4000_94,
-    
+
     # Fokker
     ('F28-0070', None): F28_0070,
+
+    # Beechcraft
+    ('1900D', None): Beechcraft_1900D,
 }
 
 
