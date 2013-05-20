@@ -17,6 +17,9 @@ Flight Data Utilities: Aircraft Configuration Information
 
 
 FLAP_SERIES_MAP = {
+    '1900': (0, 10, 20, 35),                    # FAA TCDS A24CE Rev 106
+    '1900C': (0, 10, 20, 35),                   # FAA TCDS A24CE Rev 106
+    '1900D': (0, 17.5, 35),                     # FAA TCDS A24CE Rev 106
     'A300B2': (0, 8, 15, 25),                   # FAA TCDS A35EU Rev 26
     'A300B2K': (0, 8, 15, 25),                  # FAA TCDS A35EU Rev 26
     'A300B4(F)': (0, 8, 15, 25),                # FAA TCDS A35EU Rev 26
