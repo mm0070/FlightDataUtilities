@@ -118,7 +118,7 @@ SLAT_FAMILY_MAP = {
     'A320':    (0, 18, 22, 27),    # FAA TCDS A28NM Rev 11
     'A321':    (0, 18, 22, 27),    # FAA TCDS A28NM Rev 11
     'A330':    (0, 16, 20, 23),    # Smart Cockpit A330 General Limitions Rev 19
-    'A380':    (0, 20, 23),        # Smart Cockpit A380 Briefing For Pilots
+    ####'A380':    (0, 20, 23),        # Smart Cockpit A380 Briefing For Pilots
     'CRJ 700': (0, 20, 25),        # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
     'CRJ 900': (0, 20, 25),        # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
     'DC-9':    (0, 17.8, 21),      # FAA TCDS A6WE Rev 28 (DC-9-81 & DC-9-82)
