@@ -201,15 +201,15 @@ CONF_FAMILY_MAP = {
         'Full': (27, 25),      # FAA TCDS A28NM Rev 11
     },
     'A330': {
-        '0': (0, 0, 0),        # Smart Cockpit A330 General Limitions Rev 4 
-        '1': (16, 0, 0),       # Smart Cockpit A330 General Limitions Rev 4 
+        '0': (0, 0, 0),        # Smart Cockpit A330 General Limitions Rev 4
+        '1': (16, 0, 0),       # Smart Cockpit A330 General Limitions Rev 4
         '1+F': (16, 8, 5),     # Smart Cockpit A330 General Limitions Rev 4 (ECAM Indication = 1+F)
         '1*': (20, 8, 10),     # Smart Cockpit A330 General Limitions Rev 4 (ECAM Indication = 2)
         '2': (20, 14, 10),     # Smart Cockpit A330 General Limitions Rev 4
         '2*': (23, 14, 10),    # Smart Cockpit A330 General Limitions Rev 4 (ECAM Indication = 3)
         '3': (23, 22, 10),     # Smart Cockpit A330 General Limitions Rev 4
         'Full': (23, 32, 10),  # Smart Cockpit A330 General Limitions Rev 4
-    },    
+    },
     ####'F7X': {
     ####    '0'  : (0, 0),         # FAA TCDS A59NM Rev 1 & Smart Cockpit 7X Flight Controls Issue 2
     ####    'SF1': (Extended, 9),  # FAA TCDS A59NM Rev 1 & Smart Cockpit 7X Flight Controls Issue 2
