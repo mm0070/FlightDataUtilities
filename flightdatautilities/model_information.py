@@ -220,6 +220,13 @@ CONF_FAMILY_MAP = {
 
 
 #############################################################################
+# Imports
+
+
+from itertools import imap
+
+
+#############################################################################
 # Accessors
 
 
@@ -234,6 +241,21 @@ def get_flap_detents():
     for detents in FLAP_SERIES_MAP.itervalues():
         all_detents.update(detents)
     for detents in FLAP_FAMILY_MAP.itervalues():
+        all_detents.update(detents)
+    return sorted(all_detents)
+
+
+def get_conf_detents():
+    '''
+    Get all conf combinations from all supported aircraft types
+
+    :returns: list of detent values
+    :rtype: list
+    '''
+    all_detents = set()
+    for detents in imap(dict.keys, CONF_SERIES_MAP.itervalues()):
+        all_detents.update(detents)
+    for detents in imap(dict.keys, CONF_FAMILY_MAP.itervalues()):
         all_detents.update(detents)
     return sorted(all_detents)
 
