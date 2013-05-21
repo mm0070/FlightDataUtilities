@@ -76,9 +76,6 @@ FLAP_FAMILY_MAP = {
     'MD-11': (0, 15, 22, 25, 28, 35, 50),               # FAA TCDS A22WE Rev 12
     'DC-9': (0, 11, 15, 28, 40),                        # FAA TCDS ????? Rev ??
     'RJ85': (0, 18, 24, 30, 33),                        # FAA TCDS A49EU Rev 17
-
-    'test': (5.5, 10.1, 20.9),                          # test_derive_fractional_settings
-
 }
 
 
