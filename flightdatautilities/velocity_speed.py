@@ -263,6 +263,34 @@ class B737_700(VelocitySpeed):
         },
     }
 
+class B737_700_CFM56_7B22(VelocitySpeed):
+    '''
+    Velocity speed tables for Boeing B737-700.
+
+    Note: This table is available but should never be needed as the Boeing B737
+    NG family of aircraft record the V2 and VREF parameters in the data frame.
+    '''
+    interpolate = True
+    minimum_speed = 110
+    source = 'FDS Customer #105'
+    weight_unit = 'lb'
+    tables = {
+        'v2': {
+            'weight': (90000, 100000, 110000, 120000, 130000, 140000, 150000, 160000),
+                   1: (  114,    120,    126,    131,    137,    142,    147,    151),
+                   5: (  111,    117,    123,    129,    134,    139,    144,    148),
+                  10: (  109,    114,    119,    124,    128,    133,    137,    140),
+                  15: (  107,    112,    117,    122,    126,    130,    134,   None),
+                  25: (  106,    111,    116,    120,    125,    129,    133,   None),
+        },
+        'vref': {
+            'weight': (90000, 100000, 110000, 120000, 130000, 140000, 150000, 160000, 170000, 180000),
+                  15: (  115,    121,    127,    133,    139,    145,    150,    155,    159,    164),
+                  30: (  111,    117,    123,    129,    134,    140,    144,    149,    153,    158),
+                  40: (  108,    114,    120,    126,    132,    137,    142,    147,    151,    156),
+        },
+    }
+
 
 class B737_800(VelocitySpeed):
     '''
@@ -463,6 +491,7 @@ VELOCITY_SPEED_MAP = {
     ('B737-400', None): B737_400,
     ('B737-500', None): B737_500,
     ('B737-700', None): B737_700,
+    ('B737-700', 'CFM56-7B22'): B737_700_CFM56_7B22,
     ('B737-800', None): B737_800,
 
     ('B757-200', 'RB211-535'): B757_200_RB211_535,
