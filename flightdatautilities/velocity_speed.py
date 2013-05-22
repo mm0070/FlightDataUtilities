@@ -14,6 +14,8 @@ aircraft family or series in the model information module.
 
 When deciding on the table to select, we use the following order of precedence:
 
+- aircraft series, engine type.
+- aircraft family, engine type.
 - aircraft series, engine series.
 - aircraft family, engine series.
 - aircraft series.
@@ -196,12 +198,13 @@ class VelocitySpeed(object):
 # Velocity Speed Table Classes
 
 
+# TODO: Review and update source name.
 class B737_300(VelocitySpeed):
     '''
     Velocity speed tables for Boeing B737-300.
     '''
     interpolate = True
-    source = 'B737-5_925017_07'
+    source = ''
     weight_unit = 't'
     tables = {
         'v2': {
@@ -219,12 +222,13 @@ class B737_300(VelocitySpeed):
     }
 
 
+# TODO: Review and update source name.
 class B737_400(VelocitySpeed):
     '''
     Velocity speed tables for Boeing B737-400.
     '''
     interpolate = True
-    source = 'B737-5_925017_07'
+    source = ''
     weight_unit = 't'
     tables = {
         'v2': {
@@ -240,13 +244,14 @@ class B737_400(VelocitySpeed):
     }
 
 
+# TODO: Review and update source name.
 class B737_500(VelocitySpeed):
     '''
     Velocity speed tables for Boeing B737-500.
     '''
     interpolate = True
     minimum_speed = 109
-    source = ''  # FIXME: Populate this attribute.
+    source = ''
     weight_unit = 't'
     tables = {
         'v2': {
@@ -263,6 +268,7 @@ class B737_500(VelocitySpeed):
     }
 
 
+# TODO: Review and update source name.
 class B737_700(VelocitySpeed):
     '''
     Velocity speed tables for Boeing B737-700.
@@ -272,7 +278,7 @@ class B737_700(VelocitySpeed):
     '''
     interpolate = True
     minimum_speed = 110
-    source = 'B737-5_925017_07'
+    source = ''
     weight_unit = 't'
     tables = {
         'v2': {
@@ -289,7 +295,8 @@ class B737_700(VelocitySpeed):
         },
     }
 
-class B737_700_CFM56_7B22(VelocitySpeed):
+
+class B737_700_CFM56_7B(VelocitySpeed):
     '''
     Velocity speed tables for Boeing B737-700.
 
@@ -298,7 +305,7 @@ class B737_700_CFM56_7B22(VelocitySpeed):
     '''
     interpolate = True
     minimum_speed = 110
-    source = 'FDS Customer #105'
+    source = 'FDS Customer 105: 737 FCOM'
     weight_unit = 'lb'
     tables = {
         'v2': {
@@ -318,6 +325,7 @@ class B737_700_CFM56_7B22(VelocitySpeed):
     }
 
 
+# TODO: Review and update source name.
 class B737_800(VelocitySpeed):
     '''
     Velocity speed tables for Boeing B737-800.
@@ -327,7 +335,7 @@ class B737_800(VelocitySpeed):
     '''
     interpolate = True
     minimum_speed = 110
-    source = 'B737-5_925017_07'
+    source = ''
     weight_unit = 't'
     tables = {
         'v2': {
@@ -345,52 +353,56 @@ class B737_800(VelocitySpeed):
     }
 
 
-# FIXME: This is only applicable to RR RB211-535E4 engines!
-class B757_200_RB211_535(VelocitySpeed):
-    '''
-    Velocity speed tables for Boeing B757-200 with Rolls Royce
-    RB211-535E4 engines.
-    '''
-    interpolate = True
-    source = 'Boeing Manual'  # Original name of source unknown.
-    weight_unit = 't'
-    tables = {
-        'v2': {
-            'weight': (  62,   64,   66,   68,  70,  72,  74,  76,  78,  80,  82,  84,  86,  88,  90,  92,  94,  96,  98, 100, 102, 104, 106, 108, 110, 112, 114, 116),
-                   5: (None, None, None, None, 130, 132, 134, 135, 137, 139, 141, 142, 144, 146, 147, 149, 150, 152, 154, 155, 157, 158, 159, 161, 163, 165, 166, 168),
-                  15: ( 124,  124,  124,  124, 123, 125, 126, 128, 130, 131, 133, 135, 136, 138, 140, 141, 143, 144, 146, 147, 149, 151, 152, 153, 154, 156, 157, 159),
-        },
-        'vref': {
-            'weight': (  62,   64,   66,   68,  70,  72,  74,  76,  78,  80,  82,  84,  86,  88,  90,  92,  94,  96,  98, 100, 102, 104, 106, 108, 110, 112, 114, 116),
-                   5: (None, None, None, None, 120, 122, 124, 126, 128, 130, 132, 134, 136, 138, 140, 141, 143, 145, 147, 149, 151, 153, 155, 157, 158, 160, 162, 164),
-                  15: ( 111,  117,  117,  117, 114, 116, 118, 120, 122, 123, 125, 127, 129, 131, 133, 135, 137, 139, 140, 141, 143, 145, 147, 149, 150, 152, 154, 156),
-                  30: ( 107,  109,  111,  113, 115, 116, 118, 120, 122, 123, 125, 127, 129, 131, 132, 134, 136, 137, 139, 141, 142, 144, 146, 147, 149, 150, 152, 154),
-        },
-    }
-
-
 class B757_200_RB211_535C_37(VelocitySpeed):
     '''
     Velocity speed tables for Boeing B757-200 with Rolls Royce
     RB211-535C-37 engines.
     '''
     interpolate = True
-    source = 'FDS Customer #20; Support Ticket #243'
+    source = 'FDS Customer 20: Support Ticket 243; 757 FCOM'
     weight_unit = 't'
     tables = {
-        # TODO: Copy of 575 v2 table above, update once v2 table received:
         'v2': {
-            'weight': (  62,   64,   66,   68,  70,  72,  74,  76,  78,  80,  82,  84,  86,  88,  90,  92,  94,  96,  98, 100, 102, 104, 106, 108, 110, 112, 114, 116),
-                   5: (None, None, None, None, 130, 132, 134, 135, 137, 139, 141, 142, 144, 146, 147, 149, 150, 152, 154, 155, 157, 158, 159, 161, 163, 165, 166, 168),
-                  15: ( 124,  124,  124,  124, 123, 125, 126, 128, 130, 131, 133, 135, 136, 138, 140, 141, 143, 144, 146, 147, 149, 151, 152, 153, 154, 156, 157, 159),
+            'weight': ( 70,  80,  90, 100, 110),
+                  1 : (141, 151, 160, 169, 179),
+                  5 : (129, 139, 147, 156, 165),
+                 15 : (124, 132, 139, 147, 155),
+                 20 : (114, 124, 133, 141, 148),
         },
         'vref': {
             'weight': ( 60,  70,  80,  90, 100, 110, 120),
-                  20: (115, 121, 127, 133, 139, 145, 150),
-                  25: (111, 117, 123, 129, 134, 140, 144),
-                  30: (108, 114, 120, 126, 132, 137, 142),
+                  20: (116, 125, 135, 143, 151, 159, 167),
+                  25: (108, 117, 126, 134, 142, 151, 158),
+                  30: (106, 115, 124, 132, 140, 149, 157),
         },
     }
+
+
+class B757_200_RB211_535E4_37(VelocitySpeed):
+    '''
+    Velocity speed tables for Boeing B757-200 with Rolls Royce
+    RB211-535E4 engines.
+    '''
+    interpolate = True
+    source = 'FDS Customer 109: 757 FCOM/FPPM'
+    weight_unit = 't'
+    tables = {
+        'v2': {
+            'weight': ( 70,  80,  90, 100, 110, 120),
+                   1: (138, 150, 160, 169, 177, 186),
+                   5: (130, 139, 147, 155, 163, 171),
+                  15: (123, 131, 139, 147, 154, 161),
+                  20: (117, 125, 132, 140, 147, 154),
+        },
+        'vref': {
+            'weight': ( 60,  70,  80,  90, 100, 110, 120),
+                  20: (116, 125, 135, 143, 151, 159, 167),
+                  25: (108, 117, 126, 134, 142, 151, 158),
+                  30: (106, 115, 124, 132, 140, 149, 157),
+        },
+    }
+B757_200_RB211_535E4_B_37 = B757_200_RB211_535E4_37
+B757_200_RB211_535E4_C_37 = B757_200_RB211_535E4_37
 
 
 class B767(VelocitySpeed):
@@ -398,7 +410,7 @@ class B767(VelocitySpeed):
     Velocity speed tables for Boeing B767.
     '''
     interpolate = True
-    source = '767 Flight Crew Operations Manual'
+    source = 'FDS Customer 20: 767 FCOM'
     weight_unit = 't'
     tables = {
         'v2': {
@@ -408,11 +420,10 @@ class B767(VelocitySpeed):
                   20: (118, 124, 129, 134, 140, 144, 149, 154, 159, 164),
         },
         'vref': {
-            # FIXME: Flap detents look wrong here!
             'weight': (100, 110, 120, 130, 140, 150, 160, 170, 180, 190),
-                   5: (114, 121, 128, 134, 141, 147, 153, 158, 164, 169),
-                  15: (109, 116, 122, 129, 141, 135, 146, 151, 157, 162),
-                  20: (105, 111, 118, 124, 130, 135, 141, 147, 152, 158),
+                  20: (128, 135, 141, 146, 151, 157, 162, 168, 173, 179),
+                  25: (123, 129, 135, 141, 146, 151, 156, 161, 166, 170),
+                  30: (119, 125, 131, 137, 142, 148, 156, 164, 171, 179),
         },
     }
 
@@ -422,7 +433,7 @@ class B767_200_CF6_80A(VelocitySpeed):
     Velocity speed tables for Boeing B767-200 w/ GE CF6-80A.
     '''
     interpolate = True
-    source = 'FDS Customer #78'
+    source = 'FDS Customer 78'
     weight_unit = 'lb'
     tables = {
         'v2': {
@@ -446,7 +457,7 @@ class B767_300_CF6_80C2(VelocitySpeed):
     Velocity speed tables for Boeing B767-300 w/ GE CF6-80C2.
     '''
     interpolate = True
-    source = 'FDS Customer #78'
+    source = 'FDS Customers 20, 78 & 109: 767 FCOM/FPPM'
     weight_unit = 't'
     tables = {
         'v2': {
@@ -469,7 +480,7 @@ class B767_300_PW4000_94(VelocitySpeed):
     Velocity speed tables for Boeing B767-300 w/ P&W 4000-94.
     '''
     interpolate = True
-    source = 'FDS Customer #78'
+    source = 'FDS Customer 78'
     weight_unit = 't'
     tables = {
         'v2': {
@@ -487,12 +498,13 @@ class B767_300_PW4000_94(VelocitySpeed):
     }
 
 
+# TODO: Review and update source name.
 class F28_0070(VelocitySpeed):
     '''
     Velocity speed tables for Fokker F28-0070 (Fokker 70).
     '''
     interpolate = True
-    source = ''  # FIXME: Populate this attribute.
+    source = ''
     weight_unit = 't'
     tables = {
         'v2': {
@@ -514,7 +526,7 @@ class Beechcraft_1900D(VelocitySpeed):
     '''
     Velocity speed tables for Beechcraft 1900D.
     '''
-    source = 'FDS Customer #121'
+    source = 'FDS Customer 121'
     weight_unit = None  # Table only contains fixed values.
     tables = {
         # Note: Mid-range for temperatures +20°C to +40°C, S>L> to 6000ft PA.
@@ -532,6 +544,7 @@ class Beechcraft_1900D(VelocitySpeed):
 # Constants
 
 
+# TODO: Determine a better way of looking up which table should be used!
 VELOCITY_SPEED_MAP = {
     # Boeing
     ('B737-300', None): B737_300,
@@ -539,13 +552,17 @@ VELOCITY_SPEED_MAP = {
     ('B737-400', None): B737_400,
     ('B737-500', None): B737_500,
     ('B737-700', None): B737_700,
-    ('B737-700', 'CFM56-7B22'): B737_700_CFM56_7B22,
+    ('B737-700', 'CFM56-7B'): B737_700_CFM56_7B,
     ('B737-800', None): B737_800,
 
-    ('B757-200', 'RB211-535'): B757_200_RB211_535,
-    ('B757-200(PCF)', 'RB211-535'): B757_200_RB211_535,
     ('B757-200', 'RB211-535C-37'): B757_200_RB211_535C_37,
+    ('B757-200', 'RB211-535E4-37'): B757_200_RB211_535E4_37,
+    ('B757-200', 'RB211-535E4-B-37'): B757_200_RB211_535E4_B_37,
+    ('B757-200', 'RB211-535E4-C-37'): B757_200_RB211_535E4_C_37,
     ('B757-200(F)', 'RB211-535C-37'): B757_200_RB211_535C_37,
+    ('B757-200(PCF)', 'RB211-535E4-37'): B757_200_RB211_535E4_37,
+    ('B757-200(PCF)', 'RB211-535E4-B-37'): B757_200_RB211_535E4_B_37,
+    ('B757-200(PCF)', 'RB211-535E4-C-37'): B757_200_RB211_535E4_C_37,
 
     ('B767', None): B767,
     ('B767-200', 'CF6-80A'): B767_200_CF6_80A,
