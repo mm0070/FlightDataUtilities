@@ -198,28 +198,47 @@ class VelocitySpeed(object):
 # Velocity Speed Table Classes
 
 
-# TODO: Review and update source name.
-class B737_300(VelocitySpeed):
+class ATR72_200(VelocitySpeed):
     '''
-    Velocity speed tables for Boeing B737-300.
+    Velocity speed tables for ATR72-202 w/ PWC PW124B engines.
     '''
     interpolate = True
-    source = ''
+    source = 'FDS Customer 6: ATR72 FCOM'
+    weight_unit = 't'
+    tables = { 
+        'v2': {
+            'weight': ( 13,  17,  18,  19,  20,  21, 21.5,  22),
+                  15: (105, 105, 108, 111, 114, 117,  118, 120),
+
+        },
+        'vref': {
+            'weight': (13, 14, 15, 16,  17,  18,  19,  20,  21, 21.5),            
+                  30: (87, 90, 94, 97, 100, 103, 106, 110, 113,  114),
+		},
+	}
+
+
+class B737_300(VelocitySpeed):
+    '''
+    Velocity speed tables for Boeing B737-300 w/ CFM56-3 20K engines.
+    '''
+    interpolate = True
+    source = 'FDS Customer 109: 737 FCOM'
     weight_unit = 't'
     tables = {
         'v2': {
             'weight': ( 35,  40,  45,  50,  55,  60,  65),
-                   1: (124, 131, 138, 145, 153, 160, 168),
-                   5: (119, 126, 132, 139, 146, 153, 160),
-                  15: (113, 120, 126, 132, 139, 145, 152),
+                   1: (122, 130, 137, 145, 152, 160, 166),
+                   5: (118, 125, 132, 139, 146, 153, 159),
+                  15: (113, 119, 126, 132, 139, 145, 152),
         },
         'vref': {
-            'weight': ( 32,  36,  40,  44,  48,  52,  56,  60,  64),
-                  15: (111, 118, 125, 132, 138, 143, 149, 154, 159),
-                  30: (105, 111, 117, 123, 129, 135, 140, 144, 149),
-                  40: (101, 108, 114, 120, 125, 130, 135, 140, 145),
-        },
-    }
+            'weight': ( 35,  40,  45,  50,  55,  60,  65),
+                  15: (119, 128, 136, 144, 151, 158, 165),
+                  30: (111, 119, 127, 134, 141, 147, 154),
+                  40: (107, 115, 123, 131, 138, 146, 153),
+		},
+	}
 
 
 # TODO: Review and update source name.
@@ -268,40 +287,11 @@ class B737_500(VelocitySpeed):
     }
 
 
-# TODO: Review and update source name.
-class B737_700(VelocitySpeed):
-    '''
-    Velocity speed tables for Boeing B737-700.
-
-    Note: This table is available but should never be needed as the Boeing B737
-    NG family of aircraft record the V2 and VREF parameters in the data frame.
-    '''
-    interpolate = True
-    minimum_speed = 110
-    source = ''
-    weight_unit = 't'
-    tables = {
-        'v2': {
-            'weight': ( 40,  45,  49,  54,  58,  63,  68,  72),
-                   1: (114, 120, 126, 132, 137, 142, 147, 152),
-                   5: (111, 117, 123, 129, 134, 139, 144, 148),
-                  15: (107, 113, 117, 122, 127, 131, 135, 138),
-        },
-        'vref': {
-            'weight': ( 40,  45,  49,  54,  58,  63,  68,  72,  77),
-                  15: (115, 121, 127, 133, 139, 145, 150, 155, 159),
-                  30: (111, 117, 123, 129, 134, 140, 144, 149, 153),
-                  40: (108, 114, 120, 126, 132, 137, 142, 147, 151),
-        },
-    }
-
-
 class B737_700_CFM56_7B(VelocitySpeed):
     '''
     Velocity speed tables for Boeing B737-700.
 
-    Note: This table is available but should never be needed as the Boeing B737
-    NG family of aircraft record the V2 and VREF parameters in the data frame.
+    Note: V2 and VREF are recorded on Boeing B737 NG aircraft.
     '''
     interpolate = True
     minimum_speed = 110
@@ -325,38 +315,64 @@ class B737_700_CFM56_7B(VelocitySpeed):
     }
 
 
-# TODO: Review and update source name.
-class B737_800(VelocitySpeed):
+class B737_700_CFM56_7B27B3(VelocitySpeed):
     '''
-    Velocity speed tables for Boeing B737-800.
+    Velocity speed tables for Boeing B737-700BBJ w/ CFMI CFM56-7B27B3 engines.
 
-    Note: This table is available but should never be needed as the Boeing B737
-    NG family of aircraft record the V2 and VREF parameters in the data frame.
+    Note: V2 and VREF are recorded on Boeing B737 NG aircraft.
     '''
     interpolate = True
-    minimum_speed = 110
-    source = ''
+    source = 'FDS Customer #109'
     weight_unit = 't'
     tables = {
         'v2': {
-            'weight': ( 41,  45,  50,  54,  59,  63,  68,  73,  77,  82),
-                   1: (167, 164, 160, 156, 151, 147, 142, 137, 131, 126),
-                   5: (161, 158, 154, 150, 146, 141, 137, 132, 127, 121),
-                  15: (156, 153, 149, 145, 141, 137, 133, 128, 123, 118),
+            'weight': ( 40,  44,  48,  52,  56,  60,  64,  68,  72,  76,  80,  84,  88),
+                   1: (113, 118, 124, 129, 134, 138, 143, 147, 151, 155, 159, 163, 167),
+                   5: (110, 115, 121, 126, 131, 135, 140, 144, 148, 151, 155, 159, 163),
+                  10: (109, 114, 119, 123, 127, 131, 135, 138, 141, 144, 148, 152, 155),
+                  15: (108, 112, 117, 121, 125, 129, 132, 136, 139, 142, 145, 148, 152),
+                  25: (107, 111, 115, 119, 123, 127, 131, 134, 137, 140, 143, 146, None),
         },
         'vref': {
-            'weight': ( 41,  45,  50,  54,  59,  63,  68,  73,  77,  82),
-                  15: (174, 169, 164, 159, 154, 148, 142, 135, 129, 122),
-                  30: (165, 160, 156, 151, 146, 141, 135, 129, 123, 116),
-                  40: (157, 153, 148, 144, 139, 133, 128, 122, 116, 109),
+            'weight': ( 45,  50,  55,  60,  65,  70,  75,  80,  85),
+                  15: (121, 127, 134, 140, 147, 152, 157, 162, 167),
+                  30: (117, 123, 129, 135, 141, 146, 151, 156, 161),
+                  40: (114, 120, 127, 133, 139, 144, 149, 154, 159),
+        }
+    }
+
+
+class B737_800(VelocitySpeed):
+    '''
+    Velocity speed tables for Boeing B737-800 w/ CFMI CFM56-7B engines.
+
+    Note: V2 and VREF are recorded on Boeing B737 NG aircraft.
+    '''
+    interpolate = True
+    source = 'FDS Customer 109: 737 FCOM'
+    weight_unit = 't'
+    tables = {
+        'v2': {
+            'weight': ( 40,  45,  50,  55,  60,  65,  70,  75,  80,  85, 90),
+                   1: (125, 131, 137, 143, 148, 153, 158, 162, 167, 171, 176),
+                   5: (121, 126, 132, 137, 143, 148, 152, 156, 160, 164, 167),
+                  10: (119, 125, 131, 136, 141, 146, 150, 154, 158, 162, 166),
+                  15: (117, 123, 128, 133, 138, 143, 147, 151, 155, 159, None),
+                  25: (115, 121, 126, 131, 136, 141, 145, 149, 153, 157, None),
+        },
+        'vref': {
+            'weight': ( 40,  45,  50,  55,  60,  65,  70,  75,  80,  85),
+                  15: (121, 128, 136, 143, 149, 156, 161, 167, 172, 177),
+                  30: (115, 122, 129, 136, 142, 148, 153, 158, 163, 168),
+                  40: (108, 115, 122, 128, 135, 141, 146, 151, 155, 160),
         }
     }
 
 
 class B757_200_RB211_535C_37(VelocitySpeed):
     '''
-    Velocity speed tables for Boeing B757-200 with Rolls Royce
-    RB211-535C-37 engines.
+    Velocity speed tables for Boeing B757-200 w/ Rolls Royce RB211-535C-37
+    engines.
     '''
     interpolate = True
     source = 'FDS Customer 20: Support Ticket 243; 757 FCOM'
@@ -380,8 +396,8 @@ class B757_200_RB211_535C_37(VelocitySpeed):
 
 class B757_200_RB211_535E4_37(VelocitySpeed):
     '''
-    Velocity speed tables for Boeing B757-200 with Rolls Royce
-    RB211-535E4 engines.
+    Velocity speed tables for Boeing B757-200 w/ Rolls Royce RB211-535E4
+    engines.
     '''
     interpolate = True
     source = 'FDS Customer 109: 757 FCOM/FPPM'
@@ -546,13 +562,16 @@ class Beechcraft_1900D(VelocitySpeed):
 
 # TODO: Determine a better way of looking up which table should be used!
 VELOCITY_SPEED_MAP = {
+    # ATR
+    ('ATR72_200', None): ATR72_200,
+
     # Boeing
     ('B737-300', None): B737_300,
     ('B737-300(QC)', None): B737_300,
     ('B737-400', None): B737_400,
     ('B737-500', None): B737_500,
-    ('B737-700', None): B737_700,
     ('B737-700', 'CFM56-7B'): B737_700_CFM56_7B,
+    ('B737-700', 'CFM56-7B27B3'): B737_700_CFM56_7B27B3,
     ('B737-800', None): B737_800,
 
     ('B757-200', 'RB211-535C-37'): B757_200_RB211_535C_37,
