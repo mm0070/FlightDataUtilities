@@ -241,24 +241,24 @@ class B737_300(VelocitySpeed):
 	}
 
 
-# TODO: Review and update source name.
 class B737_400(VelocitySpeed):
     '''
-    Velocity speed tables for Boeing B737-400.
+    Velocity speed tables for Boeing B737-400 w/ CFMI CFM56-3_23.5K engines.
     '''
     interpolate = True
-    source = ''
+    source = 'FDS Customer 25 & 28: 737 FCOM'
     weight_unit = 't'
     tables = {
         'v2': {
             'weight': ( 40,  45,  50,  55,  60,  65,  70),
                    5: (130, 136, 143, 149, 155, 162, 168),
+                  15: (122, 129, 135, 141, 146, 152, 157),
         },
         'vref': {
-            'weight': ( 35,  40,  45,  50,  55,  60,  65,  70,  70),
-                  15: (123, 132, 141, 149, 156, 164, 171, 177, 177),
-                  30: (111, 119, 127, 134, 141, 147, 154, 159, 159),
-                  40: (109, 116, 124, 130, 137, 143, 149, 155, 155),
+            'weight': ( 35,  40,  45,  50,  55,  60,  65,  70),
+                  15: (123, 132, 141, 149, 156, 164, 171, 177),
+                  30: (111, 119, 127, 134, 141, 147, 154, 159),
+                  40: (109, 116, 124, 130, 137, 143, 149, 155),
         },
     }
 
