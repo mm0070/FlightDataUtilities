@@ -15,7 +15,7 @@ SUPPORTED_WPS = [64, 128, 256, 512, 1024, 2048]
 
 
 def inspect(file_obj, words_to_read):
-    words = np.fromfile(file_obj, dtype=np.short, count=words_to_read)
+    words = np.fromfile(file_obj, dtype=np.short, count=words_to_read) & 0xFFF
 
     for word_index, word in enumerate(words[:words_to_read - max(SUPPORTED_WPS)]):
         for pattern_name, pattern in SYNC_PATTERNS.items():
