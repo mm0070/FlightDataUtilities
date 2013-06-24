@@ -94,6 +94,7 @@ class CompressedFile(object):
             self.uncompressed_path = self.compressed_path
             return self.compressed_path
 
+        extension = '.' + self.format
         basename = os.path.basename(self.compressed_path)
 
         if self.temporary_dir is None:
