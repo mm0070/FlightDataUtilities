@@ -131,7 +131,7 @@ class CompressedFile(object):
         '''
         Clean-up the temporary files.
         '''
-        if os.path.exists(self.temporary_dir):
+        if self.temporary_dir and os.path.exists(self.temporary_dir):
             logger.debug('Deleting temporary file `%s`',
                          self.uncompressed_path)
             shutil.rmtree(self.temporary_dir)
