@@ -155,6 +155,23 @@ class CompressedFile(object):
         return self.save()
 
 
+class ReadOnlyCompressedFile(CompressedFile):
+    '''
+    Compressed file wrapper with caching.
+
+    If the uncompressed file is found it will be reused instead of
+    uncompressing from source again.
+
+    This is a read-only solution: the changes to the uncompressed file are not
+    saved back to archive (``self.compress()`` does not do anything)!
+    '''
+    def save(self):
+        '''
+        Don't save, only clean up the temporary files.
+        '''
+        self.cleanup()
+
+
 class CachedCompressedFile(CompressedFile):
     '''
     Compressed file wrapper with caching.
