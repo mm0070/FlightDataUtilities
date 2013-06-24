@@ -89,10 +89,10 @@ class CompressedFile(object):
         '''
         Decompress the file and return the path to the contents.
         '''
-        if self.format is not None:
-            extension = '.' + self.format
-        else:
-            extension = None
+        if self.format is None:
+            # No-Op: return the original file
+            self.uncompressed_path = self.compressed_path
+            return self.compressed_path
 
         basename = os.path.basename(self.compressed_path)
 
@@ -139,8 +139,9 @@ class CompressedFile(object):
         '''
         Compress the file and delete the temporary path.
         '''
-        self.compress()
-        self.cleanup()
+        if self.format:
+            self.compress()
+            self.cleanup()
 
     def __enter__(self):
         '''
