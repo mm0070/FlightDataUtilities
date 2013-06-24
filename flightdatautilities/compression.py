@@ -98,9 +98,10 @@ class CompressedFile(object):
 
         if self.temporary_dir is None:
             self.temporary_dir = tempfile.mkdtemp()
-            if extension and basename.endswith(extension):
-                # Strip the compression extension
-                basename, ext = os.path.splitext(basename)
+
+        if extension and basename.endswith(extension):
+            # Strip the compression extension
+            basename, ext = os.path.splitext(basename)
 
         new_path = os.path.join(self.temporary_dir, basename)
 
