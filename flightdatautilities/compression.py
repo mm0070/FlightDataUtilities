@@ -45,7 +45,7 @@ class CompressedFile(object):
             used.
         :type format: str
         :param temp_dir: Temporary directory to store the uncompressed file. If
-            None, a random temporary directory name will nbe generated.
+            None, a random temporary directory name will be generated.
         :type temp_dir: str
         :param create: Create a new file instead of opening (will overwrite).
         :type create: bool
@@ -132,7 +132,7 @@ class CompressedFile(object):
         Clean-up the temporary files.
         '''
         if self.temporary_dir and os.path.exists(self.temporary_dir):
-            logger.debug('Deleting temporary file `%s`',
+            logger.debug('Deleting temporary directory `%s`',
                          self.uncompressed_path)
             shutil.rmtree(self.temporary_dir)
 
@@ -201,3 +201,7 @@ class CachedCompressedFile(CompressedFile):
         Do nothing: we leave the temporary file for later use.
         '''
         pass
+
+
+###############################################################################
+# vim:et:ft=python:nowrap:sts=4:sw=4:ts=4
