@@ -36,16 +36,20 @@ class CompressedFile(object):
 
     On exit the resulting file is compressed back to the original place.
     '''
-    def __init__(self, compressed_path, format=None, temp_dir=None,
-                 create=False):
+    def __init__(self, compressed_path, format=None, output_dir=None,
+                 temp_dir=None, create=False):
         '''
         :param compressed_path: Path to the compressed file.
         :type compressed_path: str
         :param format: Format of the archive, if None the filename extension is
             used.
         :type format: str
+        :param output_dir: Output directory to store the uncompressed file. If
+            None, a temporary directory will be created and deleted on exit.
+        :type output_dir: str
         :param temp_dir: Temporary directory to store the uncompressed file. If
-            None, a random temporary directory name will be generated.
+            None, a system default will be used. Mutually exclusive with
+            ``output_dir``.
         :type temp_dir: str
         :param create: Create a new file instead of opening (will overwrite).
         :type create: bool
@@ -68,8 +72,16 @@ class CompressedFile(object):
             format = None
 
         self.compressed_path = compressed_path
+        # Path to the uncompressed file
         self.uncompressed_path = None
-        self.temporary_dir = temp_dir
+        # Path where the uncompressed files will be stored
+        self.output_dir = temp_dir
+        # Prefix for temporary directory (if None, the system default will be
+        # used)
+        self.temp_dir = temp_dir
+        # Temporary path containing uncompressed file. YThis directory will be
+        # deleted in self.cleanup()!
+        self.temp_path = None
         self.format = format
         self.create = create
 
@@ -97,19 +109,20 @@ class CompressedFile(object):
         extension = '.' + self.format
         basename = os.path.basename(self.compressed_path)
 
-        if self.temporary_dir is None:
-            self.temporary_dir = tempfile.mkdtemp()
-
         if extension and basename.endswith(extension):
             # Strip the compression extension
             basename, ext = os.path.splitext(basename)
 
-        new_path = os.path.join(self.temporary_dir, basename)
+        if self.output_dir is None:
+            # Prepare the temporary directory to store the file
+            # This directory will be deleted on exit!
+            self.output_dir = tempfile.mkdtemp(dir=self.temp_dir)
+            self.temp_path = self.output_dir
 
-        if not os.path.isdir(self.temporary_dir):
-            os.makedirs(self.temporary_dir)
+            if not os.path.isdir(self.output_dir):
+                os.makedirs(self.output_dir)
 
-        self.uncompressed_path = new_path
+        self.uncompressed_path = os.path.join(self.output_dir, basename)
 
         if not self.create:
             self.uncompress()
@@ -131,10 +144,10 @@ class CompressedFile(object):
         '''
         Clean-up the temporary files.
         '''
-        if self.temporary_dir and os.path.exists(self.temporary_dir):
+        if self.temp_path and os.path.exists(self.temp_path):
             logger.debug('Deleting temporary directory `%s`',
-                         self.uncompressed_path)
-            shutil.rmtree(self.temporary_dir)
+                         self.temp_path)
+            shutil.rmtree(self.temp_path)
 
     def save(self):
         '''
