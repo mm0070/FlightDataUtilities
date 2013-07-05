@@ -75,7 +75,7 @@ class CompressedFile(object):
         # Path to the uncompressed file
         self.uncompressed_path = None
         # Path where the uncompressed files will be stored
-        self.output_dir = temp_dir
+        self.output_dir = output_dir
         # Prefix for temporary directory (if None, the system default will be
         # used)
         self.temp_dir = temp_dir
