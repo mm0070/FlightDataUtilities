@@ -16,6 +16,7 @@ import shutil
 import logging
 
 
+COMPRESSION_LEVEL = 6
 COMPRESSION_FORMATS = {
     'gz': gzip.GzipFile,
     'bz2': bz2.BZ2File,
@@ -37,7 +38,8 @@ class CompressedFile(object):
     On exit the resulting file is compressed back to the original place.
     '''
     def __init__(self, compressed_path, format=None, output_dir=None,
-                 temp_dir=None, create=False):
+                 temp_dir=None, create=False,
+                 compression_level=COMPRESSION_LEVEL):
         '''
         :param compressed_path: Path to the compressed file.
         :type compressed_path: str
@@ -84,6 +86,7 @@ class CompressedFile(object):
         self.temp_path = None
         self.format = format
         self.create = create
+        self.compression_level = compression_level
 
     def uncompress(self):
         '''
@@ -136,7 +139,9 @@ class CompressedFile(object):
         logger.debug('Recompressing file `%s` from temporary location `%s`',
                      self.compressed_path, self.uncompressed_path)
 
-        with self.compressor(self.compressed_path, 'w') as compressed_file:
+        with self.compressor(
+                self.compressed_path, 'w',
+                compresslevel=self.compression_level) as compressed_file:
             with file(self.uncompressed_path, 'rb') as uncompressed_file:
                 compressed_file.write(uncompressed_file.read())
 
