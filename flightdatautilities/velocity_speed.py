@@ -163,7 +163,8 @@ class VelocitySpeed(object):
             msg = "Velocity speed table '%s' has no entry for flap/conf '%s'."
             arg = (self.__class__.__name__, setting)
             logger.error(msg, *arg)
-            raise KeyError(msg % arg)
+            # raise KeyError(msg % arg)
+            return None
 
         # If table which doesn't have weights return fixed value:
         if self.weight_unit is None:
@@ -590,6 +591,7 @@ VELOCITY_SPEED_MAP = {
     ('B767-300', 'CF6-80C2'): B767_300_CF6_80C2,
     ('B767-300(ER)', 'CF6-80C2'): B767_300_CF6_80C2,
     ('B767-300F(ER)', 'CF6-80C2'): B767_300_CF6_80C2,
+    ('B767-300F(ER)', 'CF6-80C2B7F'): B767_300_CF6_80C2,
     ('B767-300(ER/F)', 'CF6-80C2'): B767_300_CF6_80C2,
     ('B767-300', 'PW4000-94'): B767_300_PW4000_94,
     ('B767-300(ER)', 'PW4000-94'): B767_300_PW4000_94,
