@@ -199,6 +199,69 @@ class VelocitySpeed(object):
 # Velocity Speed Table Classes
 
 
+class A300_600(VelocitySpeed):
+    '''
+    Velocity speed tables for A300-600
+    '''
+    interpolate = True
+    source = 'FDS Customer 6: A300 FCOM'
+    weight_unit = 'lb'
+    tables = {
+        'v2': {
+            'weight': (200,205,210,215,220,225,230,235,240,245,250,255,260,265,270,275,280,285,290,295,300,305,310,315,320,325,330,335,340,345,350,355,360,365,370,375,380,385),
+                   0: (131,133,134,136,137,139,140,142,143,145,146,147,149,150,152,153,154,155,157,158,159,160,162,163,164,165,166,168,169,170,171,172,174,175,176,177,178,179),
+                    # Slat 15/ Flap 0, Taken from  V2/VS 1.27
+                  15: (123,124,126,127,129,130,131,133,134,135,137,138,139,140,142,143,144,145,146,148,149,150,151,152,153,154,156,157,158,159,160,161,162,163,164,165,166,167),
+                    # Slat 15/ Flap 15, Taken from  V2/VS 1.27
+                  20: (117,119,120,121,123,124,125,127,128,129,131,132,133,134,135,137,138,139,140,141,142,143,145,146,147,148,149,150,151,152,153,154,155,156,157,158,159,160),
+                    # Slat 15/ Flap 20, Taken from  V2/VS 1.27	
+        },
+        'vref': {
+            'weight': (177,205,220,235,250,265,280,295,310,325,340,355,370,385),
+                  40: (109,111,115,119,122,126,129,132,135,139,142,145,148,151), #Slat 30/Flap 40
+        },
+    }
+
+
+class A300_B4(VelocitySpeed):
+    '''
+    Velocity speed tables for A300-B4
+    '''
+    interpolate = True
+    source = 'FDS Customer 6: A300 FCOM'
+    weight_unit = 'lb'
+    tables = {
+        'v2': {
+            'weight': (240,260,280,300,320,340),
+                   0: (145,150,154,162,167,171), # Slat 15/ Flap 0,  Taken from a graph table
+		           8: (130,134,141,146,148,155), # Slat 16/ Flap 8,  Taken from a graph table
+                  15: (123,128,133,137,142,146), # Slat 16/ Flap 15, Taken from a graph table
+        },
+        'vref': {
+            'weight': (230,240,250,260,270,280,290,300,310,320,330,340,350,360,363.6),
+                  25: (121,124,127,129,132,135,137,139,141,143,145,147,150,152,152), #Slat 25/Flap 25
+        },
+    }
+
+
+class ATR42_300(VelocitySpeed):
+    '''
+    Velocity speed tables for ATR42-300 w/ PWC PW120 engines.
+    '''
+    interpolate = True
+    source = 'FDS Customer 6: ATR42 FCOM'
+    weight_unit = 't'
+    tables = {
+        'v2': {
+            'weight': (14,14.5,15,15.5, 16,16.5,16.7,16.9),
+                  15: (92,94,96,98,100,102,102,103),
+        },
+        'vref': {
+            'weight': (11,11.5,12,12.5,13,13.5,14,14.5,15,15.5, 16,16.5),
+                  30: (84,86,88,90,92,93,95,97,99,101,102,104),
+        },
+    }
+
 class ATR72_200(VelocitySpeed):
     '''
     Velocity speed tables for ATR72-202 w/ PWC PW124B engines.
@@ -562,7 +625,12 @@ class Beechcraft_1900D(VelocitySpeed):
 
 # TODO: Determine a better way of looking up which table should be used!
 VELOCITY_SPEED_MAP = {
+    #Airbus
+    ('A300_600', None): A300_600,
+    ('A300_B4', None): A300_B4,
+
     # ATR
+    ('ATR42_300', None): ATR42_300,
     ('ATR72_200', None): ATR72_200,
 
     # Boeing

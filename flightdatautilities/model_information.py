@@ -64,7 +64,7 @@ FLAP_FAMILY_MAP = {
     'A320':    (0, 10, 15, 20, 35),                    # FAA TCDS A28NM Rev 11
     'A321':    (0, 10, 14, 21, 25),                    # FAA TCDS A28NM Rev 11
     'A330':    (0, 8, 14, 22, 32),                     # Smart Cockpit A330 General Limitions Rev 19
-    ####'A380':    (0, 8, 17, 26, 33),                     # Smart Cockpit A380 Briefing For Pilots
+    'A380':    (0, 8, 17, 26, 33),                     # Smart Cockpit A380 Briefing For Pilots
     'BAE 146': (0, 18, 24, 30, 33),                    # FAA TCDS A49EU Rev 17 (Includes RJ85 & RJ100)
     'B727':    (0, 2, 5, 15, 25, 30, 40),              # Smart Cockpit B727 Flight Controls 
     'B737 Classic': (0, 1, 2, 5, 10, 15, 25, 30, 40),  # Smart Cockpit B737E Flight Controls 9.10.13
@@ -73,7 +73,7 @@ FLAP_FAMILY_MAP = {
     'B757':    (0, 1, 5, 15, 20, 25, 30),              # Smart Cockpit B757-200RR Flight Controls 9.10.8
     'B767':    (0, 1, 5, 15, 20, 25, 30),              # Smart Cockpit B767-300GE Flight Controls 9.10.10
     'B777':    (0, 1, 5, 15, 20, 25, 30),              # Smart Cockpit B777 Flight Controls 9.10.7
-    ####'B787':    (0, 1, 5, 15, 20, 25, 30),              # FAA TCDS T00021SE Rev 6
+    'B787':    (0, 1, 5, 15, 20, 25, 30),              # FAA TCDS T00021SE Rev 6
     'CL600':   (0, 20, 30, 45),                        # FAA TCDS A21EA Rev 31
     'CL850':   (0, 8, 20, 30, 45),                     # FAA TCDS A21EA Rev 31
     'CRJ 100/200': (0, 8, 20, 30, 45),                 # FAA TCDS A21EA Rev 31
@@ -91,7 +91,7 @@ FLAP_FAMILY_MAP = {
     'C-130':   (0, 50, 100),                           # FAA TCDS A1SO Rev 16 (100% = 36)
     'Learjet': (0, 8, 20, 40),                         # FAA TCDS T00008WI Rev 17
     'L1011':   (0, 4, 10, 14, 18, 22, 33),             # FAA TCDS A23WE Rev 19
-    'MD-11':   (0, 15, 22, 25, 28, 35, 50),            # FAA TCDS A22WE Rev 12
+    ###'MD-11':   (0, 15, 22, 25, 28, 35, 50),            # FAA TCDS A22WE Rev 12     FIXME
 }
 
 
@@ -118,12 +118,12 @@ SLAT_FAMILY_MAP = {
     'A320':    (0, 18, 22, 27),    # FAA TCDS A28NM Rev 11
     'A321':    (0, 18, 22, 27),    # FAA TCDS A28NM Rev 11
     'A330':    (0, 16, 20, 23),    # Smart Cockpit A330 General Limitions Rev 19
-    ####'A380':    (0, 20, 23),        # Smart Cockpit A380 Briefing For Pilots
+    'A380':    (0, 20, 23),        # Smart Cockpit A380 Briefing For Pilots
     'CRJ 700': (0, 20, 25),        # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
     'CRJ 900': (0, 20, 25),        # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
     'DC-9':    (0, 17.8, 21),      # FAA TCDS A6WE Rev 28 (DC-9-81 & DC-9-82)
     ####'Falcon': (Not Extended, Extended),   # FAA TCDS A59NM Rev 1 & Smart Cockpit 7X Flight Controls Issue 2 FIXME
-    ####'Global': (Not Extended, Extended),   # FAA TCDS T00003NY Rev 16 & Smart Cockpit G5000 Limitations Vol 1 FIXME
+    'Global': (0, 20),             # (Not Extended, Extended) FAA TCDS T00003NY Rev 16 & Smart Cockpit G5000 Limitations Vol 1 & LFL doc
 }
 
 
@@ -138,7 +138,7 @@ AILERON_SERIES_MAP = {
 
 AILERON_FAMILY_MAP = {
     'A330': (0, 5, 10),         # Smart Cockpit A330 General Limitions Rev 19
-    ####'A380': (0, 5, 10),         # Smart Cockpit A380 Briefing For Pilots
+    'A380': (0, 5, 10),         # Smart Cockpit A380 Briefing For Pilots
 }
 
 
@@ -231,14 +231,14 @@ CONF_FAMILY_MAP = {
         '3':    (23, 22, 10),  # Smart Cockpit A330 General Limitions Rev 4
         'Full': (23, 32, 10),  # Smart Cockpit A330 General Limitions Rev 4
     },         
-    ####'A380': {
-    ####    '0':    (0, 0, 0),     # Smart Cockpit A380 Briefing For Pilots
-    ####    '1':    (20, 0, 0),    # Smart Cockpit A380 Briefing For Pilots
-    ####    '1+F':  (20, 8, 5),    # Smart Cockpit A380 (ECAM Indication = 1+F)
-    ####    '2':    (20, 17, 5),   # Smart Cockpit A380 Briefing For Pilots
-    ####    '3':    (23, 26, 5),   # Smart Cockpit A380 Briefing For Pilots
-    ####    'Full': (23, 33, 10),  # Smart Cockpit A380 Briefing For Pilots
-    ####},   
+    'A380': {
+        '0':    (0, 0, 0),     # Smart Cockpit A380 Briefing For Pilots
+        '1':    (20, 0, 0),    # Smart Cockpit A380 Briefing For Pilots
+        '1+F':  (20, 8, 5),    # Smart Cockpit A380 (ECAM Indication = 1+F)
+        '2':    (20, 17, 5),   # Smart Cockpit A380 Briefing For Pilots
+        '3':    (23, 26, 5),   # Smart Cockpit A380 Briefing For Pilots
+        'Full': (23, 33, 10),  # Smart Cockpit A380 Briefing For Pilots
+    },   
     ####'Falcon': {
     ####    '0'  : (0, 0),         # FAA TCDS A59NM Rev 1 & Smart Cockpit 7X Flight Controls Issue 2 FIXME
     ####    'SF1': (Extended, 9),  # FAA TCDS A59NM Rev 1 & Smart Cockpit 7X Flight Controls Issue 2 FIXME
