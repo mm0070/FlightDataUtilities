@@ -331,11 +331,12 @@ def get_slat_map(series=None, family=None):
 
 def get_aileron_map(series=None, family=None):
     '''
-    Accessor for fetching aileron mapping parameters.
+    Accessor for fetching aileron mapping parameters. Note this is used for
+    generating the Flaperon parameter.
 
-    :param series: Aircraft series e.g. B737-300
+    :param series: Aircraft series e.g. A340-500
     :type series: String
-    :param family: Aircraft family e.g. B737
+    :param family: Aircraft family e.g. A330
     :type family: String
     :raises: KeyError if no mapping found
     :returns: list of detent values
