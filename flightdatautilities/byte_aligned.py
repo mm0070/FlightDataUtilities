@@ -15,13 +15,13 @@ SUPPORTED_WPS = [64, 128, 256, 512, 1024, 2048]
 
 
 def inspect(file_obj, words_to_read):
-    words = np.fromfile(file_obj, dtype=np.short, count=words_to_read)
+    words = np.fromfile(file_obj, dtype=np.short, count=words_to_read) & 0xFFF
 
     for word_index, word in enumerate(words[:words_to_read - max(SUPPORTED_WPS)]):
         for pattern_name, pattern in SYNC_PATTERNS.items():
             try:
                 pattern_index = pattern.index(word)
-                logger.debug('Found first sync word.')
+                logger.debug('Found first sync word at %d.', word_index)
                 break
             except ValueError:
                 continue
@@ -33,7 +33,7 @@ def inspect(file_obj, words_to_read):
 
         for wps in SUPPORTED_WPS:
             if words[word_index + wps] == pattern[pattern_index]:
-                logger.debug('Found second sync word.')
+                logger.debug('Found second sync word at %d.', word_index)
                 break
         else:
             # Sync word not found at any expected subframe boundary.
@@ -42,14 +42,14 @@ def inspect(file_obj, words_to_read):
         pattern_index = (pattern_index + 1) % 4
 
         if words[word_index + (2 * wps)] == pattern[pattern_index]:
-            logger.debug('Found third sync word')
+            logger.debug('Found third sync word at %d', word_index)
         else:
             continue
 
         pattern_index = (pattern_index + 1) % 4
 
         if words[word_index + (3 * wps)] == pattern[pattern_index]:
-            logger.debug('Found fourth sync word')
+            logger.debug('Found fourth sync word at %d', word_index)
         else:
             continue
         logger.info('Found complete %d wps frame at word %d (byte %d) with %s sync pattern.',

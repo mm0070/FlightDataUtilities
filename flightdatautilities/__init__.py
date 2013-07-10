@@ -5,7 +5,7 @@
 # See the file "LICENSE" for the full license governing this code.
 
 __packagename__ = 'FlightDataUtilities'
-__version__ = '0.0.0'
+__version__ = '0.0.2'
 __author__ = 'Flight Data Services Ltd'
 __author_email__ = 'developers@flightdataservices.com'
 __maintainer__ = 'Flight Data Services Ltd'
