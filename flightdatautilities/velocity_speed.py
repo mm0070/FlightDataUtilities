@@ -406,7 +406,7 @@ class B737_700_CFM56_7B27B3(VelocitySpeed):
     Note: V2 and VREF are recorded on Boeing B737 NG aircraft.
     '''
     interpolate = True
-    source = 'FDS Customer #109'
+    source = 'FDS Customer 69 & 109 FCOM'
     weight_unit = 't'
     tables = {
         'v2': {
@@ -433,7 +433,7 @@ class B737_800(VelocitySpeed):
     Note: V2 and VREF are recorded on Boeing B737 NG aircraft.
     '''
     interpolate = True
-    source = 'FDS Customer 109: 737 FCOM'
+    source = 'FDS Customer 69 & 109: 737 FCOM'
     weight_unit = 't'
     tables = {
         'v2': {
