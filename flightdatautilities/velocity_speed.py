@@ -484,7 +484,7 @@ class B757_200_RB211_535E4_37(VelocitySpeed):
     engines.
     '''
     interpolate = True
-    source = 'FDS Customer 104, 109: 757 FCOM/FPPM'
+    source = 'FDS Customer 104, 109 & 122: 757 FCOM/FPPM'
     weight_unit = 't'
     tables = {
         'v2': {
