@@ -129,13 +129,15 @@ class CompressionTest(unittest.TestCase):
         shutil.rmtree(cache_dir)
 
     def test_exc(self):
-        # raise exception, test the error is propagated through from context
-        # manager
+        '''
+        Any exception raised in contest manager should be propagated through.
+        Changes made in the context manager should not be saved.
+        '''
         def _raiseValueError():
             with CompressedFile(self.filename, create=True) as uncompressed:
                 with file(uncompressed, 'w+') as f:
                     text = ' This is a failed content, ' \
-                        'it should not appear in the file\n'
+                        'it should not appear in the compressed file\n'
                     f.write(text)
                 raise ValueError
 
