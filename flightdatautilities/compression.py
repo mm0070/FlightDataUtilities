@@ -168,12 +168,19 @@ class CompressedFile(object):
         '''
         return self.load()
 
-    def __exit__(self, a_type, value, traceback):
+    def __exit__(self, exc_type, exc_value, traceback):
         '''
         Save the archive contents with the defaults: the path the file was
         decompressed to in ``load()``.
         '''
-        return self.save()
+        if exc_type is not None:
+            # cleanup only
+            self.cleanup()
+        else:
+            # save and cleanup
+            self.save()
+
+        return False  # re-raise exception, if any
 
 
 class ReadOnlyCompressedFile(CompressedFile):
