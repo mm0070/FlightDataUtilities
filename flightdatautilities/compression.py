@@ -212,9 +212,20 @@ class CachedCompressedFile(CompressedFile):
     '''
     def uncompress(self):
         '''
-        Uncompress the file **if not found** in the temporary location.
+        Uncompress the file if not found in the temporary location or the
+        cached version is older than the compressed one.
         '''
         if not os.path.exists(self.uncompressed_path):
+            need_to_update = True
+        else:
+            compressed_st = os.stat(self.compressed_path)
+            uncompressed_st = os.stat(self.uncompressed_path)
+            if uncompressed_st.st_mtime < compressed_st.st_mtime:
+                need_to_update = True
+            else:
+                need_to_update = False
+
+        if need_to_update:
             logger.debug('Cached file `%s` not found', self.uncompressed_path)
             super(CachedCompressedFile, self).uncompress()
         else:

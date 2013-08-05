@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os
-import shutil
+import time
 import tempfile
 import unittest
 
@@ -90,7 +90,6 @@ class CompressionTest(unittest.TestCase):
 
         # Create contents of the file
         self.generateContent()
-        self.generateContent()
 
         cache_dir = tempfile.mkdtemp()
 
@@ -102,8 +101,8 @@ class CompressionTest(unittest.TestCase):
                     'only available in the cached copy!\n'
                 f.write(text)
 
-        # Let's open it in cache mode again, the file was found, so it will not
-        # be uncompressed again:
+        # Let's open it in cache mode again, the file will be found, so it will
+        # not be uncompressed again:
         expected = [
             ' 1. This is the first line of content\n',
             ' 2. This is the second line of content, '
@@ -116,17 +115,24 @@ class CompressionTest(unittest.TestCase):
             with file(uncompressed) as f:
                 self.assertListEqual(f.readlines(), expected)
 
-        # Now let's reopen the file from archive again
+        # Sleep for 1 sec. to let the mtimes differ
+        time.sleep(1)
+
+        # "touch" the original file
+        os.utime(self.filename, None)
+
+        # Let's open it in cache mode again, the file will be found, but older
+        # than the original, so the cache will be refreshed. The extra content
+        # will disappear.
         expected = [
             ' 1. This is the first line of content\n',
         ]
-        with ReadOnlyCompressedFile(self.filename, output_dir=cache_dir) \
+        with CachedCompressedFile(self.filename, output_dir=cache_dir) \
                 as uncompressed:
             with file(uncompressed) as f:
                 self.assertListEqual(f.readlines(), expected)
 
-        # clean up the cache dir
-        shutil.rmtree(cache_dir)
+        os.unlink(uncompressed)
 
     def test_exc(self):
         '''
