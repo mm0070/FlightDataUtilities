@@ -1,22 +1,19 @@
 # -*- coding: utf-8 -*-
-#############################################################################
 
 '''
 Flight Data Utilities: Aircraft Configuration Information
 '''
 
+import logging
+import numpy as np
+
+logger = logging.getLogger(name=__name__)
+
 #############################################################################
 # Flap Selections
 
-# Notes:
-#
-# Todo:
-# - B757 ACMS dataframe uses FLAP_LEVER - create a test case with this data
-# - B777 Records using many discrete positions, use that! (create a multi-part
-# parameter which scales FLAP_15 discrete by 15!
 
-
-##### FIXME: Can we avoid doing this?
+##### FIXME: Can we avoid doing this model specific level?
 ####FLAP_MODEL_MAP = {
 ####    'CRJ 100LR': (0, 20, 30, 45),               # FAA TCDS A21EA Rev 31
 ####}
@@ -308,6 +305,41 @@ def get_flap_map(series=None, family=None):
     raise KeyError("No flap mapping for series '%s', family '%s'." % \
         (series, family))
 
+
+def get_flap_values_mapping(series, family, flap_param=None):
+    '''
+    Get the flap mapping for the aircraft type. Should this not be
+    available, rounds the available flap array to the nearest 5 degrees.
+    
+    If flap_param is None, raises KeyError as no fallback available.
+    
+    Returns the values mapping:
+    { int(flap angle) : str(flap angle) }
+    
+    :param series: Aircrat Series with .value attribute
+    :type series: Attribute
+    :param family: Aircraft Family with .value attribute
+    :type family: Attribute
+    :param flap_param: Recorded flap parameter.
+    :type flap_param: Parameter
+    :returns: Values Mapping for each flap setting for provided aircraft type
+    :rtype: Dict
+    '''
+    try:
+        flap_steps = get_flap_map(series.value, family.value)
+    except KeyError:
+        # no flaps mapping, round to nearest 5 degrees
+        logger.warning("No flap settings for series '%s' family '%s' - "
+                       "rounding to nearest 5", series.value, family.value)
+        if flap_param is None:
+            raise
+        # round to nearest 5 degrees (as per round_to_nearest)
+        step = 5.0
+        array = np.ma.round(flap_param.array / step) * step
+        flap_steps = [int(f) for f in np.ma.unique(array) \
+                      if f is not np.ma.masked]
+    return {int(f): str(f) for f in flap_steps}
+    
 
 def get_slat_map(series=None, family=None):
     '''
