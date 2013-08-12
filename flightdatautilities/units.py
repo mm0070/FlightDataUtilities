@@ -184,6 +184,12 @@ STANDARD_CONVERSIONS = {
 
 
 UNIT_CORRECTIONS = {
+    # Electricity:
+    'A': 'amps',
+    'kVA': 'kilovolt-amps',
+    'V': 'volts',
+    'VAC': 'volts',
+    'VDC': 'volts',
     # Flow (Volume):
     'lb/hr': 'lb/h',
     'lbs/h': 'lb/h',
@@ -215,6 +221,7 @@ UNIT_CORRECTIONS = {
     'tonnes': 't',
     # Speed:
     'kts': 'kt',
+    'kn': 'kt',
     'knot': 'kt',
     'knots': 'kt',
     'mi/h': 'mph',
@@ -224,16 +231,31 @@ UNIT_CORRECTIONS = {
     'feet/min': 'fpm',
     # Temperature:
     'C': u'°C',
+    'degree C': u'°C',
+    'deg. C': u'°C',
     'F': u'°F',
     'K': u'°K',
     # Time:
+    'day': 'days',
     'hr': 'h',
     'hrs': 'h',
     'mins': 'min',
+    'mon': 'months',
     'sec': 's',
+    'second': 's',
+    'seconds': 's',
     'secs': 's',
+    'year': 'years',
     # Other:
+    'DDM': 'ddm',
+    'degree': 'deg',
     'dot': 'dots',
+    'G': 'g',
+    'percent': '%',
+    'PSIA': 'psi',
+    'PSID': 'psid',
+    'RPM': 'rpm',
+    'Qt (US)': 'Qt (US)', # Q: liquid or dry?
 }
 
 
