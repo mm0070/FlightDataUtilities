@@ -286,6 +286,21 @@ def get_conf_detents():
     return sorted(all_detents)
 
 
+def get_slat_detents():
+    '''
+    Get all slat detents from all supported aircraft types
+
+    :returns: list of detent values
+    :rtype: list
+    '''
+    all_detents = set()
+    for detents in SLAT_SERIES_MAP.itervalues():
+        all_detents.update(detents)
+    for detents in SLAT_FAMILY_MAP.itervalues():
+        all_detents.update(detents)
+    return sorted(all_detents)
+
+
 def get_flap_map(series=None, family=None):
     '''
     Accessor for fetching flap mapping parameters.
