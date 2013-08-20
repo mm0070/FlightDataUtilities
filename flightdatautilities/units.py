@@ -8,6 +8,7 @@ Provides utilities for handling conversions between units of flight data.
 # FIXME: Default unit change - 'dots' should be 'dot'?
 # FIXME: Default unit change - 'mB' should be 'mbar' or 'mb'?
 # FIXME: Default unit change - 'nm' should be 'NM' or 'nmi'?
+# FIXME: Resolve problems with unicode degree symbol on Windows...
 
 ##############################################################################
 # Constants
@@ -145,19 +146,21 @@ CONVERSION_MULTIPLIERS = {
 }
 
 
+# FIXME: Use the degree symbol as appropriate if Microsoft Windows can be made
+#        to behave correctly with unicode output in command line scripts... :(
 CONVERSION_FUNCTIONS = {
     # Temperature:
-    u'°C': {
-        u'°F': lambda v: v * 9.0 / 5.0 + 32.0,
-        u'°K': lambda v: v + 273.15,
+    'C': {
+        'F': lambda v: v * 9.0 / 5.0 + 32.0,
+        'K': lambda v: v + 273.15,
     },
-    u'°F': {
-        u'°C': lambda v: (v - 32.0) * 5.0 / 9.0,
-        u'°K': lambda v: (v + 459.67) * 5.0 / 9.0,
+    'F': {
+        'C': lambda v: (v - 32.0) * 5.0 / 9.0,
+        'K': lambda v: (v + 459.67) * 5.0 / 9.0,
     },
-    u'°K': {
-        u'°C': lambda v: v - 273.15,
-        u'°F': lambda v: v * 9.0 / 5.0 - 459.67,
+    'K': {
+        'C': lambda v: v - 273.15,
+        'F': lambda v: v * 9.0 / 5.0 - 459.67,
     },
 }
 
@@ -174,8 +177,8 @@ STANDARD_CONVERSIONS = {
     # Pressure:
     'inHg': 'mB',
     # Temperature:
-    u'°F': u'°C',
-    u'°K': u'°C',
+    'F': 'C',  # XXX: See note next to CONVERSION_FUNCTIONS.
+    'K': 'C',  # XXX: See note next to CONVERSION_FUNCTIONS.
     # Other:
     'gs-ddm': 'dots',
     'loc-ddm': 'dots',
@@ -230,11 +233,8 @@ UNIT_CORRECTIONS = {
     'ft/min': 'fpm',
     'feet/min': 'fpm',
     # Temperature:
-    'C': u'°C',
-    'degree C': u'°C',
-    'deg. C': u'°C',
-    'F': u'°F',
-    'K': u'°K',
+    'degree C': 'C',  # XXX: See note next to CONVERSION_FUNCTIONS.
+    'deg. C': 'C',    # XXX: See note next to CONVERSION_FUNCTIONS.
     # Time:
     'day': 'days',
     'hr': 'h',
