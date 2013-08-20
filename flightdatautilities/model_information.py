@@ -116,6 +116,7 @@ SLAT_FAMILY_MAP = {
     'A321':    (0, 18, 22, 27),    # FAA TCDS A28NM Rev 11
     'A330':    (0, 16, 20, 23),    # Smart Cockpit A330 General Limitions Rev 19
     'A380':    (0, 20, 23),        # Smart Cockpit A380 Briefing For Pilots
+    'B787':    (0, 50, 100),       # Boeing 787 Operations Manual
     'CRJ 700': (0, 20, 25),        # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
     'CRJ 900': (0, 20, 25),        # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
     'DC-9':    (0, 17.8, 21),      # FAA TCDS A6WE Rev 28 (DC-9-81 & DC-9-82)
@@ -235,7 +236,16 @@ CONF_FAMILY_MAP = {
         '2':    (20, 17, 5),   # Smart Cockpit A380 Briefing For Pilots
         '3':    (23, 26, 5),   # Smart Cockpit A380 Briefing For Pilots
         'Full': (23, 33, 10),  # Smart Cockpit A380 Briefing For Pilots
-    },   
+    },
+    'B787': {
+        0:    (0, 0),
+        1:    (50, 0),
+        5:    (50, 5),
+        15:   (50, 15),
+        20:   (50, 20),
+        25:   (100, 20),
+        30:   (100, 30),
+    },
     ####'Falcon': {
     ####    '0'  : (0, 0),         # FAA TCDS A59NM Rev 1 & Smart Cockpit 7X Flight Controls Issue 2 FIXME
     ####    'SF1': (Extended, 9),  # FAA TCDS A59NM Rev 1 & Smart Cockpit 7X Flight Controls Issue 2 FIXME
