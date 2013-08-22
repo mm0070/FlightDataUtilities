@@ -163,9 +163,11 @@ def get_vmo_procedure(series=None, family=None):
         procedure, args = VMO_SERIES[series]
 
     else:
-        raise ValueError(
-            'No VMO/MMO defined for aircraft family `%s`/series `%s`' %
-            (family, series))
+        # FIXME: we should raise error
+        #raise ValueError(
+        #    'No VMO/MMO defined for aircraft family `%s`/series `%s`' %
+        #    (family, series))
+        return VMONone()
 
     return procedure(*args)
 
