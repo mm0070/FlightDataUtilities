@@ -147,15 +147,50 @@ def dict_filter(d, keep=None, remove=None):
     :param remove: A list of keys to be removed from the output dictionary.
     :type remove: list
     '''
+    def replace_down(x, wildkey, thiskey):
+        new_dict = {}
+        try:
+            for key,value in x.iteritems():
+                new_dict[key] = replace_down(x[key], wildkey, thiskey)
+        except:
+            try:
+                x = re.sub(wildkey, thiskey , x)
+            except:
+                pass
+            return x
+        return new_dict
+    
     if keep and remove:
         raise ValueError('Cannot keep and remove at the same time!')
     if keep:
         f = lambda k, v: k in keep
+        return_dict = dfilter(f, d)
     elif remove:
         f = lambda k, v: k not in remove
+        return_dict = dfilter(f, d)
     else:
-        return d
-    return dfilter(f, d)
+        return_dict = d
+    
+    # return return_dict # Was the end
+    
+    # Extract the wildcard entries from d
+    import re
+    new_dict={}
+    if keep==None:
+        return return_dict
+    for key in d:
+        if '(*)' in key:
+            wildkey = key.replace("(*)","\\(\\w*\\)") # This format for re.compile
+            wild_one = re.compile(wildkey)
+            for thiskey in keep:
+                pos = wild_one.match(thiskey)
+                if pos:
+                    wildkey = key.replace("(*)","\\(\\*\\)") # This format for re()
+                    new_dict[thiskey]=replace_down(d[key], wildkey, thiskey) 
+    
+    return dict(return_dict.items() + new_dict.items())
+    
+
 
 
 ################################################################################
