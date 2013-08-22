@@ -174,8 +174,7 @@ def get_vmo_procedure(series=None, family=None):
 
 # FIXME: this should probably be done in a better way (frame settings?)
 # VMO/MMO procedures registry
-# keys are the frame names, values are 2-element lists: VMO/MMO class and list
-# of constructor arguments
+# values are 2-element lists: VMO/MMO class and list of constructor arguments
 VMO_FAMILIES = {
     'Lockheed C-130': [VMOL382, []],
     'B737 Classic': [VMO, [340, 0.82]],
