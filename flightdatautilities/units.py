@@ -128,6 +128,13 @@ CONVERSION_MULTIPLIERS = {
         'h': 0.000277778,
         'min': 0.016666667,
     },
+    # Volume:
+    'pt (US)': {
+        'qt (US)': 0.5,
+    },
+    'qt (US)': {
+        'pt (US)': 2,
+    },
     # Other:
     'gs-ddm': {
         'dots': 11.428571428571429,
@@ -179,6 +186,8 @@ STANDARD_CONVERSIONS = {
     # Temperature:
     'F': 'C',  # XXX: See note next to CONVERSION_FUNCTIONS.
     'K': 'C',  # XXX: See note next to CONVERSION_FUNCTIONS.
+    # Volume:
+    'pt (US)': 'qt (US)',
     # Other:
     'gs-ddm': 'dots',
     'loc-ddm': 'dots',
@@ -246,6 +255,13 @@ UNIT_CORRECTIONS = {
     'seconds': 's',
     'secs': 's',
     'year': 'years',
+    # Volume:
+    'pint': 'pt (US)',
+    'pints': 'pt (US)',
+    'pt': 'pt (US)',
+    'quart': 'qt (US)',
+    'quarts': 'qt (US)',
+    'qt': 'qt (US)',
     # Other:
     'DDM': 'ddm',
     'degree': 'deg',
@@ -255,7 +271,6 @@ UNIT_CORRECTIONS = {
     'PSIA': 'psi',
     'PSID': 'psid',
     'RPM': 'rpm',
-    'Qt (US)': 'Qt (US)', # Q: liquid or dry?
 }
 
 
