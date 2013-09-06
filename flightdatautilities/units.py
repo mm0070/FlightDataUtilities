@@ -241,6 +241,8 @@ UNIT_CORRECTIONS = {
     'ft/m': 'fpm',
     'ft/min': 'fpm',
     'feet/min': 'fpm',
+    'M': 'Mach',
+    'mach': 'Mach',
     # Temperature:
     'degree C': 'C',  # XXX: See note next to CONVERSION_FUNCTIONS.
     'deg. C': 'C',    # XXX: See note next to CONVERSION_FUNCTIONS.
