@@ -119,7 +119,7 @@ class CompressedFile(object):
         if self.output_dir is None:
             # This may fail if the process has no right to create files in
             # parent directory of self.temp_dir
-            if not os.path.exists(self.temp_dir):
+            if self.temp_dir and not os.path.exists(self.temp_dir):
                 os.makedirs(self.temp_dir)
 
             # Prepare the temporary directory to store the file
