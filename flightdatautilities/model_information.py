@@ -341,7 +341,7 @@ def get_flap_values_mapping(series, family, flap_param=None):
     Returns the values mapping:
     { int(flap angle) : str(flap angle) }
     
-    :param series: Aircrat Series with .value attribute
+    :param series: Aircraft Series with .value attribute
     :type series: Attribute
     :param family: Aircraft Family with .value attribute
     :type family: Attribute
