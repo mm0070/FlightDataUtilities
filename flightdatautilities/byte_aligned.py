@@ -76,7 +76,10 @@ def main():
 
     if args.debug:
         logger.setLevel(logging.DEBUG)
-
+    
+    if args.file_path.splitext()[1].lower() == 'bz2':
+        import bz2
+        bz2.BZ2File()
     with open(args.file_path, 'rb') as file_obj:
         inspect(file_obj, args.words)
 

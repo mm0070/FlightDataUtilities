@@ -31,6 +31,19 @@ def setUpModule():
 # Test Cases
 
 
+class TestBatch(unittest.TestCase):
+    '''
+    '''
+
+    def test_batch(self):
+        '''
+        '''
+        self.assertEqual(list(iterext.batch(0, 5, 2)), [(0, 2), (2, 4), (4, 5)])
+        self.assertEqual(list(iterext.batch(1, 5, 2)), [(1, 3), (3, 5)])
+        self.assertEqual(list(iterext.batch(0, 10, 5)), [(0, 5), (5, 10)])
+        self.assertEqual(list(iterext.batch(0, 11, 5)), [(0, 5), (5, 10), (10, 11)])
+
+
 class TestNestedGroupby(unittest.TestCase):
     '''
     '''

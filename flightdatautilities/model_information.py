@@ -85,7 +85,7 @@ FLAP_FAMILY_MAP = {
     'G-IV':    (0, 10, 20, 39),                        # FAA TCDS A12EA Rev 40
     'G-V':     (0, 10, 20, 39),                        # FAA TCDS A12EA Rev 40
     'Global':  (0, 6, 16, 30),                         # FAA TCDS T00003NY Rev 16 & Smart Cockpit G5000 Limitations Vol 1
-    'C-130':   (0, 50, 100),                           # FAA TCDS A1SO Rev 16 (100% = 36)
+    'L100':   (0, 50, 100),                           # FAA TCDS A1SO Rev 16 (100% = 36)
     'Learjet': (0, 8, 20, 40),                         # FAA TCDS T00008WI Rev 17
     'L1011':   (0, 4, 10, 14, 18, 22, 33),             # FAA TCDS A23WE Rev 19
     ###'MD-11':   (0, 15, 22, 25, 28, 35, 50),            # FAA TCDS A22WE Rev 12     FIXME
@@ -341,7 +341,7 @@ def get_flap_values_mapping(series, family, flap_param=None):
     Returns the values mapping:
     { int(flap angle) : str(flap angle) }
     
-    :param series: Aircrat Series with .value attribute
+    :param series: Aircraft Series with .value attribute
     :type series: Attribute
     :param family: Aircraft Family with .value attribute
     :type family: Attribute

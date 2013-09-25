@@ -9,7 +9,7 @@ Flight Data Utilities: Iter Extensions
 # Imports
 
 
-from itertools import groupby
+from itertools import count, groupby, izip, takewhile, tee
 
 
 ##############################################################################
@@ -21,6 +21,27 @@ __all__ = ['nested_groupby']
 
 ##############################################################################
 # Functions
+
+
+def batch(start, stop, step):
+    '''
+    A generator that yields batches between the start and stop values provided.
+
+    :param start: a start index
+    :type start: int
+    :param stop: a stop index
+    :type stop: int
+    :param step: an integer step
+    :type step: int
+    '''
+    a, b = tee(count(start, step))
+    next(b, None)
+    last = None
+    for x in takewhile(lambda z: z[1] < stop, izip(a, b)):
+        last = x[1]
+        yield x
+    if last is not None:
+        yield (last, stop)
 
 
 def nested_groupby(iterable, function_list, manipulate=None, output=list):
@@ -41,7 +62,7 @@ def nested_groupby(iterable, function_list, manipulate=None, output=list):
     if not len(function_list):
         return manipulate(iterable) if manipulate else list(iterable)
     return output([(k, nested_groupby(v, function_list[1:], manipulate, output))
-        for k, v in groupby(iterable, function_list[0])])
+                  for k, v in groupby(iterable, function_list[0])])
 
 
 ##############################################################################

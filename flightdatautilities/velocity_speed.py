@@ -555,6 +555,9 @@ class B767_200_CF6_80A(VelocitySpeed):
 class B767_300_CF6_80C2(VelocitySpeed):
     '''
     Velocity speed tables for Boeing B767-300 w/ GE CF6-80C2.
+    
+    Values for Vref at 90 tonnes added by extrapolation of customers' data.
+    TODO: Seek verification from Boeing for these speeds.
     '''
     interpolate = True
     source = 'FDS Customers 20, 78 & 109: 767 FCOM/FPPM'
@@ -567,10 +570,10 @@ class B767_300_CF6_80C2(VelocitySpeed):
                   20: (118, 124, 129, 134, 139, 145, 149, 154, 159, 165),
         },
         'vref': {
-            'weight': (100, 110, 120, 130, 140, 150, 160, 170, 180, 190),
-                  20: (128, 135, 141, 146, 151, 157, 162, 168, 173, 179),
-                  25: (123, 129, 135, 141, 146, 151, 156, 161, 166, 170),
-                  30: (119, 125, 131, 137, 142, 148, 156, 164, 171, 179),
+            'weight': (90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190),
+                  20: (122, 128, 135, 141, 146, 151, 157, 162, 168, 173, 179),
+                  25: (117, 123, 129, 135, 141, 146, 151, 156, 161, 166, 170),
+                  30: (113, 119, 125, 131, 137, 142, 148, 156, 164, 171, 179),
         },
     }
 

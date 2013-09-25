@@ -177,6 +177,7 @@ def get_vmo_procedure(series=None, family=None):
 # values are 2-element lists: VMO/MMO class and list of constructor arguments
 VMO_FAMILIES = {
     'Lockheed C-130': [VMOL382, []],
+    'L100': [VMOL382, []],
     'B737 Classic': [VMO, [340, 0.82]],
     'B737 NG': [VMO, [340, 0.82]],
     'B757': [VMO, [360, 0.86]],
