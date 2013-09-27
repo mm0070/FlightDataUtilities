@@ -676,7 +676,9 @@ VELOCITY_SPEED_MAP = {
 
     # ATR
     ('ATR42_300', None): ATR42_300,
+    ('ATR42_300(F)', None): ATR42_300,
     ('ATR72_200', None): ATR72_200,
+    ('ATR72_200(F)', None): ATR72_200,
 
     # Boeing
     ('B737-300', None): B737_300,
