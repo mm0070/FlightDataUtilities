@@ -601,6 +601,22 @@ class B767_300_PW4000_94(VelocitySpeed):
     }
 
 
+class B787_8_Trent_1000_A(VelocitySpeed):
+    '''
+    Velocity speed tables for Boeing B787-8 w/ Trent 1000-A.
+    '''
+    interpolate = True
+    source = 'FDS Customer 2'
+    weight_unit = 't'
+    tables = {
+        'vref': {
+            'weight': (120, 130, 140, 150, 160, 170),
+                  25: (123, 128, 133, 137, 142, 146),
+                  30: (121, 125, 130, 134, 139, 142),
+        },
+    }
+
+
 # TODO: Review and update source name.
 class F28_0070(VelocitySpeed):
     '''
@@ -642,7 +658,7 @@ class Beechcraft_1900D(VelocitySpeed):
         'vref': {35: 97},
     }
 
-	
+
 class Learjet_45(VelocitySpeed):
     '''
     Velocity speed tables for Learjet 45.
@@ -712,6 +728,8 @@ VELOCITY_SPEED_MAP = {
     ('B767-300(ER)', 'PW4000-94'): B767_300_PW4000_94,
     ('B767-300F(ER)', 'PW4000-94'): B767_300_PW4000_94,
     ('B767-300(ER/F)', 'PW4000-94'): B767_300_PW4000_94,
+    
+    ('B787-8', 'Trent 1000-A'): B787_8_Trent_1000_A,
 
     # Fokker
     ('F28-0070', None): F28_0070,
