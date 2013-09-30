@@ -690,10 +690,9 @@ class F28_0070(VelocitySpeed):
     }
 
 
-class Global_XRS(VelocitySpeed):
+class Global(VelocitySpeed):
     '''
-    Velocity speed tables for Global Express XRS Dry Conditions at Sea Level, 0 Deg C OAT.  Based on Zero Wind and Zero Runway Gradient
-    engines.
+    Velocity speed tables for Global Express XRS Global and the Vision 6000. Dry Conditions at Sea Level, 0 Deg C OAT.
     '''
     interpolate = True
     source = 'FDS Customer 106'
@@ -814,9 +813,10 @@ VELOCITY_SPEED_MAP = {
     # Bombardier
     ('Challenger_850', None): Challenger_850,
 
-    ('Global_XRS', None): Global_XRS,
+    ('GlobalXRS',  None): Global,
+    ('Global6000', None): Global,
 
-    ('Learjet_45', None): Learjet_45,
+    ('Learjet_45',   None): Learjet_45,
     ('Learjet_60XR', None): Learjet_60XR,
 
 }
