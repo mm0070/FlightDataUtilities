@@ -641,7 +641,7 @@ class Beechcraft_1900D(VelocitySpeed):
     }
 
 
-class CL850(VelocitySpeed):
+class Challenger_850(VelocitySpeed):
     '''
     Velocity speed tables for Challenger 850 w/ CF-34-3B1 engines
     engines.
@@ -686,6 +686,28 @@ class F28_0070(VelocitySpeed):
                    0: (124, 129, 133, 137, 142, 146, 150, 154, 157),
                   25: (113, 117, 121, 125, 129, 133, 137, 140, 143),
                   42: (104, 108, 112, 115, 119, 122, 126, 129, 132),
+        },
+    }
+
+
+class Global_XRS(VelocitySpeed):
+    '''
+    Velocity speed tables for Global Express XRS Dry Conditions at Sea Level, 0 Deg C OAT.  Based on Zero Wind and Zero Runway Gradient
+    engines.
+    '''
+    interpolate = True
+    source = 'FDS Customer 106'
+    weight_unit = 'lb'
+    tables = {
+        'v2': {
+            'weight': (54000, 58000, 62000, 66000, 70000, 74000, 78000, 82000, 86000, 90000, 94000,  98000, 99500),
+                  0 : ( None,   127,   129,   132,   134,   136,   139,   142,   145,   149,   152,    155,   156),
+                  6 : (  112,   112,   115,   119,   122,   125,   128,   131,   134,   137,   139,    142,   142),
+                 16 : (  111,   109,   112,   115,   118,   120,   123,   126,   129,   132,   135,   None,  None),
+		},
+        'vref': {
+            'weight': (54000, 58000, 62000, 66000, 70000, 74000, 78000, 82000, 86000, 90000, 94000, 98000, 99500),
+                  30: (  107,   110,   114,   118,   121,   125,   128,   132,   135,   139,   142,   144,   145),
         },
     }
 
@@ -786,13 +808,14 @@ VELOCITY_SPEED_MAP = {
     # Beechcraft
     ('1900D', None): Beechcraft_1900D,
 
-    # Challenger
-    ('Challenger-850', None): CL850,
-
     # Fokker
     ('F28-0070', None): F28_0070,
 
-    # Learjet
+    # Bombardier
+    ('Challenger_850', None): Challenger_850,
+
+    ('Global_XRS', None): Global_XRS,
+
     ('Learjet_45', None): Learjet_45,
     ('Learjet_60XR', None): Learjet_60XR,
 
