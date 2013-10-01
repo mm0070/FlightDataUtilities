@@ -46,7 +46,7 @@ FLAP_SERIES_MAP = {
     'DHC-8-400': (0, 5, 10, 15, 35),            # FAA TCDS A13NM Rev 20
     'ERJ-135BJ': (0, 9, 22, 45),                # FAA TCDS T00011AT Rev 29
     ####'Citation Sovereign': (0, 7, 15, 35),   # Smart Cockpit Citation Sovereign Flight Controls Mode; 680 FIXME
-    ####'Citation Bravo':     (0, 15, 40),	# FAA TCDS A22CE Rev 65 Smart Cockpit Citation Bravo Limitations Model 550 FIXME
+    ####'Citation Bravo':     (0, 15, 40),	    # FAA TCDS A22CE Rev 65 Smart Cockpit Citation Bravo Limitations Model 550 FIXME
     ####'Citation CJ1':       (0, 15, 35, 60),  # FAA TCDS A1WI Rev 21 & Smart Cockpit Citation CJ1 Limitations (60 = prohibited in flight) Model 525A FIXME
     ####'Citation CJ3':       (0, 15, 35, 55),  # FAA TCDS A1WI Rev 21 & Smart Cockpit Citation CJ3 Limitations (55 = Prohibited in flight) Model 525B FIXME
     ####'Citation X':         (0, 5, 15, 35),   # Smart Cockpit Citation X Limitations Model 750 FIXME
@@ -86,7 +86,7 @@ FLAP_FAMILY_MAP = {
     'G-IV':    (0, 10, 20, 39),                        # FAA TCDS A12EA Rev 40
     'G-V':     (0, 10, 20, 39),                        # FAA TCDS A12EA Rev 40
     'Global':  (0, 6, 16, 30),                         # FAA TCDS T00003NY Rev 16 & Smart Cockpit G5000 Limitations Vol 1
-    'C-130':   (0, 50, 100),                           # FAA TCDS A1SO Rev 16 (100% = 36)
+    'L100':   (0, 50, 100),                           # FAA TCDS A1SO Rev 16 (100% = 36)
     'Learjet': (0, 8, 20, 40),                         # FAA TCDS T00008WI Rev 17
     'L1011':   (0, 4, 10, 14, 18, 22, 33),             # FAA TCDS A23WE Rev 19
     ###'MD-11':   (0, 15, 22, 25, 28, 35, 50),            # FAA TCDS A22WE Rev 12     FIXME
@@ -111,6 +111,7 @@ SLAT_SERIES_MAP = {
 
 
 SLAT_FAMILY_MAP = {
+    'A310':    (0, 15, 20, 30),    # FAA TCDS A35EU Rev 26
     'A318':    (0, 18, 22, 27),    # FAA TCDS A28NM Rev 11
     'A319':    (0, 18, 22, 27),    # FAA TCDS A28NM Rev 11
     'A320':    (0, 18, 22, 27),    # FAA TCDS A28NM Rev 11

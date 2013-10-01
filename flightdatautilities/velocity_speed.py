@@ -212,9 +212,9 @@ class A300_600(VelocitySpeed):
                    0: (   131,   133,   134,   136,   137,   139,   140,   142,   143,   145,   146,   147,   149,   150,   152,   153,   154,   155,   157,   158,   159,   160,   162,   163,   164,   165,   166,   168,   169,   170,   171,   172,   174,   175,   176,   177,   178,   179),
                   15: (   123,   124,   126,   127,   129,   130,   131,   133,   134,   135,   137,   138,   139,   140,   142,   143,   144,   145,   146,   148,   149,   150,   151,   152,   153,   154,   156,   157,   158,   159,   160,   161,   162,   163,   164,   165,   166,   167),
                   20: (   117,   119,   120,   121,   123,   124,   125,   127,   128,   129,   131,   132,   133,   134,   135,   137,   138,   139,   140,   141,   142,   143,   145,   146,   147,   148,   149,   150,   151,   152,   153,   154,   155,   156,   157,   158,   159,   160),
-				# Flap  0 / Slat 15, Taken from  V2/VS 1.27
-				# Flap 15 / Slat 15, Taken from  V2/VS 1.27
-				# Flap 20 / Slat 15, Taken from  V2/VS 1.27
+                  # Flap  0 / Slat 15, Taken from  V2/VS 1.27
+                  # Flap 15 / Slat 15, Taken from  V2/VS 1.27
+                  # Flap 20 / Slat 15, Taken from  V2/VS 1.27
         },
         'vref': {
             'weight': (177000, 205000, 220000, 235000, 250000, 265000, 280000, 295000, 310000, 325000, 340000, 355000, 370000, 385000),
@@ -234,7 +234,7 @@ class A300_B4(VelocitySpeed):
         'v2': {
             'weight': (240000, 260000, 280000, 300000, 320000, 340000),
                    0: (   145,    150,    154,    162,    167,    171), # Slat 15/ Flap 0,  Taken from a graph table
-		           8: (   130,    134,    141,    146,    148,    155), # Slat 16/ Flap 8,  Taken from a graph table
+                   8: (   130,    134,    141,    146,    148,    155), # Slat 16/ Flap 8,  Taken from a graph table
                   15: (   123,    128,    133,    137,    142,    146), # Slat 16/ Flap 15, Taken from a graph table
         },
         'vref': {
@@ -570,7 +570,7 @@ class B767_300_CF6_80C2(VelocitySpeed):
                   20: (118, 124, 129, 134, 139, 145, 149, 154, 159, 165),
         },
         'vref': {
-            'weight': (90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190),
+            'weight': ( 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190),
                   20: (122, 128, 135, 141, 146, 151, 157, 162, 168, 173, 179),
                   25: (117, 123, 129, 135, 141, 146, 151, 156, 161, 166, 170),
                   30: (113, 119, 125, 131, 137, 142, 148, 156, 164, 171, 179),
@@ -601,6 +601,71 @@ class B767_300_PW4000_94(VelocitySpeed):
     }
 
 
+class B787_8_Trent_1000_A(VelocitySpeed):
+    '''
+    Velocity speed tables for Boeing B787-8 w/ Trent 1000-A.
+    '''
+    interpolate = True
+    source = 'FDS Customer 124'
+    weight_unit = 't'
+    tables = {
+        'v2': {
+            'weight': (100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210,  220,  230,  240),
+				   5: (114, 119, 124, 129, 134, 138, 142, 146, 150, 154, 157, 161,  164,  166,  169),
+				  15: (112, 115, 120, 124, 129, 133, 137, 140, 144, 148, 151, 155,  158,  160, None),
+				  20: (106, 110, 115, 119, 123, 127, 131, 135, 139, 142, 146, 149, None, None, None),
+        },
+        'vref': {
+            'weight': (120, 130, 140, 150, 160, 170),
+                  25: (123, 128, 133, 137, 142, 146),
+                  30: (121, 125, 130, 134, 139, 142),
+        },
+    }
+
+
+class Beechcraft_1900D(VelocitySpeed):
+    '''
+    Velocity speed tables for Beechcraft 1900D.
+    '''
+    source = 'FDS Customer 121'
+    weight_unit = None  # Table only contains fixed values.
+    tables = {
+        # Note: Mid-range for temperatures +20°C to +40°C, S>L> to 6000ft PA.
+        #       Lowest V2 = 103 kts @ 10000ft PA, 14000 lb, 30°C
+        #       Highest V2 = 123 kts @ flap 0, MAUW 17120 lb, n/a °C
+        'v2': {0: 125, 17.5: 114},
+        # Note: Mid-range for temperatures +20°C to +40°C, S>L> to 6000ft PA.
+        #       Lowest VREF = 93 kts
+        #       Highest VREF = 115 kts @ MLW 16000 lb
+        'vref': {35: 97},
+    }
+
+
+class Challenger_850(VelocitySpeed):
+    '''
+    Velocity speed tables for Challenger 850 w/ CF-34-3B1 engines
+    engines.
+    '''
+    interpolate = True
+    source = 'FDS Customer 106: FCOM'
+    weight_unit = 'lb'
+    tables = {
+        'v2': {
+            'weight': ( 38,  40,  42,  44,  46,  48,  50,  52, 52.9),
+                  8 : (134, 138, 141, 144, 148, 151, 154, 157,  158),
+                 20 : (124, 127, 130, 133, 136, 139, 142, 145,  146),
+        },
+        'vref': {
+            'weight': ( 38,  40,  42,  44,  46, 46.75,  48,  50,  52, 52.9),
+                   0: (157, 160, 163, 166, 169,   170, 179, 175, 178,  180),
+                   8: (145, 148, 151, 154, 157,   158, 160, 163, 166,  168),
+                  20: (139, 142, 145, 148, 151,   152, 154, 157, 160,  162),
+                  30: (135, 138, 141, 144, 147,   148, 150, 153, 156,  158),
+                  45: (127, 130, 133, 136, 139,   140, 142, 145, 148,  150),
+        },
+    }
+
+
 # TODO: Review and update source name.
 class F28_0070(VelocitySpeed):
     '''
@@ -625,24 +690,27 @@ class F28_0070(VelocitySpeed):
     }
 
 
-class Beechcraft_1900D(VelocitySpeed):
+class Global(VelocitySpeed):
     '''
-    Velocity speed tables for Beechcraft 1900D.
+    Velocity speed tables for Global Express XRS Global and the Vision 6000. Dry Conditions at Sea Level, 0 Deg C OAT.
     '''
-    source = 'FDS Customer 121'
-    weight_unit = None  # Table only contains fixed values.
+    interpolate = True
+    source = 'FDS Customer 106'
+    weight_unit = 'lb'
     tables = {
-        # Note: Mid-range for temperatures +20°C to +40°C, S>L> to 6000ft PA.
-        #       Lowest V2 = 103 kts @ 10000ft PA, 14000 lb, 30°C
-        #       Highest V2 = 123 kts @ flap 0, MAUW 17120 lb, n/a °C
-        'v2': {0: 125, 17.5: 114},
-        # Note: Mid-range for temperatures +20°C to +40°C, S>L> to 6000ft PA.
-        #       Lowest VREF = 93 kts
-        #       Highest VREF = 115 kts @ MLW 16000 lb
-        'vref': {35: 97},
+        'v2': {
+            'weight': (54000, 58000, 62000, 66000, 70000, 74000, 78000, 82000, 86000, 90000, 94000,  98000, 99500),
+                  0 : ( None,   127,   129,   132,   134,   136,   139,   142,   145,   149,   152,    155,   156),
+                  6 : (  112,   112,   115,   119,   122,   125,   128,   131,   134,   137,   139,    142,   142),
+                 16 : (  111,   109,   112,   115,   118,   120,   123,   126,   129,   132,   135,   None,  None),
+		},
+        'vref': {
+            'weight': (54000, 58000, 62000, 66000, 70000, 74000, 78000, 82000, 86000, 90000, 94000, 98000, 99500),
+                  30: (  107,   110,   114,   118,   121,   125,   128,   132,   135,   139,   142,   144,   145),
+        },
     }
 
-	
+
 class Learjet_45(VelocitySpeed):
     '''
     Velocity speed tables for Learjet 45.
@@ -662,6 +730,27 @@ class Learjet_45(VelocitySpeed):
     }
 
 
+class Learjet_60XR(VelocitySpeed):
+    '''
+    Velocity speed tables for Learjet 60XR Dry Conditions at Sea Level, 0 Deg C OAT
+    engines.
+    '''
+    interpolate = True
+    source = 'FDS Customer 106: FCOM'
+    weight_unit = 'lb'
+    tables = {
+        'v2': {
+            'weight': (17400, 17800, 18100, 18200, 18400, 18700, 18800, 19100, 19400, 19800, 20100, 20400, 20800, 21100, 21400, 21800, 22100, 22500, 22800, 23200, 23500),
+                  8 : (  138,   138,   138,   138,   139,   139,   140,   140,   141,   142,   143,   144,   145,   146,   147,   148,   149,   150,   151,   152,   153),
+                 20 : (  132,   133,   133,   133,   134,   134,   135,   135,   136,   137,   138,   139,   140,   141,   142,   143,   143,   144,   145,   146,   147),
+        },
+        'vref': {
+            'weight':(15300, 15600, 15800, 16100, 16400, 16800, 17100, 17300, 17600, 17800, 18100, 18400, 18700, 19200, 19500),
+                  40:(  125,   126,   127,   128,   129,   130,   131,   132,   133,   134,   135,   136,   137,   138,   139),
+        },
+    }
+
+
 ##############################################################################
 # Constants
 
@@ -676,7 +765,9 @@ VELOCITY_SPEED_MAP = {
 
     # ATR
     ('ATR42_300', None): ATR42_300,
+    ('ATR42_300(F)', None): ATR42_300,
     ('ATR72_200', None): ATR72_200,
+    ('ATR72_200(F)', None): ATR72_200,
 
     # Boeing
     ('B737-300', None): B737_300,
@@ -711,14 +802,22 @@ VELOCITY_SPEED_MAP = {
     ('B767-300F(ER)', 'PW4000-94'): B767_300_PW4000_94,
     ('B767-300(ER/F)', 'PW4000-94'): B767_300_PW4000_94,
 
-    # Fokker
-    ('F28-0070', None): F28_0070,
+    ('B787-8', 'Trent 1000-A'): B787_8_Trent_1000_A,
 
     # Beechcraft
     ('1900D', None): Beechcraft_1900D,
 
-    # Learjet
-    ('Learjet_45', None): Learjet_45,
+    # Fokker
+    ('F28-0070', None): F28_0070,
+
+    # Bombardier
+    ('Challenger_850', None): Challenger_850,
+
+    ('GlobalXRS',  None): Global,
+    ('Global6000', None): Global,
+
+    ('Learjet_45',   None): Learjet_45,
+    ('Learjet_60XR', None): Learjet_60XR,
 
 }
 
