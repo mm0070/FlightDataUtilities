@@ -76,8 +76,9 @@ FLAP_FAMILY_MAP = {
     'CRJ 100/200': (0, 8, 20, 30, 45),                 # FAA TCDS A21EA Rev 31
     'DC-9':    (0, 13, 20, 25, 30, 40),                # FAA TCDS A6WE Rev 28 (DC-9-81 & DC-9-82)
     'ERJ-135/145': (0, 9, 18, 22, 45),                 # FAA TCDS T00011AT Rev 29
-    ####'ERJ-170/175': (0, 5, 10, 20, 35),                 # FAA TCDS A56NM Rev 8     FIXME
-    ####'ERJ-190/195': (0, 7, 10, 20, 37),                 # FAA TCDS A57NM Rev 9     FIXME
+    ####'ERJ-170/175': (0, 5, 10, 20, 35),             # FAA TCDS A56NM Rev 8     FIXME
+    'ERJ-190': (0, 7, 10, 20, 37),                     # FAA TCDS A57NM Rev 9 & Smart Cockpit Embraer_190 Flight Controls
+	####'ERJ-195': (0, 7, 10, 20, 37),                 # FAA TCDS A57NM Rev 9     FIXME 
     'F27':     (0, 5, 10, 15, 20, 25, 35),             # FAA TCDS A-817 Rev 21
     'F28':     (0, 8, 15, 25, 42),                     # FAA TCDS A20EU Rev 14
     'Falcon':  (0, 9, 20, 40),                         # FAA TCDS A59NM Rev 1 & Smart Cockpit 7X Flight Controls Issue 2
@@ -121,6 +122,7 @@ SLAT_FAMILY_MAP = {
     'CRJ 700': (0, 20, 25),        # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
     'CRJ 900': (0, 20, 25),        # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
     'DC-9':    (0, 17.8, 21),      # FAA TCDS A6WE Rev 28 (DC-9-81 & DC-9-82)
+	'ERJ-190': (0, 15, 25),        # FAA TCDS A57NM Rev 9 & Smart Cockpit Embraer_190 Flight Controls
     ####'Falcon': (Not Extended, Extended),   # FAA TCDS A59NM Rev 1 & Smart Cockpit 7X Flight Controls Issue 2 FIXME
     'Global': (0, 20),             # (Not Extended, Extended) FAA TCDS T00003NY Rev 16 & Smart Cockpit G5000 Limitations Vol 1 & LFL doc
 }
@@ -247,6 +249,15 @@ CONF_FAMILY_MAP = {
         25:   (100, 20),
         30:   (100, 30),
     },
+	'ERJ-190': {
+        '0':    (0, 0),        # Smart Cockpit Embraer 190 Flight Controls
+        '1':    (15, 7),       # Smart Cockpit Embraer 190 Flight Controls
+        '2':    (15, 10),      # Smart Cockpit Embraer 190 Flight Controls
+        '3':    (15, 20),      # Smart Cockpit Embraer 190 Flight Controls
+        '4':    (25, 20),      # Smart Cockpit Embraer 190 Flight Controls
+        '5':    (25, 20),      # Smart Cockpit Embraer 190 Flight Controls
+        'Full': (25, 37),      # Smart Cockpit Embraer 190 Flight Controls
+	},	
     ####'Falcon': {
     ####    '0'  : (0, 0),         # FAA TCDS A59NM Rev 1 & Smart Cockpit 7X Flight Controls Issue 2 FIXME
     ####    'SF1': (Extended, 9),  # FAA TCDS A59NM Rev 1 & Smart Cockpit 7X Flight Controls Issue 2 FIXME
