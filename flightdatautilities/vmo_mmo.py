@@ -54,7 +54,10 @@ class VMORanges(VMO):
     '''
     Class which calculates VMO/MMO value from a list of values
     '''
-    vmo_mmo_table = None
+    def __init__(self, vmo_mmo_table=None, vmo=True, mmo=True):
+        self.vmo = vmo
+        self.mmo = mmo
+        self.vmo_mmo_table = vmo_mmo_table
 
     def get_vmo_mmo(self, press_alt):
         for alt, vmo_mmo in self.vmo_mmo_table:
@@ -136,22 +139,6 @@ class VMOL382(VMO):
         return vmo_array, mmo_array
 
 
-class VMOGlobalExpress(VMORanges):
-    '''
-    Return VMO/MMO based on pressure altitude in feet.
-    '''
-    vmo_mmo_table = (
-        (8000, 300),
-        (30267, 340),
-        (35000, 0.89),
-        (41400, 0.88),
-        (47000, 0.858),
-        (None, 0.842),
-    )
-    vmo = True
-    mmo = True
-
-
 def get_vmo_procedure(series=None, family=None):
     '''
     Return a VMO class used to calculate the VMO/MMO values.
@@ -188,4 +175,17 @@ VMO_SERIES = {
     'F28-0070': [VMONone, []],  # Fokker provides VMO in the frame
     '1900D': [VMONone, []],
     #'1900D': [VMO, [248, 0.48]],  # FIXME: we need verify these
+    'Global Express': [
+        VMORanges,
+        [
+            [
+                (8000, 300),
+                (30267, 340),
+                (35000, 0.89),
+                (41400, 0.88),
+                (47000, 0.858),
+                (None, 0.842),
+            ]
+        ]
+    ],
 }

@@ -69,9 +69,10 @@ class TestVMOL382(unittest.TestCase):
 
 class TestVMOGlobalExpress(unittest.TestCase):
     def test_get_vmo_mmo(self):
-        from flightdatautilities.vmo_mmo import VMOGlobalExpress
+        from flightdatautilities.vmo_mmo import VMO_SERIES
 
-        vmo_mapping = VMOGlobalExpress()
+        vmo_class, params = VMO_SERIES['Global Express']
+        vmo_mapping = vmo_class(*params)
 
         # First band is below 8000
         res = vmo_mapping.get_vmo_mmo(7000)
@@ -98,12 +99,13 @@ class TestVMOGlobalExpress(unittest.TestCase):
         self.assertEqual(res, (None, 0.842))
 
     def test_get_vmo_mmo_array(self):
-        from flightdatautilities.vmo_mmo import VMOGlobalExpress
+        from flightdatautilities.vmo_mmo import VMO_SERIES
 
-        vmo_mapping = VMOGlobalExpress()
+        vmo_class, params = VMO_SERIES['Global Express']
+        vmo_mapping = vmo_class(*params)
 
         pres_alt = np.ma.arange(7000, 50001, dtype=np.float)
-        res = vmo_mapping.get_vmo_mmo_arrays(pres_alt)
+        res_vmo, res_mmo = vmo_mapping.get_vmo_mmo_arrays(pres_alt)
         expected_vmo = np.ma.array(
             [300] * 1001 +
             [340] * (30267 - 8000)
@@ -114,8 +116,6 @@ class TestVMOGlobalExpress(unittest.TestCase):
             [0.858] * (47000 - 41400) +
             [0.842] * (50000 - 47000)
         )
-        res_vmo = res[0]
-        res_mmo = res[1]
 
         self.assertTrue(np.ma.is_masked(res_vmo[pres_alt > 30267]))
         np.testing.assert_array_equal(res_vmo[pres_alt <= 30267], expected_vmo)
