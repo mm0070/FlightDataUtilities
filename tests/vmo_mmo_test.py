@@ -124,5 +124,33 @@ class TestVMOGlobalExpress(unittest.TestCase):
         np.testing.assert_array_equal(res_mmo[pres_alt > 30267], expected_mmo)
 
 
+class TestVMOCRJ700(unittest.TestCase):
+    def test_get_vmo_mmo_array(self):
+        from flightdatautilities.vmo_mmo import VMO_FAMILIES
+
+        vmo_class, params = VMO_FAMILIES['CRJ 700']
+        vmo_mapping = vmo_class(*params)
+
+        pres_alt = np.ma.arange(7000, 50001, dtype=np.float)
+        res_vmo, res_mmo = vmo_mapping.get_vmo_mmo_arrays(pres_alt)
+        expected = np.ma.array(
+            [330] * 1001 +
+            [335] * (25500 - 8000) +
+            [0.8] * (28500 - 25500) +
+            [315] * (31500 - 28500) +
+            [0.85] * (34000 - 31500) +
+            [0.84] * (50000 - 34000)
+        )
+
+        vmo_ixs = np.ma.where(expected > 1)
+        mmo_ixs = np.ma.where(expected < 1)
+        self.assertTrue(np.ma.is_masked(res_vmo[mmo_ixs]))
+        np.testing.assert_array_equal(res_vmo[vmo_ixs].data,
+                                      expected[vmo_ixs].data)
+
+        self.assertTrue(np.ma.is_masked(res_mmo[vmo_ixs]))
+        np.testing.assert_array_equal(res_mmo[mmo_ixs].data,
+                                      expected[mmo_ixs].data)
+
 ##############################################################################
 # vim:et:ft=python:nowrap:sts=4:sw=4:ts=4

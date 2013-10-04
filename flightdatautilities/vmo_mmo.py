@@ -169,7 +169,23 @@ VMO_FAMILIES = {
     'B737 NG': [VMO, [340, 0.82]],
     'B757': [VMO, [360, 0.86]],
     'B767': [VMO, [360, 0.86]],
+    'CRJ 700': [
+        VMORanges,
+        [
+            [
+                (8000, 330),
+                (25500, 335),
+                (28500, 0.8),  # FIXME: check the pres alt
+                (31500, 315),
+                (34000, 0.85),
+                (None, 0.84),
+            ]
+        ]
+    ],
 }
+
+VMO_FAMILIES['CRJ 900'] = VMO_FAMILIES['CRJ 700']
+
 
 VMO_SERIES = {
     'F28-0070': [VMONone, []],  # Fokker provides VMO in the frame
