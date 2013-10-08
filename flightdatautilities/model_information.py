@@ -38,8 +38,8 @@ FLAP_SERIES_MAP = {
     'ATR72-100': (0, 15, 28),                   # FAA TCDS A53EU Rev 21
     'ATR72-200': (0, 15, 28),                   # FAA TCDS A53EU Rev 21
     'ATR72-210': (0, 15, 33),                   # FAA TCDS A53EU Rev 21 (-500 is -212A!)
-    'CRJ 700':   (0, 1, 8, 20, 30, 45),         # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
-    'CRJ 900':   (0, 1, 8, 20, 30, 45),         # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
+    'CRJ-700':   (0, 1, 8, 20, 30, 45),         # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
+    'CRJ-900':   (0, 1, 8, 20, 30, 45),         # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
     'DHC-8-100': (0, 5, 15, 35),                # FAA TCDS A13NM Rev 20
     'DHC-8-200': (0, 5, 15, 35),                # FAA TCDS A13NM Rev 20
     'DHC-8-300': (0, 5, 10, 15, 35),            # FAA TCDS A13NM Rev 20
@@ -105,6 +105,8 @@ SLAT_SERIES_MAP = {
     'A340-300':  (0, 20, 24),   # FAA TCDS A43NM Rev 7
     'A340-500':  (0, 21, 24),   # FAA TCDS A43NM Rev 7 & FDS Customer #47 A330/A340 Flight Controls
     'A340-600':  (0, 20, 23),   # FAA TCDS A43NM Rev 7
+    'CRJ900':    (0, 20, 25),   # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
+    'CRJ700':    (0, 20, 25),   # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
     ####'Citation X': (Not Extended, Extended),    # Smart Cockpit Citation X Limitations Model 750 FIXME
 }
 
@@ -118,8 +120,8 @@ SLAT_FAMILY_MAP = {
     'A330':    (0, 16, 20, 23),    # Smart Cockpit A330 General Limitions Rev 19
     'A380':    (0, 20, 23),        # Smart Cockpit A380 Briefing For Pilots
     'B787':    (0, 50, 100),       # Boeing 787 Operations Manual
-    'CRJ 700': (0, 20, 25),        # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
-    'CRJ 900': (0, 20, 25),        # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
+    'CRJ-700': (0, 20, 25),        # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
+    'CRJ-900': (0, 20, 25),        # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
     'DC-9':    (0, 17.8, 21),      # FAA TCDS A6WE Rev 28 (DC-9-81 & DC-9-82)
     'ERJ190':  (0, 15, 25),        # FAA TCDS A57NM Rev 9 & Smart Cockpit Embraer_190 Flight Controls
     ####'Falcon': (Not Extended, Extended),   # FAA TCDS A59NM Rev 1 & Smart Cockpit 7X Flight Controls Issue 2 FIXME
@@ -247,6 +249,22 @@ CONF_FAMILY_MAP = {
         20:   (50, 20),
         25:   (100, 20),
         30:   (100, 30),
+    },
+	'CRJ-700': {
+        '0':    (0, 0),        # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
+        '1':    (20, 0),       # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
+        '8':    (20, 8),       # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
+        '20':   (20, 20),      # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
+        '30':   (25, 30),      # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
+        '45':   (25, 45),      # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
+    },	
+	'CRJ-900': {
+        '0':    (0, 0),        # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
+        '1':    (20, 0),       # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
+        '8':    (20, 8),       # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
+        '20':   (20, 20),      # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
+        '30':   (25, 30),      # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
+        '45':   (25, 45),      # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
     },
 	'ERJ190': {
         '0':    (0, 0),        # Smart Cockpit Embraer 190 Flight Controls & FAA TCDS A57NM Rev 9
