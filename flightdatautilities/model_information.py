@@ -1,13 +1,10 @@
 # -*- coding: utf-8 -*-
+# vim:et:ft=python:nowrap:sts=4:sw=4:ts=4
+#############################################################################
 
 '''
 Flight Data Utilities: Aircraft Configuration Information
 '''
-
-import logging
-import numpy as np
-
-logger = logging.getLogger(name=__name__)
 
 #############################################################################
 # Flap Selections
@@ -38,19 +35,17 @@ FLAP_SERIES_MAP = {
     'ATR72-100': (0, 15, 28),                   # FAA TCDS A53EU Rev 21
     'ATR72-200': (0, 15, 28),                   # FAA TCDS A53EU Rev 21
     'ATR72-210': (0, 15, 33),                   # FAA TCDS A53EU Rev 21 (-500 is -212A!)
-    'CRJ-700':   (0, 1, 8, 20, 30, 45),         # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
-    'CRJ-900':   (0, 1, 8, 20, 30, 45),         # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
     'DHC-8-100': (0, 5, 15, 35),                # FAA TCDS A13NM Rev 20
     'DHC-8-200': (0, 5, 15, 35),                # FAA TCDS A13NM Rev 20
     'DHC-8-300': (0, 5, 10, 15, 35),            # FAA TCDS A13NM Rev 20
     'DHC-8-400': (0, 5, 10, 15, 35),            # FAA TCDS A13NM Rev 20
     'ERJ-135BJ': (0, 9, 22, 45),                # FAA TCDS T00011AT Rev 29
-    ####'Citation Sovereign': (0, 7, 15, 35),   # Smart Cockpit Citation Sovereign Flight Controls Mode; 680 FIXME
-    ####'Citation Bravo':     (0, 15, 40),	    # FAA TCDS A22CE Rev 65 Smart Cockpit Citation Bravo Limitations Model 550 FIXME
-    ####'Citation CJ1':       (0, 15, 35, 60),  # FAA TCDS A1WI Rev 21 & Smart Cockpit Citation CJ1 Limitations (60 = prohibited in flight) Model 525A FIXME
-    ####'Citation CJ3':       (0, 15, 35, 55),  # FAA TCDS A1WI Rev 21 & Smart Cockpit Citation CJ3 Limitations (55 = Prohibited in flight) Model 525B FIXME
-    ####'Citation X':         (0, 5, 15, 35),   # Smart Cockpit Citation X Limitations Model 750 FIXME
-    ####'Citation XLS':       (0, 7, 15, 35),   # FAA TCDS A22CE Rev 65 FIXME    
+    ####'Citation Sovereign': (0, 7, 15, 35),   # Smart Cockpit Citation Sovereign Flight Controls Mode; 680; FIXME
+    ####'Citation Bravo':     (0, 15, 40),      # FAA TCDS A22CE Rev 65 Smart Cockpit Citation Bravo Limitations Model 550; FIXME
+    ####'Citation CJ1':       (0, 15, 35, 60),  # FAA TCDS A1WI Rev 21 & Smart Cockpit Citation CJ1 Limitations (60 = prohibited in flight) Model 525A; FIXME
+    ####'Citation CJ3':       (0, 15, 35, 55),  # FAA TCDS A1WI Rev 21 & Smart Cockpit Citation CJ3 Limitations (55 = Prohibited in flight) Model 525B; FIXME
+    ####'Citation X':         (0, 5, 15, 35),   # Smart Cockpit Citation X Limitations Model 750; FIXME
+    ####'Citation XLS':       (0, 7, 15, 35),   # FAA TCDS A22CE Rev 65; FIXME
 }
 
 
@@ -63,7 +58,7 @@ FLAP_FAMILY_MAP = {
     'A330':    (0, 8, 14, 22, 32),                     # Smart Cockpit A330 General Limitions Rev 19
     'A380':    (0, 8, 17, 26, 33),                     # Smart Cockpit A380 Briefing For Pilots
     'BAE 146': (0, 18, 24, 30, 33),                    # FAA TCDS A49EU Rev 17 (Includes RJ85 & RJ100)
-    'B727':    (0, 2, 5, 15, 25, 30, 40),              # Smart Cockpit B727 Flight Controls 
+    'B727':    (0, 2, 5, 15, 25, 30, 40),              # Smart Cockpit B727 Flight Controls
     'B737 Classic': (0, 1, 2, 5, 10, 15, 25, 30, 40),  # Smart Cockpit B737E Flight Controls 9.10.13
     'B737 NG': (0, 1, 2, 5, 10, 15, 25, 30, 40),       # Smart Cockpit B_NG Flight Controls (1)
     'B747':    (0, 1, 5, 10, 20, 25, 30),              # Smart Cockpit B747-400 Flight Controls 9.10.8
@@ -74,9 +69,11 @@ FLAP_FAMILY_MAP = {
     'CL600':   (0, 20, 30, 45),                        # FAA TCDS A21EA Rev 31
     'CL850':   (0, 8, 20, 30, 45),                     # FAA TCDS A21EA Rev 31
     'CRJ 100/200': (0, 8, 20, 30, 45),                 # FAA TCDS A21EA Rev 31
+    'CRJ 700':   (0, 1, 8, 20, 30, 45),                # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
+    'CRJ 900':   (0, 1, 8, 20, 30, 45),                # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
     'DC-9':    (0, 13, 20, 25, 30, 40),                # FAA TCDS A6WE Rev 28 (DC-9-81 & DC-9-82)
     'ERJ-135/145': (0, 9, 18, 22, 45),                 # FAA TCDS T00011AT Rev 29
-    ####'ERJ-170/175': (0, 5, 10, 20, 35),             # FAA TCDS A56NM Rev 8     FIXME
+    ####'ERJ-170/175': (0, 5, 10, 20, 35),             # FAA TCDS A56NM Rev 8; FIXME
     'ERJ190':  (0, 7, 10, 20, 37),                     # FAA TCDS A57NM Rev 9 & Smart Cockpit Embraer_190 Flight Controls & FAA TCDS A57NM Rev 9
     'F27':     (0, 5, 10, 15, 20, 25, 35),             # FAA TCDS A-817 Rev 21
     'F28':     (0, 8, 15, 25, 42),                     # FAA TCDS A20EU Rev 14
@@ -85,10 +82,10 @@ FLAP_FAMILY_MAP = {
     'G-IV':    (0, 10, 20, 39),                        # FAA TCDS A12EA Rev 40
     'G-V':     (0, 10, 20, 39),                        # FAA TCDS A12EA Rev 40
     'Global':  (0, 6, 16, 30),                         # FAA TCDS T00003NY Rev 16 & Smart Cockpit G5000 Limitations Vol 1
-    'L100':   (0, 50, 100),                           # FAA TCDS A1SO Rev 16 (100% = 36)
+    'L100':    (0, 50, 100),                           # FAA TCDS A1SO Rev 16 (100% = 36)
     'Learjet': (0, 8, 20, 40),                         # FAA TCDS T00008WI Rev 17
     'L1011':   (0, 4, 10, 14, 18, 22, 33),             # FAA TCDS A23WE Rev 19
-    ###'MD-11':   (0, 15, 22, 25, 28, 35, 50),            # FAA TCDS A22WE Rev 12     FIXME
+    ####'MD-11':   (0, 15, 22, 25, 28, 35, 50),        # FAA TCDS A22WE Rev 12; FIXME
 }
 
 
@@ -105,9 +102,7 @@ SLAT_SERIES_MAP = {
     'A340-300':  (0, 20, 24),   # FAA TCDS A43NM Rev 7
     'A340-500':  (0, 21, 24),   # FAA TCDS A43NM Rev 7 & FDS Customer #47 A330/A340 Flight Controls
     'A340-600':  (0, 20, 23),   # FAA TCDS A43NM Rev 7
-    'CRJ900':    (0, 20, 25),   # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
-    'CRJ700':    (0, 20, 25),   # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
-    ####'Citation X': (Not Extended, Extended),    # Smart Cockpit Citation X Limitations Model 750 FIXME
+    ####'Citation X': (Not Extended, Extended),    # Smart Cockpit Citation X Limitations Model 750; FIXME
 }
 
 
@@ -120,11 +115,11 @@ SLAT_FAMILY_MAP = {
     'A330':    (0, 16, 20, 23),    # Smart Cockpit A330 General Limitions Rev 19
     'A380':    (0, 20, 23),        # Smart Cockpit A380 Briefing For Pilots
     'B787':    (0, 50, 100),       # Boeing 787 Operations Manual
-    'CRJ-700': (0, 20, 25),        # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
-    'CRJ-900': (0, 20, 25),        # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
+    'CRJ 700': (0, 20, 25),        # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
+    'CRJ 900': (0, 20, 25),        # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
     'DC-9':    (0, 17.8, 21),      # FAA TCDS A6WE Rev 28 (DC-9-81 & DC-9-82)
     'ERJ190':  (0, 15, 25),        # FAA TCDS A57NM Rev 9 & Smart Cockpit Embraer_190 Flight Controls
-    ####'Falcon': (Not Extended, Extended),   # FAA TCDS A59NM Rev 1 & Smart Cockpit 7X Flight Controls Issue 2 FIXME
+    ####'Falcon': (Not Extended, Extended),   # FAA TCDS A59NM Rev 1 & Smart Cockpit 7X Flight Controls Issue 2; FIXME
     'Global': (0, 20),             # (Not Extended, Extended) FAA TCDS T00003NY Rev 16 & Smart Cockpit G5000 Limitations Vol 1 & LFL doc
 }
 
@@ -224,15 +219,15 @@ CONF_FAMILY_MAP = {
         'Full': (27, 25),      # FAA TCDS A28NM Rev 11
     },
     'A330': {
-        '0':    (0, 0, 0),     # Smart Cockpit A330 General Limitions Rev 4 
-        '1':    (16, 0, 0),    # Smart Cockpit A330 General Limitions Rev 4 
+        '0':    (0, 0, 0),     # Smart Cockpit A330 General Limitions Rev 4
+        '1':    (16, 0, 0),    # Smart Cockpit A330 General Limitions Rev 4
         '1+F':  (16, 8, 5),    # Smart Cockpit A330 General Limitions Rev 4 (ECAM Indication = 1+F)
         '1*':   (20, 8, 10),   # Smart Cockpit A330 General Limitions Rev 4 (ECAM Indication = 2)
         '2':    (20, 14, 10),  # Smart Cockpit A330 General Limitions Rev 4
         '2*':   (23, 14, 10),  # Smart Cockpit A330 General Limitions Rev 4 (ECAM Indication = 3)
         '3':    (23, 22, 10),  # Smart Cockpit A330 General Limitions Rev 4
         'Full': (23, 32, 10),  # Smart Cockpit A330 General Limitions Rev 4
-    },         
+    },
     'A380': {
         '0':    (0, 0, 0),     # Smart Cockpit A380 Briefing For Pilots
         '1':    (20, 0, 0),    # Smart Cockpit A380 Briefing For Pilots
@@ -242,23 +237,15 @@ CONF_FAMILY_MAP = {
         'Full': (23, 33, 10),  # Smart Cockpit A380 Briefing For Pilots
     },
     'B787': {
-        0:    (0, 0),
-        1:    (50, 0),
-        5:    (50, 5),
-        15:   (50, 15),
-        20:   (50, 20),
-        25:   (100, 20),
-        30:   (100, 30),
+        '0':    (0, 0),
+        '1':    (50, 0),
+        '5':    (50, 5),
+        '15':   (50, 15),
+        '20':   (50, 20),
+        '25':   (100, 20),
+        '30':   (100, 30),
     },
-	'CRJ-700': {
-        '0':    (0, 0),        # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
-        '1':    (20, 0),       # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
-        '8':    (20, 8),       # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
-        '20':   (20, 20),      # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
-        '30':   (25, 30),      # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
-        '45':   (25, 45),      # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
-    },	
-	'CRJ-900': {
+    'CRJ 700': {
         '0':    (0, 0),        # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
         '1':    (20, 0),       # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
         '8':    (20, 8),       # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
@@ -266,7 +253,15 @@ CONF_FAMILY_MAP = {
         '30':   (25, 30),      # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
         '45':   (25, 45),      # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
     },
-	'ERJ190': {
+    'CRJ 900': {
+        '0':    (0, 0),        # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
+        '1':    (20, 0),       # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
+        '8':    (20, 8),       # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
+        '20':   (20, 20),      # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
+        '30':   (25, 30),      # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
+        '45':   (25, 45),      # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
+    },
+    'ERJ190': {
         '0':    (0, 0),        # Smart Cockpit Embraer 190 Flight Controls & FAA TCDS A57NM Rev 9
         '1':    (15, 7),       # Smart Cockpit Embraer 190 Flight Controls & FAA TCDS A57NM Rev 9
         '2':    (15, 10),      # Smart Cockpit Embraer 190 Flight Controls & FAA TCDS A57NM Rev 9
@@ -274,12 +269,12 @@ CONF_FAMILY_MAP = {
         '4':    (25, 20),      # Smart Cockpit Embraer 190 Flight Controls & FAA TCDS A57NM Rev 9
         '5':    (25, 20),      # Smart Cockpit Embraer 190 Flight Controls & FAA TCDS A57NM Rev 9
         'Full': (25, 37),      # Smart Cockpit Embraer 190 Flight Controls & FAA TCDS A57NM Rev 9
-	},	
+    },
     ####'Falcon': {
-    ####    '0'  : (0, 0),         # FAA TCDS A59NM Rev 1 & Smart Cockpit 7X Flight Controls Issue 2 FIXME
-    ####    'SF1': (Extended, 9),  # FAA TCDS A59NM Rev 1 & Smart Cockpit 7X Flight Controls Issue 2 FIXME
-    ####    'SF2': (Extended, 20), # FAA TCDS A59NM Rev 1 & Smart Cockpit 7X Flight Controls Issue 2 FIXME
-    ####    'SF3': (Extended, 40), # FAA TCDS A59NM Rev 1 & Smart Cockpit 7X Flight Controls Issue 2 FIXME
+    ####    '0'  : (0, 0),         # FAA TCDS A59NM Rev 1 & Smart Cockpit 7X Flight Controls Issue 2; FIXME
+    ####    'SF1': (Extended, 9),  # FAA TCDS A59NM Rev 1 & Smart Cockpit 7X Flight Controls Issue 2; FIXME
+    ####    'SF2': (Extended, 20), # FAA TCDS A59NM Rev 1 & Smart Cockpit 7X Flight Controls Issue 2; FIXME
+    ####    'SF3': (Extended, 40), # FAA TCDS A59NM Rev 1 & Smart Cockpit 7X Flight Controls Issue 2; FIXME
     ####},
 }
 
@@ -288,7 +283,17 @@ CONF_FAMILY_MAP = {
 # Imports
 
 
+import logging
+import numpy as np
+
 from itertools import imap
+
+
+#############################################################################
+# Globals
+
+
+logger = logging.getLogger(name=__name__)
 
 
 #############################################################################
@@ -356,20 +361,20 @@ def get_flap_map(series=None, family=None):
         return FLAP_SERIES_MAP[series]
     if family in FLAP_FAMILY_MAP:
         return FLAP_FAMILY_MAP[family]
-    raise KeyError("No flap mapping for series '%s', family '%s'." % \
-        (series, family))
+    raise KeyError("No flap mapping for series '%s', family '%s'." %
+                   (series, family))
 
 
 def get_flap_values_mapping(series, family, flap_param=None):
     '''
     Get the flap mapping for the aircraft type. Should this not be
     available, rounds the available flap array to the nearest 5 degrees.
-    
+
     If flap_param is None, raises KeyError as no fallback available.
-    
+
     Returns the values mapping:
     { int(flap angle) : str(flap angle) }
-    
+
     :param series: Aircraft Series with .value attribute
     :type series: Attribute
     :param family: Aircraft Family with .value attribute
@@ -390,10 +395,10 @@ def get_flap_values_mapping(series, family, flap_param=None):
         # round to nearest 5 degrees (as per round_to_nearest)
         step = 5.0
         array = np.ma.round(flap_param.array / step) * step
-        flap_steps = [int(f) for f in np.ma.unique(array) \
+        flap_steps = [int(f) for f in np.ma.unique(array)
                       if f is not np.ma.masked]
     return {int(f): str(f) for f in flap_steps}
-    
+
 
 def get_slat_map(series=None, family=None):
     '''
@@ -411,8 +416,8 @@ def get_slat_map(series=None, family=None):
         return SLAT_SERIES_MAP[series]
     if family in SLAT_FAMILY_MAP:
         return SLAT_FAMILY_MAP[family]
-    raise KeyError("No slat mapping for series '%s', family '%s'." % \
-        (series, family))
+    raise KeyError("No slat mapping for series '%s', family '%s'." %
+                   (series, family))
 
 
 def get_aileron_map(series=None, family=None):
@@ -432,8 +437,8 @@ def get_aileron_map(series=None, family=None):
         return AILERON_SERIES_MAP[series]
     if family in AILERON_FAMILY_MAP:
         return AILERON_FAMILY_MAP[family]
-    raise KeyError("No aileron mapping for series '%s', family '%s'" % \
-        (series, family))
+    raise KeyError("No aileron mapping for series '%s', family '%s'" %
+                   (series, family))
 
 
 def get_conf_map(series=None, family=None):
@@ -455,9 +460,5 @@ def get_conf_map(series=None, family=None):
         return CONF_SERIES_MAP[series]
     if family in CONF_FAMILY_MAP:
         return CONF_FAMILY_MAP[family]
-    raise KeyError("No conf mapping for series '%s', family '%s'." % \
-        (series, family))
-
-
-#############################################################################
-# vim:et:ft=python:nowrap:sts=4:sw=4:ts=4
+    raise KeyError("No conf mapping for series '%s', family '%s'." %
+                   (series, family))
