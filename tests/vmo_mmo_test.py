@@ -152,5 +152,31 @@ class TestVMOCRJ700(unittest.TestCase):
         np.testing.assert_array_equal(res_mmo[mmo_ixs].data,
                                       expected[mmo_ixs].data)
 
+
+class TestVMOLearjet45(unittest.TestCase):
+    def test_get_vmo_mmo_array(self):
+        from flightdatautilities.vmo_mmo import VMO_SERIES
+
+        vmo_class, params = VMO_SERIES['Learjet 45']
+        vmo_mapping = vmo_class(*params)
+
+        pres_alt = np.ma.arange(25000, 27001, dtype=np.float)
+        res_vmo, res_mmo = vmo_mapping.get_vmo_mmo_arrays(pres_alt)
+        expected = np.ma.array(
+            [330] * 1757 +
+            [0.81] * (27001 - 26757)
+        )
+
+        vmo_ixs = np.ma.where(expected > 1)
+        mmo_ixs = np.ma.where(expected < 1)
+        self.assertTrue(np.ma.is_masked(res_vmo[mmo_ixs]))
+        np.testing.assert_array_equal(res_vmo[vmo_ixs].data,
+                                      expected[vmo_ixs].data)
+
+        self.assertTrue(np.ma.is_masked(res_mmo[vmo_ixs]))
+        np.testing.assert_array_equal(res_mmo[mmo_ixs].data,
+                                      expected[mmo_ixs].data)
+
+
 ##############################################################################
 # vim:et:ft=python:nowrap:sts=4:sw=4:ts=4
