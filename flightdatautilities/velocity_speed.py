@@ -371,6 +371,24 @@ class B737_500(VelocitySpeed):
     }
 
 
+class B737_600(VelocitySpeed):
+    '''
+    Velocity speed tables for Boeing B737-600.
+    '''
+    interpolate = True
+    minimum_speed = 109
+    source = 'FDS Customer 125 Analysis Program'
+    weight_unit = 'lb'
+    tables = {
+        'vref': {
+            'weight': ( 38,  40,  42,  44,  46,  48,  50,  52,  54,  56,  58,  60,  62,  64,  66,  68,  70),
+                  15: (111, 114, 116, 119, 122, 125, 127, 130, 132, 135, 137, 140, 142, 144, 146, 148, 150),
+                  30: (106, 109, 112, 115, 117, 120, 122, 125, 127, 129, 131, 134, 136, 138, 140, 142, 144),
+                  40: (104, 107, 109, 112, 114, 117, 119, 122, 124, 127, 129, 131, 133, 135, 137, 139, 141),
+        },
+    }	
+
+
 class B737_700_CFM56_7B(VelocitySpeed):
     '''
     Velocity speed tables for Boeing B737-700.
@@ -799,6 +817,7 @@ VELOCITY_SPEED_MAP = {
     ('B737-300(QC)', None): B737_300,
     ('B737-400', None): B737_400,
     ('B737-500', None): B737_500,
+    ('B737-600', None): B737_600,	
     ('B737-700', 'CFM56-7B'): B737_700_CFM56_7B,
     ('B737-700', 'CFM56-7B27B3'): B737_700_CFM56_7B27B3,
     ('B737-800', None): B737_800,
