@@ -378,7 +378,7 @@ class B737_600(VelocitySpeed):
     interpolate = True
     minimum_speed = 109
     source = 'FDS Customer 125 Analysis Program'
-    weight_unit = 'lb'
+    weight_unit = 't'
     tables = {
         'vref': {
             'weight': ( 38,  40,  42,  44,  46,  48,  50,  52,  54,  56,  58,  60,  62,  64,  66,  68,  70),
