@@ -263,6 +263,25 @@ class A320(VelocitySpeed):
               'Full': (   112,    114,    115,    116,    117,    118,    119,    121,    122,    123,    124,    125,    126,    127,    128,    129,    129,    130,    131,    133,    134,    135,    136,    137,    137,    138,    139,    140,    141,    142,    143,    144,    144,    145,    146,    147),
         },
     }
+	
+	
+class A340_300(VelocitySpeed):
+    '''
+    Velocity speed tables for Airbus A340-300 series
+    '''
+    interpolate = True
+    source = 'FDS Customer 125 DAR Analysis Program'
+    weight_unit = 't'
+	### 'Vapp' ###
+    tables = {
+        'vref': {
+	         'weight': (140, 150, 160, 170, 180, 190, 200),
+                   26: (131, 132, 135, 139, 143, 147, 150),
+                   32: (131, 131, 132, 136, 140, 144, 147),
+				     # Flap  26 / Slat 24, Handle Position = 3
+				     # Flap  32 / Slat 24, Handle Position = Full
+		},
+    }
 
 
 class ATR42_300(VelocitySpeed):
@@ -283,6 +302,7 @@ class ATR42_300(VelocitySpeed):
         },
     }
 
+	
 class ATR72_200(VelocitySpeed):
     '''
     Velocity speed tables for ATR72-202 w/ PWC PW124B engines.
@@ -805,6 +825,7 @@ VELOCITY_SPEED_MAP = {
     ('A300_B4', None): A300_B4,
 
     ('A320', None): A320,
+    ('A340', None): A340_300,
 
     # ATR
     ('ATR42_300', None): ATR42_300,
