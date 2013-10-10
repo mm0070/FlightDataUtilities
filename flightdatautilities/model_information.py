@@ -120,6 +120,7 @@ SLAT_FAMILY_MAP = {
     'DC-9':    (0, 17.8, 21),      # FAA TCDS A6WE Rev 28 (DC-9-81 & DC-9-82)
     'ERJ190':  (0, 15, 25),        # FAA TCDS A57NM Rev 9 & Smart Cockpit Embraer_190 Flight Controls
     ####'Falcon': (Not Extended, Extended),   # FAA TCDS A59NM Rev 1 & Smart Cockpit 7X Flight Controls Issue 2; FIXME
+	#### Note: Slats Extended: Inboard Down = 20 deg, Median & Outboard Down = 35 deg
     'Global': (0, 20),             # (Not Extended, Extended) FAA TCDS T00003NY Rev 16 & Smart Cockpit G5000 Limitations Vol 1 & LFL doc
 }
 
@@ -275,6 +276,7 @@ CONF_FAMILY_MAP = {
     ####    'SF1': (Extended, 9),  # FAA TCDS A59NM Rev 1 & Smart Cockpit 7X Flight Controls Issue 2; FIXME
     ####    'SF2': (Extended, 20), # FAA TCDS A59NM Rev 1 & Smart Cockpit 7X Flight Controls Issue 2; FIXME
     ####    'SF3': (Extended, 40), # FAA TCDS A59NM Rev 1 & Smart Cockpit 7X Flight Controls Issue 2; FIXME
+	#### Note: Slats Extended: Inboard Down = 20 deg, Median & Outboard Down = 35 deg
     ####},
 }
 
