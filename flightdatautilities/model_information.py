@@ -237,14 +237,14 @@ CONF_FAMILY_MAP = {
         '3':    (23, 26, 5),   # Smart Cockpit A380 Briefing For Pilots
         'Full': (23, 33, 10),  # Smart Cockpit A380 Briefing For Pilots
     },
-    'B787': {
-        '0':    (0, 0),
-        '1':    (50, 0),
-        '5':    (50, 5),
-        '15':   (50, 15),
-        '20':   (50, 20),
-        '25':   (100, 20),
-        '30':   (100, 30),
+    'B787': { # Flap settings must be integers.
+        0:    (0, 0),
+        1:    (50, 0),
+        5:    (50, 5),
+        15:   (50, 15),
+        20:   (50, 20),
+        25:   (100, 20),
+        30:   (100, 30),
     },
     'CRJ 700': {
         '0':    (0, 0),        # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
