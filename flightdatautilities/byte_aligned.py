@@ -1,6 +1,8 @@
 import argparse
+import bz2
 import logging
 import numpy as np
+import os
 
 
 logging.basicConfig(format='%(message)s')
@@ -15,7 +17,12 @@ SUPPORTED_WPS = [64, 128, 256, 512, 1024, 2048]
 
 
 def inspect(file_obj, words_to_read):
-    words = np.fromfile(file_obj, dtype=np.short, count=words_to_read) & 0xFFF
+    if isinstance(file_obj, bz2.BZ2File):
+        words = np.fromstring(file_obj.read(words_to_read * 2), dtype=np.short)
+    else:
+        words = np.fromfile(file_obj, dtype=np.short, count=words_to_read)
+    
+    words &= 0xFFF
 
     for word_index, word in enumerate(words[:words_to_read - max(SUPPORTED_WPS)]):
         for pattern_name, pattern in SYNC_PATTERNS.items():
@@ -77,11 +84,14 @@ def main():
     if args.debug:
         logger.setLevel(logging.DEBUG)
     
-    if args.file_path.splitext()[1].lower() == 'bz2':
-        import bz2
-        bz2.BZ2File()
-    with open(args.file_path, 'rb') as file_obj:
-        inspect(file_obj, args.words)
+    if os.path.splitext(args.file_path)[1].lower() == '.bz2':
+        file_obj = bz2.BZ2File(args.file_path)
+    else:
+        file_obj = open(args.file_path, 'rb')
+    
+    inspect(file_obj, args.words)
+    
+    file_obj.close()
 
 
 if __name__ == '__main__':
