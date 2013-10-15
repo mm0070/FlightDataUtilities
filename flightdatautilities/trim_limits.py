@@ -17,4 +17,4 @@ def get_stabilizer_limits(aircraft_family=None, aircraft_series=None):
     if aircraft_family in STABILIZER_LIMITS_FAMILIES:
         return STABILIZER_LIMITS_FAMILIES[aircraft_family]
     elif aircraft_series in STABILIZER_LIMITS_SERIES:
-        return STABILIZER_LIMITS_SERIES[aircraft_family]
+        return STABILIZER_LIMITS_SERIES[aircraft_series]
