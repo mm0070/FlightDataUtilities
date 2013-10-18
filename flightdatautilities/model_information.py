@@ -130,8 +130,7 @@ SLAT_FAMILY_MAP = {
 
 
 AILERON_SERIES_MAP = {
-    'A340-300': (0, 10),        # FAA TCDS A43NM Rev 7 & FDS Customer #125 A330/A340 Flight Controls
-    'A340-500': (0, 10),        # FAA TCDS A43NM Rev 7 & FDS Customer #47  A330/A340 Flight Controls
+    'A340-500': (0, 10),        # FAA TCDS A43NM Rev 7 & AHY A330/A340 Flight Controls
 }
 
 
@@ -160,13 +159,12 @@ CONF_SERIES_MAP = {
         'Full': (24, 32),      # FAA TCDS A43NM Rev 7
     },
     'A340-300': {
-        '0':    (0, 0, 0),     # FAA TCDS A43NM Rev 7
-        '1':    (21, 0, 0),    # FAA TCDS A43NM Rev 7 & FDS Customer #125 A330/A340 Flight Controls
-        '1+F':  (21, 17, 10),  # FAA TCDS A43NM Rev 7 (ECAM Indication = 1+F)
-        '1*':   (24, 17, 10),  # FAA TCDS A43NM Rev 7 (ECAM Indication = 2)
-        '2':    (24, 22, 10),  # FAA TCDS A43NM Rev 7 & FDS Customer #125 A330/A340 Flight Controls
-        '3':    (24, 26, 10),  # FAA TCDS A43NM Rev 7 & FDS Customer #125 A330/A340 Flight Controls
-        'Full': (24, 32, 10),  # FAA TCDS A43NM Rev 7 & FDS Customer #125 A330/A340 Flight Controls
+        '0':    (0, 0),        # FAA TCDS A43NM Rev 7
+        '1':    (20, 0),       # FAA TCDS A43NM Rev 7
+        '1+F':  (20, 17),      # FAA TCDS A43NM Rev 7 (ECAM Indication = 1+F)
+        '2':    (24, 22),      # FAA TCDS A43NM Rev 7
+        '3':    (24, 26),      # FAA TCDS A43NM Rev 7
+        'Full': (24, 32),      # FAA TCDS A43NM Rev 7
     },
     'A340-500': {
         '0':    (0, 0, 0),     # FAA TCDS A43NM Rev 7
