@@ -244,6 +244,25 @@ class A300_B4(VelocitySpeed):
     }
 
 
+class A319_100(VelocitySpeed):
+    '''
+    Velocity speed tables for A319_100 series
+    '''
+    interpolate = True
+    source = 'Pending Review, Customer 125 A321 FDIMU DAR Analysis'
+    weight_unit = 't'
+    ### 'Vapp' ###
+    tables = {
+        'vref': {
+            'weight': (  40,   44,  48,  52,  56,  60,  64,  68,  72,  76),
+                 20 : ( 110,  115, 120, 125, 130, 134, 139, 143, 147, 151),
+              'Full': (None, None, 112, 117, 121, 125, 129, 133, 137, 141),
+                  # Flap  20 / Slat 22, Handle Position = 3
+                  # Flap  40 / Slat 27, Handle Position = Full
+        },
+    }
+
+
 class A320(VelocitySpeed):
     '''
     Velocity speed tables for A320
@@ -263,8 +282,27 @@ class A320(VelocitySpeed):
               'Full': (   112,    114,    115,    116,    117,    118,    119,    121,    122,    123,    124,    125,    126,    127,    128,    129,    129,    130,    131,    133,    134,    135,    136,    137,    137,    138,    139,    140,    141,    142,    143,    144,    144,    145,    146,    147),
         },
     }
-    
-    
+
+
+class A321_200(VelocitySpeed):
+    '''
+    Velocity speed tables for A321_200 series
+    '''
+    interpolate = True
+    source = 'Pending Review, Customer 125 A321 FDIMU DAR Analysis'
+    weight_unit = 't'
+    ### 'Vapp' ###
+    tables = {
+        'vref': {
+            'weight': ( 52,  54,  56,  58,  60,  62,  64,  66,  68,  70,  72,  74,  76,  78,  80,  82,  84,  86),
+                 20 : (121, 123, 125, 128, 130, 132, 134, 136, 138, 140, 142, 144, 146, 148, 150, 152, 154, 156),
+              'Full': (116, 119, 121, 123, 125, 127, 129, 131, 133, 135, 137, 139, 141, 143, 144, 146, 148, 150),
+               # Flap  22 / Slat 22, Handle Position = 3
+               # Flap  25 / Slat 27, Handle Position = Full
+        },
+    }
+
+
 class A340_300(VelocitySpeed):
     '''
     Velocity speed tables for Airbus A340-300 series
@@ -280,7 +318,7 @@ class A340_300(VelocitySpeed):
                   32: (131, 131, 132, 136, 140, 144, 147),
                   # Flap  26 / Slat 24, Handle Position = 3
                   # Flap  32 / Slat 24, Handle Position = Full
-                  },
+        },
     }
 
 
@@ -871,8 +909,11 @@ VELOCITY_SPEED_MAP = {
     #Airbus
     ('A300_600', None): A300_600,
     ('A300_B4', None): A300_B4,
-
+    
+    ('A319', None): A319_100,
     ('A320', None): A320,
+    ('A321', None): A321_200,
+    
     ('A340', None): A340_300,
 
     # ATR
