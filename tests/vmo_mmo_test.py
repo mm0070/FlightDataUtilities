@@ -126,9 +126,9 @@ class TestVMOGlobalExpress(unittest.TestCase):
 
 class TestVMOCRJ700(unittest.TestCase):
     def test_get_vmo_mmo_array(self):
-        from flightdatautilities.vmo_mmo import VMO_FAMILIES
+        from flightdatautilities.vmo_mmo import VMO_SERIES
 
-        vmo_class, params = VMO_FAMILIES['CRJ 700']
+        vmo_class, params = VMO_SERIES['CRJ700']
         vmo_mapping = vmo_class(*params)
 
         pres_alt = np.ma.arange(7000, 50001, dtype=np.float)

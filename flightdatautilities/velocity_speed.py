@@ -900,7 +900,7 @@ VELOCITY_SPEED_MAP = {
     ('F28-0070', None): F28_0070,
 
     # Bombardier
-    ('Challenger_850', None): Challenger_850,
+    ('Challenger850', None): Challenger_850,
     ('CRJ200', None): CRJ_200,
     ('CRJ900', None): CRJ_900,
 

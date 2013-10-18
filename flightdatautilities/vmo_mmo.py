@@ -169,7 +169,14 @@ VMO_FAMILIES = {
     'B737 NG': [VMO, [340, 0.82]],
     'B757': [VMO, [360, 0.86]],
     'B767': [VMO, [360, 0.86]],
-    'CRJ 700': [
+}
+
+
+VMO_SERIES = {
+    'F28-0070': [VMONone, []],  # Fokker provides VMO in the frame
+    '1900D': [VMONone, []],
+    #'1900D': [VMO, [248, 0.48]],  # FIXME: we need verify these
+    'CRJ700': [
         VMORanges,
         [
             [
@@ -182,15 +189,6 @@ VMO_FAMILIES = {
             ]
         ]
     ],
-}
-
-VMO_FAMILIES['CRJ 900'] = VMO_FAMILIES['CRJ 700']
-
-
-VMO_SERIES = {
-    'F28-0070': [VMONone, []],  # Fokker provides VMO in the frame
-    '1900D': [VMONone, []],
-    #'1900D': [VMO, [248, 0.48]],  # FIXME: we need verify these
     'Global Express': [
         VMORanges,
         [
@@ -214,3 +212,4 @@ VMO_SERIES = {
         ]
     ],
 }
+VMO_SERIES['CRJ900'] = VMO_SERIES['CRJ700']
