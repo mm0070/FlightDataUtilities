@@ -35,11 +35,11 @@ FLAP_SERIES_MAP = {
     'ATR72-100': (0, 15, 28),                   # FAA TCDS A53EU Rev 21
     'ATR72-200': (0, 15, 28),                   # FAA TCDS A53EU Rev 21
     'ATR72-210': (0, 15, 33),                   # FAA TCDS A53EU Rev 21 (-500 is -212A!)
-    'Challenger850':   (0, 8, 20, 30, 45),      # FAA TCDS A21EA Rev 31
-    'CRJ100': (0, 8, 20, 30, 45),               # FAA TCDS A21EA Rev 31
-    'CRJ200': (0, 8, 20, 30, 45),               # FAA TCDS A21EA Rev 31
-    'CRJ700':   (0, 1, 8, 20, 30, 45),          # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
-    'CRJ900':   (0, 1, 8, 20, 30, 45),          # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
+    'Challenger850': (0, 8, 20, 30, 45),        # FAA TCDS A21EA Rev 31
+    'CRJ100':    (0, 8, 20, 30, 45),            # FAA TCDS A21EA Rev 31
+    'CRJ200':    (0, 8, 20, 30, 45),            # FAA TCDS A21EA Rev 31
+    'CRJ700':    (0, 1, 8, 20, 30, 45),         # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
+    'CRJ900':    (0, 1, 8, 20, 30, 45),         # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
     'DHC-8-100': (0, 5, 15, 35),                # FAA TCDS A13NM Rev 20
     'DHC-8-200': (0, 5, 15, 35),                # FAA TCDS A13NM Rev 20
     'DHC-8-300': (0, 5, 10, 15, 35),            # FAA TCDS A13NM Rev 20
@@ -71,7 +71,7 @@ FLAP_FAMILY_MAP = {
     'B767':    (0, 1, 5, 15, 20, 25, 30),              # Smart Cockpit B767-300GE Flight Controls 9.10.10
     'B777':    (0, 1, 5, 15, 20, 25, 30),              # Smart Cockpit B777 Flight Controls 9.10.7
     'B787':    (0, 1, 5, 15, 20, 25, 30),              # FAA TCDS T00021SE Rev 6
-    'CL-600':   (0, 20, 30, 45),                       # FAA TCDS A21EA Rev 31
+    'CL-600':  (0, 20, 30, 45),                        # FAA TCDS A21EA Rev 31
     'DC-9':    (0, 13, 20, 25, 30, 40),                # FAA TCDS A6WE Rev 28 (DC-9-81 & DC-9-82)
     'ERJ-135/145': (0, 9, 18, 22, 45),                 # FAA TCDS T00011AT Rev 29
     ####'ERJ-170/175': (0, 5, 10, 20, 35),             # FAA TCDS A56NM Rev 8; FIXME
@@ -84,8 +84,8 @@ FLAP_FAMILY_MAP = {
     'G-V':     (0, 10, 20, 39),                        # FAA TCDS A12EA Rev 40
     'Global':  (0, 6, 16, 30),                         # FAA TCDS T00003NY Rev 16 & Smart Cockpit G5000 Limitations Vol 1
     'L100':    (0, 50, 100),                           # FAA TCDS A1SO Rev 16 (100% = 36)
-    'Learjet': (0, 8, 20, 40),                         # FAA TCDS T00008WI Rev 17
     'L1011':   (0, 4, 10, 14, 18, 22, 33),             # FAA TCDS A23WE Rev 19
+    'Learjet': (0, 8, 20, 40),                         # FAA TCDS T00008WI Rev 17
     ####'MD-11':   (0, 15, 22, 25, 28, 35, 50),        # FAA TCDS A22WE Rev 12; FIXME
 }
 
@@ -122,7 +122,7 @@ SLAT_FAMILY_MAP = {
     'ERJ190':  (0, 15, 25),        # FAA TCDS A57NM Rev 9 & Smart Cockpit Embraer_190 Flight Controls
     ####'Falcon': (Not Extended, Extended),   # FAA TCDS A59NM Rev 1 & Smart Cockpit 7X Flight Controls Issue 2; FIXME
 	#### Note: Slats Extended: Inboard Down = 20 deg, Median & Outboard Down = 35 deg
-    'Global': (0, 20),             # (Not Extended, Extended) FAA TCDS T00003NY Rev 16 & Smart Cockpit G5000 Limitations Vol 1 & LFL doc
+    'Global':  (0, 20),             # (Not Extended, Extended) FAA TCDS T00003NY Rev 16 & Smart Cockpit G5000 Limitations Vol 1 & LFL doc
 }
 
 

@@ -925,9 +925,9 @@ VELOCITY_SPEED_MAP = {
 
     # Bombardier
     ('Challenger850', None): Challenger_850,
-    ('CRJ 200', None): CRJ_200,
-    ('CRJ 700', None): CRJ_700,
-    ('CRJ 900', None): CRJ_900,
+    ('CRJ200', None): CRJ_200,
+    ('CRJ700', None): CRJ_700,
+    ('CRJ900', None): CRJ_900,
 
     ('GlobalXRS',  None): Global,
     ('Global6000', None): Global,
