@@ -249,7 +249,7 @@ class A319_100(VelocitySpeed):
     Velocity speed tables for A319_100 series
     '''
     interpolate = True
-    source = 'Pending Review, Customer 125 A321 FDIMU DAR Analysis'
+    source = 'Pending Review, Customer 125 FDIMU DAR Analysis'
     weight_unit = 't'
     ### 'Vapp' ###
     tables = {
@@ -289,7 +289,7 @@ class A321_200(VelocitySpeed):
     Velocity speed tables for A321_200 series
     '''
     interpolate = True
-    source = 'Pending Review, Customer 125 A321 FDIMU DAR Analysis'
+    source = 'Pending Review, Customer 125 FDIMU DAR Analysis'
     weight_unit = 't'
     ### 'Vapp' ###
     tables = {
@@ -299,6 +299,25 @@ class A321_200(VelocitySpeed):
               'Full': (116, 119, 121, 123, 125, 127, 129, 131, 133, 135, 137, 139, 141, 143, 144, 146, 148, 150),
                # Flap  22 / Slat 22, Handle Position = 3
                # Flap  25 / Slat 27, Handle Position = Full
+        },
+    }
+
+
+class A330_300(VelocitySpeed):
+    '''
+    Velocity speed tables for Airbus A340-300 series
+    '''
+    interpolate = True
+    source = 'FDS Customer 125 DAR Analysis Program'
+    weight_unit = 't'
+    ### 'Vapp' ###
+    tables = {
+        'vref': {
+            'weight': (120, 130, 140, 150, 160, 170, 180, 190),
+                  22: (131, 131, 131, 133, 135, 139, 143, 147),
+              'Full': (131, 131, 131, 131, 132, 136, 140, 144),
+                  # Flap  22 / Slat 23, Handle Position = 3
+                  # Flap  32 / Slat 23, Handle Position = Full
         },
     }
 
@@ -914,6 +933,7 @@ VELOCITY_SPEED_MAP = {
     ('A320', None): A320,
     ('A321', None): A321_200,
     
+    ('A330', None): A330_300,
     ('A340', None): A340_300,
 
     # ATR
