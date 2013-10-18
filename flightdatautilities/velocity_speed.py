@@ -986,6 +986,10 @@ VELOCITY_SPEED_MAP = {
     ('A330', None): A330_300,
     ('A340', None): A340_300,
 
+    # BAE
+    ('BAE146', None): BAE146_100,
+    ('BAE146', None): BAE146_200,
+    
     # ATR
     ('ATR42_300', None): ATR42_300,
     ('ATR42_300(F)', None): ATR42_300,
