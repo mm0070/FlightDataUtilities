@@ -179,12 +179,12 @@ CONF_SERIES_MAP = {
         'Full': (24, 34, 10),  # FAA TCDS A43NM Rev 7 & FDS Customer #47 A330/A340 Flight Controls
     },
     'A340-600': {
-        '0':    (0, 0),        # FAA TCDS A43NM Rev 7
-        '1':    (20, 0),       # FAA TCDS A43NM Rev 7
-        '1+F':  (20, 17),      # FAA TCDS A43NM Rev 7 (ECAM Indication = 1+F)
-        '2':    (23, 22),      # FAA TCDS A43NM Rev 7
-        '3':    (23, 29),      # FAA TCDS A43NM Rev 7
-        'Full': (23, 34),      # FAA TCDS A43NM Rev 7
+        '0':    (0, 0, 0),     # FAA TCDS A43NM Rev 7
+        '1':    (20, 0, 0),    # FAA TCDS A43NM Rev 7
+        '1+F':  (20, 17, 10),  # FAA TCDS A43NM Rev 7 (ECAM Indication = 1+F)
+        '2':    (23, 22, 10),  # FAA TCDS A43NM Rev 7 (ECAM Indication = 2)
+        '3':    (23, 29, 10),  # FAA TCDS A43NM Rev 7
+        'Full': (23, 34, 10),  # FAA TCDS A43NM Rev 7
     },
     'CRJ700': {
         '0':    (0, 0),        # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
