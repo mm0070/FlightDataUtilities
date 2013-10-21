@@ -421,6 +421,27 @@ class ATR72_200(VelocitySpeed):
     }
 
 
+class ATR72_600(VelocitySpeed):
+    '''
+    Velocity speed tables for ATR72-600 With PW127F & PW127M engines.
+    '''
+    interpolate = True
+    source = 'FDS Customer 25: ATR72 QRH OPS Data'
+    weight_unit = 't'
+    tables = {
+        'v2': {
+            'weight': ( 13,  14,  15,  16,  17,  18,  19,  20,  21, 21.5, 22, 22.5,  23),
+                  15: (110, 110, 110, 110, 110, 110, 110, 110, 111,  113, 114, 115, 117),
+        },
+        'vref': {
+            'weight': ( 13,  14,  15,  16,  17,  18,  19,  20,  21, 21.5,  22, 22.5,  23),
+                   0: (115, 119, 123, 127, 131, 135, 139, 142, 146,  147, 149,  151, 152),
+                  15: ( 97,  97, 100, 103, 107, 110, 113, 116, 120,  121, 123,  124, 126),
+                  30: ( 95,  95,  95,  95,  96,  99, 102, 105, 108,  109, 111,  113, 115),
+        },
+    }
+
+
 class B737_300(VelocitySpeed):
     '''
     Velocity speed tables for Boeing B737-300 w/ CFM56-3 20K engines.
@@ -803,7 +824,7 @@ class Challenger_850(VelocitySpeed):
     }
 
 
-class CRJ_200(VelocitySpeed):
+class CRJ_200ER(VelocitySpeed):
     '''
     Velocity speed tables for CRJ-200 Regional Jet.
     '''
@@ -827,7 +848,7 @@ class CRJ_200(VelocitySpeed):
     }
 
 
-class CRJ_700(VelocitySpeed):
+class CRJ_700ER(VelocitySpeed):
     '''
     Velocity speed tables for Bombardier CRJ 700.
     '''
@@ -987,6 +1008,7 @@ VELOCITY_SPEED_MAP = {
     ('ATR42-300(F)', None): ATR42_300,
     ('ATR72-200', None): ATR72_200,
     ('ATR72-200(F)', None): ATR72_200,
+    ('ATR72-600', None): ATR72_600,
 
     # Boeing
     ('B737-300', None): B737_300,
@@ -1032,8 +1054,8 @@ VELOCITY_SPEED_MAP = {
 
     # Bombardier
     ('Challenger850', None): Challenger_850,
-    ('CRJ200', None): CRJ_200,
-    ('CRJ700', None): CRJ_700,
+    ('CRJ200', None): CRJ_200ER,
+    ('CRJ700', None): CRJ_700ER,
     ('CRJ900', None): CRJ_900,
 
     ('GlobalXRS',  None): Global,
