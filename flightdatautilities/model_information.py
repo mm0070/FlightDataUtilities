@@ -10,10 +10,9 @@ Flight Data Utilities: Aircraft Configuration Information
 # Flap Selections
 
 
-##### FIXME: Can we avoid doing this model specific level?
-####FLAP_MODEL_MAP = {
-####    'CRJ 100LR': (0, 20, 30, 45),               # FAA TCDS A21EA Rev 31
-####}
+FLAP_MODEL_MAP = {
+####'CRJ100LR':           (0, 20, 30, 45),             # FAA TCDS A21EA Rev 31
+}
 
 
 FLAP_SERIES_MAP = {
@@ -94,6 +93,9 @@ FLAP_FAMILY_MAP = {
 # Slat Selections
 
 
+SLAT_MODEL_MAP = {}
+
+
 SLAT_SERIES_MAP = {
     'A300B2':    (0, 20, 25),   # FAA TCDS A35EU Rev 26; FIXME: B2-203!
     'A300B2K':   (0, 16, 25),   # FAA TCDS A35EU Rev 26
@@ -130,6 +132,9 @@ SLAT_FAMILY_MAP = {
 # Aileron Selections
 
 
+AILERON_MODEL_MAP = {}
+
+
 AILERON_SERIES_MAP = {
     'A340-300': (0, 10),        # FAA TCDS A43NM Rev 7 & FDS Customer #125 A330/A340 Flight Controls
     'A340-500': (0, 10),        # FAA TCDS A43NM Rev 7 & FDS Customer #47  A330/A340 Flight Controls
@@ -149,6 +154,9 @@ AILERON_FAMILY_MAP = {
 # - The series conf map will take precedence over the family conf map.
 # - If using flap and slat to determine conf, only create a tuple of length 2
 # - Each entry is of the form -- indication: (slat, flap, aileron)
+
+
+CONF_MODEL_MAP = {}
 
 
 CONF_SERIES_MAP = {
@@ -313,24 +321,11 @@ def get_flap_detents():
     :rtype: list
     '''
     all_detents = set()
+    for detents in FLAP_MODEL_MAP.itervalues():
+        all_detents.update(detents)
     for detents in FLAP_SERIES_MAP.itervalues():
         all_detents.update(detents)
     for detents in FLAP_FAMILY_MAP.itervalues():
-        all_detents.update(detents)
-    return sorted(all_detents)
-
-
-def get_conf_detents():
-    '''
-    Get all conf combinations from all supported aircraft types
-
-    :returns: list of detent values
-    :rtype: list
-    '''
-    all_detents = set()
-    for detents in imap(dict.keys, CONF_SERIES_MAP.itervalues()):
-        all_detents.update(detents)
-    for detents in imap(dict.keys, CONF_FAMILY_MAP.itervalues()):
         all_detents.update(detents)
     return sorted(all_detents)
 
@@ -343,6 +338,8 @@ def get_slat_detents():
     :rtype: list
     '''
     all_detents = set()
+    for detents in SLAT_MODEL_MAP.itervalues():
+        all_detents.update(detents)
     for detents in SLAT_SERIES_MAP.itervalues():
         all_detents.update(detents)
     for detents in SLAT_FAMILY_MAP.itervalues():
@@ -350,10 +347,29 @@ def get_slat_detents():
     return sorted(all_detents)
 
 
-def get_flap_map(series=None, family=None):
+def get_conf_detents():
+    '''
+    Get all conf combinations from all supported aircraft types
+
+    :returns: list of detent values
+    :rtype: list
+    '''
+    all_detents = set()
+    for detents in imap(dict.keys, CONF_MODEL_MAP.itervalues()):
+        all_detents.update(detents)
+    for detents in imap(dict.keys, CONF_SERIES_MAP.itervalues()):
+        all_detents.update(detents)
+    for detents in imap(dict.keys, CONF_FAMILY_MAP.itervalues()):
+        all_detents.update(detents)
+    return sorted(all_detents)
+
+
+def get_flap_map(model=None, series=None, family=None):
     '''
     Accessor for fetching flap mapping parameters.
 
+    :param model: Aircraft series e.g. B737-333
+    :type model: String
     :param series: Aircraft series e.g. B737-300
     :type series: String
     :param family: Aircraft family e.g. B737
@@ -362,15 +378,94 @@ def get_flap_map(series=None, family=None):
     :returns: list of detent values
     :rtype: list
     '''
+    if model in FLAP_MODEL_MAP:
+        return FLAP_MODEL_MAP[model]
     if series in FLAP_SERIES_MAP:
         return FLAP_SERIES_MAP[series]
     if family in FLAP_FAMILY_MAP:
         return FLAP_FAMILY_MAP[family]
-    raise KeyError("No flap mapping for series '%s', family '%s'." %
-                   (series, family))
+    raise KeyError("No flap mapping for model '%s', series '%s', family '%s'."
+                   % (model, series, family))
 
 
-def get_flap_values_mapping(series, family, flap_param=None):
+def get_slat_map(model=None, series=None, family=None):
+    '''
+    Accessor for fetching slat mapping parameters.
+
+    :param model: Aircraft series e.g. B737-333
+    :type model: String
+    :param series: Aircraft series e.g. B737-300
+    :type series: String
+    :param family: Aircraft family e.g. B737
+    :type family: String
+    :raises: KeyError if no mapping found
+    :returns: list of detent values
+    :rtype: list
+    '''
+    if model in SLAT_MODEL_MAP:
+        return SLAT_MODEL_MAP[model]
+    if series in SLAT_SERIES_MAP:
+        return SLAT_SERIES_MAP[series]
+    if family in SLAT_FAMILY_MAP:
+        return SLAT_FAMILY_MAP[family]
+    raise KeyError("No slat mapping for model '%s', series '%s', family '%s'."
+                   % (model, series, family))
+
+
+def get_aileron_map(model=None, series=None, family=None):
+    '''
+    Accessor for fetching aileron mapping parameters.
+    
+    Note this is used for generating the ``Flaperon`` parameter.
+
+    :param model: Aircraft series e.g. A340-555
+    :type model: String
+    :param series: Aircraft series e.g. A340-500
+    :type series: String
+    :param family: Aircraft family e.g. A340
+    :type family: String
+    :raises: KeyError if no mapping found
+    :returns: list of detent values
+    :rtype: list
+    '''
+    if model in AILERON_MODEL_MAP:
+        return AILERON_MODEL_MAP[model]
+    if series in AILERON_SERIES_MAP:
+        return AILERON_SERIES_MAP[series]
+    if family in AILERON_FAMILY_MAP:
+        return AILERON_FAMILY_MAP[family]
+    raise KeyError("No aileron mapping for model '%s', series '%s', family '%s'"
+                   % (model, series, family))
+
+
+def get_conf_map(model=None, series=None, family=None):
+    '''
+    Accessor for fetching conf mapping parameters.
+
+    Return is a dictionary of state: tuple where tuple can contain either
+    (slat, flap) or (slat, flap, aileron) depending on Aircraft requirements.
+
+    :param model: Aircraft series e.g. A340-555
+    :type model: String
+    :param series: Aircraft series e.g. A340-500
+    :type series: String
+    :param family: Aircraft family e.g. A340
+    :type family: String
+    :raises: KeyError if no mapping found
+    :returns: conf mapping
+    :rtype: dict
+    '''
+    if model in CONF_MODEL_MAP:
+        return CONF_MODEL_MAP[model]
+    if series in CONF_SERIES_MAP:
+        return CONF_SERIES_MAP[series]
+    if family in CONF_FAMILY_MAP:
+        return CONF_FAMILY_MAP[family]
+    raise KeyError("No conf mapping for model '%s', series '%s', family '%s'."
+                   % (model, series, family))
+
+
+def get_flap_values_mapping(model, series, family, flap_param=None):
     '''
     Get the flap mapping for the aircraft type. Should this not be
     available, rounds the available flap array to the nearest 5 degrees.
@@ -380,6 +475,8 @@ def get_flap_values_mapping(series, family, flap_param=None):
     Returns the values mapping:
     { int(flap angle) : str(flap angle) }
 
+    :param model: Aircraft Model with .value attribute
+    :type model: Attribute
     :param series: Aircraft Series with .value attribute
     :type series: Attribute
     :param family: Aircraft Family with .value attribute
@@ -390,11 +487,12 @@ def get_flap_values_mapping(series, family, flap_param=None):
     :rtype: Dict
     '''
     try:
-        flap_steps = get_flap_map(series.value, family.value)
+        flap_steps = get_flap_map(model.value, series.value, family.value)
     except KeyError:
         # no flaps mapping, round to nearest 5 degrees
-        logger.warning("No flap settings for series '%s' family '%s' - "
-                       "rounding to nearest 5", series.value, family.value)
+        logger.warning("No flap settings for model '%s', series '%s' family "
+                       "'%s' - rounding to nearest 5",
+                       model.value, series.value, family.value)
         if flap_param is None:
             raise
         # round to nearest 5 degrees (as per round_to_nearest)
@@ -403,67 +501,3 @@ def get_flap_values_mapping(series, family, flap_param=None):
         flap_steps = [int(f) for f in np.ma.unique(array)
                       if f is not np.ma.masked]
     return {int(f): str(f) for f in flap_steps}
-
-
-def get_slat_map(series=None, family=None):
-    '''
-    Accessor for fetching slat mapping parameters.
-
-    :param series: Aircraft series e.g. B737-300
-    :type series: String
-    :param family: Aircraft family e.g. B737
-    :type family: String
-    :raises: KeyError if no mapping found
-    :returns: list of detent values
-    :rtype: list
-    '''
-    if series in SLAT_SERIES_MAP:
-        return SLAT_SERIES_MAP[series]
-    if family in SLAT_FAMILY_MAP:
-        return SLAT_FAMILY_MAP[family]
-    raise KeyError("No slat mapping for series '%s', family '%s'." %
-                   (series, family))
-
-
-def get_aileron_map(series=None, family=None):
-    '''
-    Accessor for fetching aileron mapping parameters. Note this is used for
-    generating the Flaperon parameter.
-
-    :param series: Aircraft series e.g. A340-500
-    :type series: String
-    :param family: Aircraft family e.g. A330
-    :type family: String
-    :raises: KeyError if no mapping found
-    :returns: list of detent values
-    :rtype: list
-    '''
-    if series in AILERON_SERIES_MAP:
-        return AILERON_SERIES_MAP[series]
-    if family in AILERON_FAMILY_MAP:
-        return AILERON_FAMILY_MAP[family]
-    raise KeyError("No aileron mapping for series '%s', family '%s'" %
-                   (series, family))
-
-
-def get_conf_map(series=None, family=None):
-    '''
-    Accessor for fetching conf mapping parameters.
-
-    Return is a dictionary of state: tuple where tuple can contain either
-    (slat, flap) or (slat, flap, aileron) depending on Aircraft requirements.
-
-    :param series: Aircraft series e.g. B737-300
-    :type series: String
-    :param family: Aircraft family e.g. B737
-    :type family: String
-    :raises: KeyError if no mapping found
-    :returns: conf mapping
-    :rtype: dict
-    '''
-    if series in CONF_SERIES_MAP:
-        return CONF_SERIES_MAP[series]
-    if family in CONF_FAMILY_MAP:
-        return CONF_FAMILY_MAP[family]
-    raise KeyError("No conf mapping for series '%s', family '%s'." %
-                   (series, family))
