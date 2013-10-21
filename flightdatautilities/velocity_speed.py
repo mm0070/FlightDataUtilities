@@ -968,25 +968,25 @@ class Learjet_60XR(VelocitySpeed):
 # TODO: Determine a better way of looking up which table should be used!
 VELOCITY_SPEED_MAP = {
     #Airbus
-    ('A300_600', None): A300_600,
-    ('A300_B4', None): A300_B4,
-    
-    ('A319', None): A319_100,
+    ('A300-600', None): A300_600,
+    ('A300-B4', None): A300_B4,
+
+    ('A319-100', None): A319_100,
     ('A320', None): A320,
-    ('A321', None): A321_200,
-    
-    ('A330', None): A330_300,
-    ('A340', None): A340_300,
+    ('A321-200', None): A321_200,
+
+    ('A330-300', None): A330_300,
+    ('A340-300', None): A340_300,
 
     # BAE
-    ('BAE146', None): BAE146_100,
-    ('BAE146', None): BAE146_200,
-    
+    ('BAE146-100', None): BAE146_100,
+    ('BAE146-200', None): BAE146_200,
+
     # ATR
-    ('ATR42_300', None): ATR42_300,
-    ('ATR42_300(F)', None): ATR42_300,
-    ('ATR72_200', None): ATR72_200,
-    ('ATR72_200(F)', None): ATR72_200,
+    ('ATR42-300', None): ATR42_300,
+    ('ATR42-300(F)', None): ATR42_300,
+    ('ATR72-200', None): ATR72_200,
+    ('ATR72-200(F)', None): ATR72_200,
 
     # Boeing
     ('B737-300', None): B737_300,
