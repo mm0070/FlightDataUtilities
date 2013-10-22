@@ -607,6 +607,22 @@ class B737_800(VelocitySpeed):
     }
 
 
+class B747_400_CF6_80C2B1F(VelocitySpeed):
+    '''
+    Velocity speed tables for FCOM Boeing B777F GE90-110B1L
+    '''
+    interpolate = True
+    source = 'FDS Customer 71 QRH'
+    weight_unit = 'lb'
+    tables = {
+        'vref': {
+            'weight': (400000, 450000, 500000, 550000, 600000, 650000, 700000, 750000, 800000, 8500000, 900000),
+                  25: (   126,    134,    141,    149,    156,    163,    169,    176,    182,    188,    194),
+                  30: (   121,    128,    136,    143,    150,    156,    162,    169,    175,    181,    186),
+        },
+    }
+
+
 class B757_200_RB211_535C_37(VelocitySpeed):
     '''
     Velocity speed tables for Boeing B757-200 w/ Rolls Royce RB211-535C-37
@@ -1087,6 +1103,8 @@ VELOCITY_SPEED_MAP = {
     ('B737-700', 'CFM56-7B27B3'): B737_700_CFM56_7B27B3,
     ('B737-800', None): B737_800,
 
+    ('B747-400', 'CF6-80C2B1F'): B747_400_CF6_80C2B1F,
+    
     ('B757-200', 'RB211-535C-37'): B757_200_RB211_535C_37,
     ('B757-200', 'RB211-535E4-37'): B757_200_RB211_535E4_37,
     ('B757-200', 'RB211-535E4-B-37'): B757_200_RB211_535E4_B_37,
