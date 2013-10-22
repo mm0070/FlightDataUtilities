@@ -778,7 +778,7 @@ class B777_200ER(VelocitySpeed):
     }
 
 
-class B777F(VelocitySpeed):
+class B777_F_GE90_110B1L(VelocitySpeed):
     '''
     Velocity speed tables for FCOM Boeing B777F GE90-110B1L
     '''
@@ -1112,7 +1112,7 @@ VELOCITY_SPEED_MAP = {
     ('B767-300(ER/F)', 'PW4000-94'): B767_300_PW4000_94,
 
     ('B777-200(ER)', None): B777_200ER,
-    ('B777F', 'GE90-110B1L'): B777F_GE90_110B1L, 
+    ('B777-F', 'GE90-110B1L'): B777_F_GE90_110B1L, 
 
     ('B787-8', 'Trent 1000-A'): B787_8_Trent_1000_A,
 
