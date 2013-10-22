@@ -620,7 +620,7 @@ class B757_200_RB211_535E4_37(VelocitySpeed):
     engines.
     '''
     interpolate = True
-    source = 'FDS Customer 104, 109 & 122: 757 FCOM/FPPM'
+    source = 'FDS Customer 27, 104, 109 & 122: 757 FCOM/FPPM'
     weight_unit = 't'
     tables = {
         'v2': {
@@ -669,7 +669,7 @@ class B767_200_CF6_80A(VelocitySpeed):
     Velocity speed tables for Boeing B767-200 w/ GE CF6-80A.
     '''
     interpolate = True
-    source = 'FDS Customer 78'
+    source = 'FDS Customer 78 & 94 FCOM'
     weight_unit = 'lb'
     tables = {
         'v2': {
