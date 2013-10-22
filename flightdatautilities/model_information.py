@@ -9,6 +9,22 @@ Flight Data Utilities: Aircraft Configuration Information
 #############################################################################
 # Flap Selections
 
+# The format for the following mappings should match the following:
+#
+#   {
+#       'name': (0, angle, ...),
+#       ...
+#   }
+#
+# Where the arguments should abide by the following:
+#
+#   - name:   model, series or family name of the aircraft. (string)
+#   - angle:  flap angle in degrees. (float or integer)
+#
+# Additional import notes to follow:
+#
+#   - There must always be a retracted angle value which is (usually) 0.
+
 
 FLAP_MODEL_MAP = {
 ####'CRJ100LR':           (0, 20, 30, 45),             # FAA TCDS A21EA Rev 31
@@ -95,6 +111,22 @@ FLAP_FAMILY_MAP = {
 #############################################################################
 # Slat Selections
 
+# The format for the following mappings should match the following:
+#
+#   {
+#       'name': (0, angle, ...),
+#       ...
+#   }
+#
+# Where the arguments should abide by the following:
+#
+#   - name:   model, series or family name of the aircraft. (string)
+#   - angle:  slat angle in degrees. (float or integer)
+#
+# Additional import notes to follow:
+#
+#   - There must always be a retracted angle value which is (usually) 0.
+
 
 SLAT_MODEL_MAP = {}
 
@@ -133,6 +165,22 @@ SLAT_FAMILY_MAP = {
 #############################################################################
 # Aileron Selections
 
+# The format for the following mappings should match the following:
+#
+#   {
+#       'name': (0, angle, ...),
+#       ...
+#   }
+#
+# Where the arguments should abide by the following:
+#
+#   - name:   model, series or family name of the aircraft. (string)
+#   - angle:  aileron angle in degrees. (float or integer)
+#
+# Additional import notes to follow:
+#
+#   - There must always be a retracted angle value which is (usually) 0.
+
 
 AILERON_MODEL_MAP = {}
 
@@ -140,6 +188,7 @@ AILERON_MODEL_MAP = {}
 AILERON_SERIES_MAP = {
     'A340-300': (0, 10),  # FAA TCDS A43NM Rev 7 & FDS Customer #125 A330/A340 Flight Controls
     'A340-500': (0, 10),  # FAA TCDS A43NM Rev 7 & FDS Customer #47  A330/A340 Flight Controls
+    'A340-600': (0, 10),  # FIXME: Verify this is correct...
 }
 
 
@@ -152,10 +201,28 @@ AILERON_FAMILY_MAP = {
 #############################################################################
 # Conf Selections
 
-# Notes:
-# - The series conf map will take precedence over the family conf map.
-# - If using flap and slat to determine conf, only create a tuple of length 2
-# - Each entry is of the form -- indication: (slat, flap, aileron)
+# The format for the following mappings should match the following:
+#
+#   {
+#       'name': {
+#           'state': (slat, flap, aileron),
+#           ...
+#       },
+#       ...
+#   }
+#
+# Where the arguments should abide by the following:
+#
+#   - name:     model, series or family name of the aircraft. (string)
+#   - state:    name of the state for the configuration parameter. (string)
+#   - slat:     slat angle in degrees for the state. (float or integer)
+#   - flap:     flap angle in degrees for the state. (float or integer)
+#   - aileron:  aileron angle in degrees for the state. (float or integer)
+#
+# Additional import notes to follow:
+#
+#   - The aileron value is optional if the aircraft doesn't use it.
+#   - If not using aileron, to determine conf, only create a tuple of length 2.
 
 
 CONF_MODEL_MAP = {}
@@ -172,8 +239,8 @@ CONF_SERIES_MAP = {
     },
     'A340-300': {
         '0':    (0, 0, 0),     # FAA TCDS A43NM Rev 7
-        '1':    (21, 0, 0),    # FAA TCDS A43NM Rev 7 & FDS Customer #125 A330/A340 Flight Controls
-        '1+F':  (21, 17, 10),  # FAA TCDS A43NM Rev 7 (ECAM Indication = 1+F)
+        '1':    (20, 0, 0),    # FAA TCDS A43NM Rev 7 & FDS Customer #125 A330/A340 Flight Controls
+        '1+F':  (20, 17, 10),  # FAA TCDS A43NM Rev 7 (ECAM Indication = 1+F)
         '1*':   (24, 17, 10),  # FAA TCDS A43NM Rev 7 (ECAM Indication = 2)
         '2':    (24, 22, 10),  # FAA TCDS A43NM Rev 7 & FDS Customer #125 A330/A340 Flight Controls
         '3':    (24, 26, 10),  # FAA TCDS A43NM Rev 7 & FDS Customer #125 A330/A340 Flight Controls
@@ -192,7 +259,7 @@ CONF_SERIES_MAP = {
         '0':    (0, 0, 0),     # FAA TCDS A43NM Rev 7
         '1':    (20, 0, 0),    # FAA TCDS A43NM Rev 7
         '1+F':  (20, 17, 10),  # FAA TCDS A43NM Rev 7 (ECAM Indication = 1+F)
-        '2':    (23, 22, 10),  # FAA TCDS A43NM Rev 7 (ECAM Indication = 2)
+        '2':    (23, 22, 10),  # FAA TCDS A43NM Rev 7
         '3':    (23, 29, 10),  # FAA TCDS A43NM Rev 7
         'Full': (23, 34, 10),  # FAA TCDS A43NM Rev 7
     },
@@ -256,61 +323,86 @@ CONF_FAMILY_MAP = {
 #############################################################################
 # Lever Selections
 
+# The format for the following mappings should match the following:
+#
+#   {
+#       'name': {
+#           (value, 'state'): (slat, flap),
+#           ...
+#       },
+#       ...
+#   }
+#
+# Where the arguments should abide by the following:
+#
+#   - name:   model, series or family name of the aircraft. (string)
+#   - value:  raw value for a multi-state parameter. (float or integer)
+#   - state:  name of the state for a multi-state parameter. (string)
+#   - slat:   slat angle in degrees for the lever position. (float or integer)
+#   - flap:   flap angle in degrees for the lever position. (float or integer)
+
 
 LEVER_MODEL_MAP = {}
 
 
 LEVER_SERIES_MAP = {
     'CRJ700': {
-        '0':    (0, 0),     # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
-        '1':    (20, 0),    # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
-        '8':    (20, 8),    # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
-        '20':   (20, 20),   # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
-        '30':   (25, 30),   # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
-        '45':   (25, 45),   # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
+        (0,  '0'):    (0, 0),      # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
+        (1,  '1'):    (20, 0),     # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
+        (8,  '8'):    (20, 8),     # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
+        (20, '20'):   (20, 20),    # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
+        (30, '30'):   (25, 30),    # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
+        (45, '45'):   (25, 45),    # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
     },
     'CRJ900': {
-        '0':    (0, 0),     # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
-        '1':    (20, 0),    # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
-        '8':    (20, 8),    # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
-        '20':   (20, 20),   # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
-        '30':   (25, 30),   # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
-        '45':   (25, 45),   # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
+        (0,  '0'):    (0, 0),      # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
+        (1,  '1'):    (20, 0),     # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
+        (8,  '8'):    (20, 8),     # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
+        (20, '20'):   (20, 20),    # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
+        (30, '30'):   (25, 30),    # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
+        (45, '45'):   (25, 45),    # FAA TCDS A21EA Rev 31 & Smart Cockpit CRJ-700/900 Flight Controls Rev 3
     },
 }
 
 
 LEVER_FAMILY_MAP = {
+    'A310': {
+        (0,  '0'):    (0, 0),      # FAA TCDS A35EU Rev 26
+        (1,  '0+S'):  (15, 0),     # FAA TCDS A35EU Rev 26
+        (15, '15'):   (15, 15),    # FAA TCDS A35EU Rev 26
+        (20, '20'):   (20, 20),    # FAA TCDS A35EU Rev 26
+        (40, '40'):   (30, 40),    # FAA TCDS A35EU Rev 26
+    },
     'B787': {
-        '0':    (0, 0),     # FAA TCDS T00021SE Rev 6
-        '1':    (50, 0),    # FAA TCDS T00021SE Rev 6
-        '5':    (50, 5),    # FAA TCDS T00021SE Rev 6
-        '15':   (50, 15),   # FAA TCDS T00021SE Rev 6
-        '20':   (50, 20),   # FAA TCDS T00021SE Rev 6
-        '25':   (100, 20),  # FAA TCDS T00021SE Rev 6
-        '30':   (100, 30),  # FAA TCDS T00021SE Rev 6
+        (0,  '0'):    (0, 0),      # FAA TCDS T00021SE Rev 6
+        (1,  '1'):    (50, 0),     # FAA TCDS T00021SE Rev 6
+        (5,  '5'):    (50, 5),     # FAA TCDS T00021SE Rev 6
+        (15, '15'):   (50, 15),    # FAA TCDS T00021SE Rev 6
+        (20, '20'):   (50, 20),    # FAA TCDS T00021SE Rev 6
+        (25, '25'):   (100, 20),   # FAA TCDS T00021SE Rev 6
+        (30, '30'):   (100, 30),   # FAA TCDS T00021SE Rev 6
     },
     'ERJ190': {
-        '0':    (0, 0),     # Smart Cockpit Embraer 190 Flight Controls & FAA TCDS A57NM Rev 9
-        '1':    (15, 7),    # Smart Cockpit Embraer 190 Flight Controls & FAA TCDS A57NM Rev 9
-        '2':    (15, 10),   # Smart Cockpit Embraer 190 Flight Controls & FAA TCDS A57NM Rev 9
-        '3':    (15, 20),   # Smart Cockpit Embraer 190 Flight Controls & FAA TCDS A57NM Rev 9
-        '4':    (25, 20),   # Smart Cockpit Embraer 190 Flight Controls & FAA TCDS A57NM Rev 9
-        '5':    (25, 20),   # Smart Cockpit Embraer 190 Flight Controls & FAA TCDS A57NM Rev 9
-        'Full': (25, 37),   # Smart Cockpit Embraer 190 Flight Controls & FAA TCDS A57NM Rev 9
+        (64, '0'):    (0, 0),      # Smart Cockpit Embraer 190 Flight Controls & FAA TCDS A57NM Rev 9
+        (32, '1'):    (15, 7),     # Smart Cockpit Embraer 190 Flight Controls & FAA TCDS A57NM Rev 9
+        (16, '2'):    (15, 10),    # Smart Cockpit Embraer 190 Flight Controls & FAA TCDS A57NM Rev 9
+        (8,  '3'):    (15, 20),    # Smart Cockpit Embraer 190 Flight Controls & FAA TCDS A57NM Rev 9
+        (4,  '4'):    (25, 20),    # Smart Cockpit Embraer 190 Flight Controls & FAA TCDS A57NM Rev 9
+        (2,  '5'):    (25, 20),    # Smart Cockpit Embraer 190 Flight Controls & FAA TCDS A57NM Rev 9
+        (1,  'Full'): (25, 37),    # Smart Cockpit Embraer 190 Flight Controls & FAA TCDS A57NM Rev 9
     },
 ####'Falcon': {
-####    '0':   (0, 0),      # FAA TCDS A59NM Rev 1 & Smart Cockpit 7X Flight Controls Issue 2; FIXME
-####    'SF1': (Extd, 9),   # FAA TCDS A59NM Rev 1 & Smart Cockpit 7X Flight Controls Issue 2; FIXME; Note: Extd: Inboard = 20, Median & Outboard = 35
-####    'SF2': (Extd, 20),  # FAA TCDS A59NM Rev 1 & Smart Cockpit 7X Flight Controls Issue 2; FIXME; Note: Extd: Inboard = 20, Median & Outboard = 35
-####    'SF3': (Extd, 40),  # FAA TCDS A59NM Rev 1 & Smart Cockpit 7X Flight Controls Issue 2; FIXME; Note: Extd: Inboard = 20, Median & Outboard = 35
+####    (0, '0'):     (0, 0),      # FAA TCDS A59NM Rev 1 & Smart Cockpit 7X Flight Controls Issue 2; FIXME
+####    (1, 'SF1'):   (Extd, 9),   # FAA TCDS A59NM Rev 1 & Smart Cockpit 7X Flight Controls Issue 2; FIXME; Note: Extd: Inboard = 20, Median & Outboard = 35
+####    (2, 'SF2'):   (Extd, 20),  # FAA TCDS A59NM Rev 1 & Smart Cockpit 7X Flight Controls Issue 2; FIXME; Note: Extd: Inboard = 20, Median & Outboard = 35
+####    (3, 'SF3'):   (Extd, 40),  # FAA TCDS A59NM Rev 1 & Smart Cockpit 7X Flight Controls Issue 2; FIXME; Note: Extd: Inboard = 20, Median & Outboard = 35
 ####},
     'Global': {
-         '0':   (0, 0),     # FAA TCDS T00003NY Rev 16 & Smart Cockpit Global 5000 Flight Controls
-         '0+S': (20, 0),    # FAA TCDS T00003NY Rev 16 & Smart Cockpit Global 5000 Flight Controls
-         '6':   (20, 6),    # FAA TCDS T00003NY Rev 16 & Smart Cockpit Global 5000 Flight Controls
-        '16':   (20, 16),   # FAA TCDS T00003NY Rev 16 & Smart Cockpit Global 5000 Flight Controls
-        '30':   (25, 30),   # FAA TCDS T00003NY Rev 16 & Smart Cockpit Global 5000 Flight Controls
+        (0,  '0'):    (0, 0),      # FAA TCDS T00003NY Rev 16 & Smart Cockpit Global 5000 Flight Controls
+        (1,  '0+S'):  (20, 0),     # FAA TCDS T00003NY Rev 16 & Smart Cockpit Global 5000 Flight Controls
+        (6,  '6'):    (20, 6),     # FAA TCDS T00003NY Rev 16 & Smart Cockpit Global 5000 Flight Controls
+        (16, '16'):   (20, 16),    # FAA TCDS T00003NY Rev 16 & Smart Cockpit Global 5000 Flight Controls
+        (30, '30'):   (20, 30),    # FAA TCDS T00003NY Rev 16 & Smart Cockpit Global 5000 Flight Controls
     },
 }
 
@@ -322,7 +414,31 @@ LEVER_FAMILY_MAP = {
 import logging
 import numpy as np
 
-from itertools import imap
+from itertools import chain, imap, izip
+
+from flightdatautilities import sortext
+
+
+#############################################################################
+# Constants
+
+
+# Do not change these values without updating the following:
+# - Configuration parameter in Flight Data Analyser
+# - Updating the multi-states in LFLs.
+
+AVAILABLE_CONF_STATES = {
+    0: '0',
+    1: '1',
+    2: '1+F',
+    3: '1*',
+    4: '2',
+    5: '2*',
+    6: '3',
+    7: '4',
+    8: '5',
+    9: 'Full',
+}
 
 
 #############################################################################
@@ -336,6 +452,13 @@ logger = logging.getLogger(name=__name__)
 # Accessors
 
 
+########################################
+# Detents
+
+# These functions return a sorted list of unique available detents for all
+# aircraft models as defined in the mappings above.
+
+
 def get_flap_detents():
     '''
     Get all flap combinations from all supported aircraft types
@@ -343,14 +466,10 @@ def get_flap_detents():
     :returns: list of detent values
     :rtype: list
     '''
-    all_detents = set()
-    for detents in FLAP_MODEL_MAP.itervalues():
-        all_detents.update(detents)
-    for detents in FLAP_SERIES_MAP.itervalues():
-        all_detents.update(detents)
-    for detents in FLAP_FAMILY_MAP.itervalues():
-        all_detents.update(detents)
-    return sorted(all_detents)
+    detents = set()
+    for x in FLAP_MODEL_MAP, FLAP_SERIES_MAP, FLAP_FAMILY_MAP:
+        detents.update(chain.from_iterable(x.itervalues()))
+    return sortext.nsorted(detents)
 
 
 def get_slat_detents():
@@ -360,14 +479,23 @@ def get_slat_detents():
     :returns: list of detent values
     :rtype: list
     '''
-    all_detents = set()
-    for detents in SLAT_MODEL_MAP.itervalues():
-        all_detents.update(detents)
-    for detents in SLAT_SERIES_MAP.itervalues():
-        all_detents.update(detents)
-    for detents in SLAT_FAMILY_MAP.itervalues():
-        all_detents.update(detents)
-    return sorted(all_detents)
+    detents = set()
+    for x in SLAT_MODEL_MAP, SLAT_SERIES_MAP, SLAT_FAMILY_MAP:
+        detents.update(chain.from_iterable(x.itervalues()))
+    return sortext.nsorted(detents)
+
+
+def get_aileron_detents():
+    '''
+    Get all aileron detents from all supported aircraft types
+
+    :returns: list of detent values
+    :rtype: list
+    '''
+    detents = set()
+    for x in AILERON_MODEL_MAP, AILERON_SERIES_MAP, AILERON_FAMILY_MAP:
+        detents.update(chain.from_iterable(x.itervalues()))
+    return sortext.nsorted(detents)
 
 
 def get_conf_detents():
@@ -377,14 +505,11 @@ def get_conf_detents():
     :returns: list of detent values
     :rtype: list
     '''
-    all_detents = set()
-    for detents in imap(dict.keys, CONF_MODEL_MAP.itervalues()):
-        all_detents.update(detents)
-    for detents in imap(dict.keys, CONF_SERIES_MAP.itervalues()):
-        all_detents.update(detents)
-    for detents in imap(dict.keys, CONF_FAMILY_MAP.itervalues()):
-        all_detents.update(detents)
-    return sorted(all_detents)
+    extract = dict.iterkeys
+    detents = set()
+    for x in CONF_MODEL_MAP, CONF_SERIES_MAP, CONF_FAMILY_MAP:
+        detents.update(chain.from_iterable(imap(extract, x.itervalues())))
+    return sortext.nsorted(detents)
 
 
 def get_lever_detents():
@@ -394,20 +519,29 @@ def get_lever_detents():
     :returns: list of detent values
     :rtype: list
     '''
-    all_detents = set()
-    for detents in imap(dict.keys, LEVER_MODEL_MAP.itervalues()):
-        all_detents.update(detents)
-    for detents in imap(dict.keys, LEVER_SERIES_MAP.itervalues()):
-        all_detents.update(detents)
-    for detents in imap(dict.keys, LEVER_FAMILY_MAP.itervalues()):
-        all_detents.update(detents)
-    return sorted(all_detents)
+    extract = lambda x: (v[1] for v in x.iterkeys())
+    detents = set()
+    for x in LEVER_MODEL_MAP, LEVER_SERIES_MAP, LEVER_FAMILY_MAP:
+        detents.update(chain.from_iterable(imap(extract, x.itervalues())))
+    return sortext.nsorted(detents)
+
+
+########################################
+# Values Mappings
+
+# These functions return a dictionary with a mapping from values to states. The
+# dictionaries returned are in a form that can be used as the values mappings
+# for multi-state parameters.
 
 
 def get_flap_map(model=None, series=None, family=None):
     '''
     Accessor for fetching flap mapping parameters.
 
+    Returns a dictionary in the following form::
+
+        {value: state, ...}
+
     :param model: Aircraft series e.g. B737-333
     :type model: String
     :param series: Aircraft series e.g. B737-300
@@ -415,23 +549,28 @@ def get_flap_map(model=None, series=None, family=None):
     :param family: Aircraft family e.g. B737
     :type family: String
     :raises: KeyError if no mapping found
-    :returns: list of detent values
-    :rtype: list
+    :returns: mapping of detent to state values
+    :rtype: dict
     '''
-    if model in FLAP_MODEL_MAP:
-        return FLAP_MODEL_MAP[model]
-    if series in FLAP_SERIES_MAP:
-        return FLAP_SERIES_MAP[series]
-    if family in FLAP_FAMILY_MAP:
-        return FLAP_FAMILY_MAP[family]
-    raise KeyError("No flap mapping for model '%s', series '%s', family '%s'."
-                   % (model, series, family))
+    keys = model, series, family
+    maps = FLAP_MODEL_MAP, FLAP_SERIES_MAP, FLAP_FAMILY_MAP
+
+    for k, m in izip(keys, maps):
+        if k in m:
+            return {v: str(v) for v in m[k]}
+
+    message = "No flap mapping for model '%s', series '%s', family '%s'."
+    raise KeyError(message % (model, series, family))
 
 
 def get_slat_map(model=None, series=None, family=None):
     '''
     Accessor for fetching slat mapping parameters.
 
+    Returns a dictionary in the following form::
+
+        {value: state, ...}
+
     :param model: Aircraft series e.g. B737-333
     :type model: String
     :param series: Aircraft series e.g. B737-300
@@ -439,24 +578,27 @@ def get_slat_map(model=None, series=None, family=None):
     :param family: Aircraft family e.g. B737
     :type family: String
     :raises: KeyError if no mapping found
-    :returns: list of detent values
-    :rtype: list
+    :returns: mapping of detent to state values
+    :rtype: dict
     '''
-    if model in SLAT_MODEL_MAP:
-        return SLAT_MODEL_MAP[model]
-    if series in SLAT_SERIES_MAP:
-        return SLAT_SERIES_MAP[series]
-    if family in SLAT_FAMILY_MAP:
-        return SLAT_FAMILY_MAP[family]
-    raise KeyError("No slat mapping for model '%s', series '%s', family '%s'."
-                   % (model, series, family))
+    keys = model, series, family
+    maps = SLAT_MODEL_MAP, SLAT_SERIES_MAP, SLAT_FAMILY_MAP
+
+    for k, m in izip(keys, maps):
+        if k in m:
+            return {v: str(v) for v in m[k]}
+
+    message = "No slat mapping for model '%s', series '%s', family '%s'."
+    raise KeyError(message % (model, series, family))
 
 
 def get_aileron_map(model=None, series=None, family=None):
     '''
     Accessor for fetching aileron mapping parameters.
-    
-    Note this is used for generating the ``Flaperon`` parameter.
+
+    Returns a dictionary in the following form::
+
+        {value: state, ...}
 
     :param model: Aircraft series e.g. A340-555
     :type model: String
@@ -465,25 +607,27 @@ def get_aileron_map(model=None, series=None, family=None):
     :param family: Aircraft family e.g. A340
     :type family: String
     :raises: KeyError if no mapping found
-    :returns: list of detent values
-    :rtype: list
+    :returns: mapping of detent to state values
+    :rtype: dict
     '''
-    if model in AILERON_MODEL_MAP:
-        return AILERON_MODEL_MAP[model]
-    if series in AILERON_SERIES_MAP:
-        return AILERON_SERIES_MAP[series]
-    if family in AILERON_FAMILY_MAP:
-        return AILERON_FAMILY_MAP[family]
-    raise KeyError("No aileron mapping for model '%s', series '%s', family '%s'"
-                   % (model, series, family))
+    keys = model, series, family
+    maps = AILERON_MODEL_MAP, AILERON_SERIES_MAP, AILERON_FAMILY_MAP
+
+    for k, m in izip(keys, maps):
+        if k in m:
+            return {v: str(v) for v in m[k]}
+
+    message = "No aileron mapping for model '%s', series '%s', family '%s'."
+    raise KeyError(message % (model, series, family))
 
 
 def get_conf_map(model=None, series=None, family=None):
     '''
     Accessor for fetching conf mapping parameters.
 
-    Return is a dictionary of state: tuple where tuple can contain either
-    (slat, flap) or (slat, flap, aileron) depending on Aircraft requirements.
+    Returns a dictionary in the followng form::
+
+        {value: state, ...}
 
     :param model: Aircraft series e.g. A340-555
     :type model: String
@@ -492,24 +636,27 @@ def get_conf_map(model=None, series=None, family=None):
     :param family: Aircraft family e.g. A340
     :type family: String
     :raises: KeyError if no mapping found
-    :returns: conf mapping
+    :returns: mapping of detent to state values
     :rtype: dict
     '''
-    if model in CONF_MODEL_MAP:
-        return CONF_MODEL_MAP[model]
-    if series in CONF_SERIES_MAP:
-        return CONF_SERIES_MAP[series]
-    if family in CONF_FAMILY_MAP:
-        return CONF_FAMILY_MAP[family]
-    raise KeyError("No conf mapping for model '%s', series '%s', family '%s'."
-                   % (model, series, family))
+    keys = model, series, family
+    maps = CONF_MODEL_MAP, CONF_SERIES_MAP, CONF_FAMILY_MAP
+
+    for k, m in izip(keys, maps):
+        if k in m:
+            return {x: v for x, v in AVAILABLE_CONF_STATES.items() if v in m[k]}
+
+    message = "No conf mapping for model '%s', series '%s', family '%s'."
+    raise KeyError(message % (model, series, family))
 
 
 def get_lever_map(model=None, series=None, family=None):
     '''
     Accessor for fetching lever mapping parameters.
 
-    Return is a dictionary of state: (slat, flap).
+    Returns a dictionary in the following form::
+
+        {value: state, ...}
 
     :param model: Aircraft series e.g. B737-333
     :type model: String
@@ -518,52 +665,113 @@ def get_lever_map(model=None, series=None, family=None):
     :param family: Aircraft family e.g. B737
     :type family: String
     :raises: KeyError if no mapping found
-    :returns: conf mapping
+    :returns: mapping of detent to state values
     :rtype: dict
     '''
-    if model in LEVER_MODEL_MAP:
-        return LEVER_MODEL_MAP[model]
-    if series in LEVER_SERIES_MAP:
-        return LEVER_SERIES_MAP[series]
-    if family in LEVER_FAMILY_MAP:
-        return LEVER_FAMILY_MAP[family]
-    raise KeyError("No lever mapping for model '%s', series '%s', family '%s'."
-                   % (model series, family))
+    keys = model, series, family
+    maps = LEVER_MODEL_MAP, LEVER_SERIES_MAP, LEVER_FAMILY_MAP
+
+    for k, m in izip(keys, maps):
+        if k in m:
+            return dict(m[k].iterkeys())
+
+    message = "No lever mapping for model '%s', series '%s', family '%s'."
+    raise KeyError(message % (model, series, family))
 
 
-def get_flap_values_mapping(model, series, family, flap_param=None):
+########################################
+# Angle Mappings
+
+# These functions return a dictionary of some preferred lookup key (multi-state
+# raw value or state name) to a tuple of angles of component surfaces which can
+# be (slat, flap) or (slat, flap, aileron) depending on what is available. The
+# output from these functions can used to help derive multi-states from raw
+# surface values.
+
+
+def get_conf_angles(model=None, series=None, family=None, key='state'):
     '''
-    Get the flap mapping for the aircraft type. Should this not be
-    available, rounds the available flap array to the nearest 5 degrees.
+    Accessor for fetching conf mapping parameters.
 
-    If flap_param is None, raises KeyError as no fallback available.
+    Returns a dictionary in one of the followng forms::
 
-    Returns the values mapping:
-    { int(flap angle) : str(flap angle) }
+        {state: (slat, flap), ...}
+        {state: (slat, flap, aileron), ...}
+        {value: (slat, flap), ...}
+        {value: (slat, flap, aileron), ...}
+        {(value, state): (slat, flap), ...}
+        {(value, state): (slat, flap, aileron), ...}
 
-    :param model: Aircraft Model with .value attribute
-    :type model: Attribute
-    :param series: Aircraft Series with .value attribute
-    :type series: Attribute
-    :param family: Aircraft Family with .value attribute
-    :type family: Attribute
-    :param flap_param: Recorded flap parameter.
-    :type flap_param: Parameter
-    :returns: Values Mapping for each flap setting for provided aircraft type
-    :rtype: Dict
+    :param model: Aircraft series e.g. A340-555
+    :type model: String
+    :param series: Aircraft series e.g. A340-500
+    :type series: String
+    :param family: Aircraft family e.g. A340
+    :type family: String
+    :param key: Key to be provided in the mapping (both, state or value)
+    :type key: str
+    :raises: KeyError if no mapping found
+    :returns: mapping of detent and/or state to surface angle values
+    :rtype: dict
     '''
-    try:
-        flap_steps = get_flap_map(model.value, series.value, family.value)
-    except KeyError:
-        # no flaps mapping, round to nearest 5 degrees
-        logger.warning("No flap settings for model '%s', series '%s' family "
-                       "'%s' - rounding to nearest 5",
-                       model.value, series.value, family.value)
-        if flap_param is None:
-            raise
-        # round to nearest 5 degrees (as per round_to_nearest)
-        step = 5.0
-        array = np.ma.round(flap_param.array / step) * step
-        flap_steps = [int(f) for f in np.ma.unique(array)
-                      if f is not np.ma.masked]
-    return {int(f): str(f) for f in flap_steps}
+    if key not in ('both', 'state', 'value'):
+        raise ValueError("Lookup key must be 'both', 'state' or 'value'.")
+
+    keys = model, series, family
+    maps = CONF_MODEL_MAP, CONF_SERIES_MAP, CONF_FAMILY_MAP
+    available = AVAILABLE_CONF_STATES.items()
+
+    for k, m in izip(keys, maps):
+        if k not in m:
+            continue
+        if key == 'both':
+            return {(x, v): m[k][v] for x, v in available if v in m[k]}
+        if key == 'state':
+            return m[k]
+        if key == 'value':
+            return {x: m[k][v] for x, v in available if v in m[k]}
+
+    message = "No conf angles for model '%s', series '%s', family '%s'."
+    raise KeyError(message % (model, series, family))
+
+
+def get_lever_angles(model=None, series=None, family=None, key='state'):
+    '''
+    Accessor for fetching conf mapping parameters.
+
+    Returns a dictionary in one of the followng forms::
+
+        {state: (slat, flap), ...}
+        {value: (slat, flap), ...}
+        {(value, state): (slat, flap), ...}
+
+    :param model: Aircraft series e.g. B737-333
+    :type model: String
+    :param series: Aircraft series e.g. B737-300
+    :type series: String
+    :param family: Aircraft family e.g. B737
+    :type family: String
+    :param key: Key to be provided in the mapping (both, state or value)
+    :type key: str
+    :raises: KeyError if no mapping found
+    :returns: mapping of detent and/or state to surface angle values
+    :rtype: dict
+    '''
+    if key not in ('both', 'state', 'value'):
+        raise ValueError("Lookup key must be 'both', 'state' or 'value'.")
+
+    keys = model, series, family
+    maps = LEVER_MODEL_MAP, LEVER_SERIES_MAP, LEVER_FAMILY_MAP
+
+    for k, m in izip(keys, maps):
+        if k not in m:
+            continue
+        if key == 'both':
+            return m[k]
+        if key == 'state':
+            return {x[1]: v for x, v in m[k].iteritems()}
+        if key == 'value':
+            return {x[0]: v for x, v in m[k].iteritems()}
+
+    message = "No lever angles for model '%s', series '%s', family '%s'."
+    raise KeyError(message % (model, series, family))
