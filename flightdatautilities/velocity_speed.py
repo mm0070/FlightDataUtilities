@@ -623,6 +623,22 @@ class B747_400_CF6_80C2B1F(VelocitySpeed):
     }
 
 
+class B747_400_PW4056(VelocitySpeed):
+    '''
+    Velocity speed tables for FCOM Boeing B747-400 PW4056
+    '''
+    interpolate = True
+    source = 'FDS Customer 71 QRH'
+    weight_unit = 'lb'
+    tables = {
+        'vref': {
+            'weight': (400000, 490000, 530000, 570000, 620000, 660000, 700000, 750000, 790000, 8400000, 880000),
+                  25: (   132,    139,    146,    152,    158,    164,    170,    176,    181,    187,     192),
+                  30: (   127,    133,    140,    146,    152,    157,    163,    168,    174,    179,     184),
+        },
+    }
+
+
 class B757_200_RB211_535C_37(VelocitySpeed):
     '''
     Velocity speed tables for Boeing B757-200 w/ Rolls Royce RB211-535C-37
@@ -1104,6 +1120,7 @@ VELOCITY_SPEED_MAP = {
     ('B737-800', None): B737_800,
 
     ('B747-400', 'CF6-80C2B1F'): B747_400_CF6_80C2B1F,
+    ('B747-400', 'PW4056'): B747_400_PW4056,
     
     ('B757-200', 'RB211-535C-37'): B757_200_RB211_535C_37,
     ('B757-200', 'RB211-535E4-37'): B757_200_RB211_535E4_37,
