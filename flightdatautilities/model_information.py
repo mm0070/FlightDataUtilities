@@ -675,6 +675,12 @@ def get_lever_map(model=None, series=None, family=None):
         if k in m:
             return dict(m[k].iterkeys())
 
+    # Fallback to using the flap mapping if no lever mapping:
+    try:
+        return get_flap_map(model, series, family)
+    except KeyError:
+        pass  # fall through to display message defined below...
+
     message = "No lever mapping for model '%s', series '%s', family '%s'."
     raise KeyError(message % (model, series, family))
 
