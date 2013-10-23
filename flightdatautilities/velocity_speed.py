@@ -249,7 +249,7 @@ class A319_100(VelocitySpeed):
     Velocity speed tables for A319_100 series
     '''
     interpolate = True
-    source = 'Customer 125 MinV2 tables'
+    source = 'Customer 125 MinV2 tables & A319-21 FDIMU DAR Analysis doc'
     weight_unit = 't'
     ### 'Vapp' ###
     tables = {
@@ -272,7 +272,7 @@ class A320_232(VelocitySpeed):
     Velocity speed tables for A320
     '''
     interpolate = True
-    source = 'Pending Review from Customer 125'
+    source = 'Customer 125 MinV2 tables & A319-21 FDIMU DAR Analysis doc'
     weight_unit = 't'
     tables = {
     ### 'Vapp' ###
@@ -1080,7 +1080,7 @@ VELOCITY_SPEED_MAP = {
     ('A300-B4', None): A300_B4,
 
     ('A319-100', None): A319_100,
-    ('A320', None): A320_232,
+    ('A320-200', None): A320_232,
     ('A321-200', None): A321_200,
 
     ('A330-300', None): A330_300,
