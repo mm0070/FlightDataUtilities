@@ -779,5 +779,20 @@ def get_lever_angles(model=None, series=None, family=None, key='state'):
         if key == 'value':
             return {x[0]: v for x, v in m[k].iteritems()}
 
+    # Fallback to using the flap mapping if no lever mapping:
+    try:
+        both = get_flap_map(model, series, family).items()
+        values, states = zip(*both)
+        angles = zip([None] * len(values), values)
+    except KeyError:
+        pass  # fall through to display message defined below...
+    else:
+        if key == 'both':
+            return dict(zip(both, angles))
+        if key == 'state':
+            return dict(zip(states, angles))
+        if key == 'value':
+            return dict(zip(values, angles))
+
     message = "No lever angles for model '%s', series '%s', family '%s'."
     raise KeyError(message % (model, series, family))
