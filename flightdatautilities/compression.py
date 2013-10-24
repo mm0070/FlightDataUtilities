@@ -37,8 +37,8 @@ class CompressedFile(object):
 
     On exit the resulting file is compressed back to the original place.
     '''
-    def __init__(self, compressed_path, format=None, output_dir=None,
-                 temp_dir=None, create=False,
+    def __init__(self, compressed_path, uncompressed_path=None, format=None,
+                 output_dir=None, temp_dir=None, create=False,
                  compression_level=COMPRESSION_LEVEL):
         '''
         :param compressed_path: Path to the compressed file.
@@ -75,18 +75,33 @@ class CompressedFile(object):
 
         self.compressed_path = compressed_path
         # Path to the uncompressed file
-        self.uncompressed_path = None
+        self.uncompressed_path = uncompressed_path
         # Path where the uncompressed files will be stored
         self.output_dir = output_dir
+        self.format = format
         # Prefix for temporary directory (if None, the system default will be
         # used)
         self.temp_dir = temp_dir
-        # Temporary path containing uncompressed file. YThis directory will be
+        # Temporary path containing uncompressed file. This directory will be
         # deleted in self.cleanup()!
         self.temp_path = None
-        self.format = format
         self.create = create
         self.compression_level = compression_level
+
+    def __repr__(self):
+        args = [
+            self.compressed_path,
+            self.uncompressed_path,
+            self.format,
+            self.output_dir,
+            self.temp_dir,
+            self.create,
+            self.compression_level,
+        ]
+        args = [self.__class__.__name__] + [
+            "'%s'" % v if isinstance(v, str) else v for v in args]
+        return "%s(%s, uncompressed_path=%s, format=%s, output_dir=%s, " \
+            "temp_dir=%s, create=%s, compression_level=%s)" % tuple(args)
 
     def uncompress(self):
         '''
