@@ -88,6 +88,21 @@ class CompressedFile(object):
         self.create = create
         self.compression_level = compression_level
 
+    def __repr__(self):
+        args = [
+            self.compressed_path,
+            self.uncompressed_path,
+            self.format,
+            self.output_dir,
+            self.temp_dir,
+            self.create,
+            self.compression_level,
+        ]
+        args = [self.__class__.__name__] + [
+            "'%s'" % v if isinstance(v, str) else v for v in args]
+        return "%s(%s, uncompressed_path=%s, format=%s, output_dir=%s, " \
+            "temp_dir=%s, create=%s, compression_level=%s)" % tuple(args)
+
     def uncompress(self):
         '''
         Uncompress the file to temporary location.
