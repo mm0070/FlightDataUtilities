@@ -13,7 +13,7 @@ from flightdatautilities.compression import (
 )
 
 
-class CompressionTest(unittest.TestCase):
+class TestCompression(unittest.TestCase):
     '''
     We use real file I/O here in temporary directory.
     '''
@@ -160,6 +160,45 @@ class CompressionTest(unittest.TestCase):
             ' 1. This is the first line of content\n',
         ]
         with ReadOnlyCompressedFile(self.filename) as uncompressed:
+            with file(uncompressed) as f:
+                self.assertListEqual(f.readlines(), expected)
+
+
+class TestCompression_from_file(unittest.TestCase):
+    '''
+    Test creation of the compressed file from an existing uncompressed file.
+    '''
+    def setUp(self):
+        self.uncompressed_filename = tempfile.mktemp()
+        self.filename = tempfile.mktemp(suffix='.gz')
+
+        with file(self.uncompressed_filename, 'w+') as f:
+            text = ' 1. This is the first line of content\n'
+            f.write(text)
+            text = ' 2. This is the second line of content\n'
+            f.write(text)
+
+    def tearDown(self):
+        if os.path.exists(self.uncompressed_filename):
+            os.unlink(self.uncompressed_filename)
+
+        if os.path.exists(self.filename):
+            os.unlink(self.filename)
+
+    def test_fromfile(self):
+        '''
+        Create the compressed file from an existing one and compare the
+        contents of the compressed version.
+        '''
+        # Create the compressed version first
+        cf = CompressedFile(self.filename, self.uncompressed_filename)
+        cf.compress()
+
+        with file(self.uncompressed_filename) as f:
+            expected = f.readlines()
+
+        # next uncompress the file and compare the contents
+        with CompressedFile(self.filename) as uncompressed:
             with file(uncompressed) as f:
                 self.assertListEqual(f.readlines(), expected)
 
