@@ -500,13 +500,21 @@ class B737_500(VelocitySpeed):
 
 class B737_600(VelocitySpeed):
     '''
-    Velocity speed tables for Boeing B737-600.
+    Velocity speed tables for Boeing B737-600 for 20K engines.
     '''
     interpolate = True
     minimum_speed = 109
-    source = 'FDS Customer 125 Analysis Program'
+    source = 'FDS Customer 125 FCOM & Analysis Program'
     weight_unit = 't'
     tables = {
+           'v2': {
+            'weight': ( 40,  45,  50,  55,  60,   65,   70),
+                   1: (112, 118, 124, 130, 136,  142,  146),
+                   5: (109, 116, 122, 128, 134,  139,  143),
+                  10: (105, 111, 117, 122, 127, None, None),
+                  15: (103, 109, 114, 120, 125, None, None),
+                  25: (102, 107, 113, 119, 124, None, None),        
+        },
         'vref': {
             'weight': ( 38,  40,  42,  44,  46,  48,  50,  52,  54,  56,  58,  60,  62,  64,  66,  68,  70),
                   15: (111, 114, 116, 119, 122, 125, 127, 130, 132, 135, 137, 140, 142, 144, 146, 148, 150),
@@ -544,14 +552,14 @@ class B737_700_CFM56_7B(VelocitySpeed):
     }
 
 
-class B737_700_CFM56_7B27B3(VelocitySpeed):
+class B737_700_CFM56_7B27B(VelocitySpeed):
     '''
     Velocity speed tables for Boeing B737-700BBJ w/ CFMI CFM56-7B27B3 engines.
 
     Note: V2 and VREF are recorded on Boeing B737 NG aircraft.
     '''
     interpolate = True
-    source = 'FDS Customer 69 & 109 FCOM'
+    source = 'FDS Customer 69, 109 & 125 FCOM'
     weight_unit = 't'
     tables = {
         'v2': {
@@ -1159,7 +1167,9 @@ VELOCITY_SPEED_MAP = {
     ('B737-500', None): B737_500,
     ('B737-600', None): B737_600,
     ('B737-700', 'CFM56-7B'): B737_700_CFM56_7B,
-    ('B737-700', 'CFM56-7B27B3'): B737_700_CFM56_7B27B3,
+    ('B737-700', 'CFM56-7B27B22'): B737_700_CFM56_7B27B,
+    ('B737-700', 'CFM56-7B27B24'): B737_700_CFM56_7B27B,
+    ('B737-700', 'CFM56-7B27B3'): B737_700_CFM56_7B27B,
     ('B737-800', None): B737_800,
 
     ('B747-400', 'CF6-80C2B1F'): B747_400_CF6_80C2B1F,
