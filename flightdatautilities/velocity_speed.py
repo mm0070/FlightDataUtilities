@@ -507,7 +507,7 @@ class B737_600(VelocitySpeed):
     source = 'FDS Customer 125 FCOM & Analysis Program'
     weight_unit = 't'
     tables = {
-           'v2': {
+        'v2': {
             'weight': ( 40,  45,  50,  55,  60,   65,   70),
                    1: (112, 118, 124, 130, 136,  142,  146),
                    5: (109, 116, 122, 128, 134,  139,  143),
@@ -524,42 +524,12 @@ class B737_600(VelocitySpeed):
     }
 
 
-class B737_700_CFM56_7B(VelocitySpeed):
+class B737_700(VelocitySpeed):
     '''
-    Velocity speed tables for Boeing B737-700.
-
-    Note: V2 and VREF are recorded on Boeing B737 NG aircraft.
+    Velocity speed tables for Boeing B737-700 & B737BBJ CFM56-7B covering 20, 22, 24, 26, & 27 engines series.
     '''
     interpolate = True
-    minimum_speed = 110
-    source = 'FDS Customer 105: 737 FCOM'
-    weight_unit = 'lb'
-    tables = {
-        'v2': {
-            'weight': (90000, 100000, 110000, 120000, 130000, 140000, 150000, 160000),
-                   1: (  114,    120,    126,    131,    137,    142,    147,    151),
-                   5: (  111,    117,    123,    129,    134,    139,    144,    148),
-                  10: (  109,    114,    119,    124,    128,    133,    137,    140),
-                  15: (  107,    112,    117,    122,    126,    130,    134,   None),
-                  25: (  106,    111,    116,    120,    125,    129,    133,   None),
-        },
-        'vref': {
-            'weight': (90000, 100000, 110000, 120000, 130000, 140000, 150000, 160000, 170000, 180000),
-                  15: (  115,    121,    127,    133,    139,    145,    150,    155,    159,    164),
-                  30: (  111,    117,    123,    129,    134,    140,    144,    149,    153,    158),
-                  40: (  108,    114,    120,    126,    132,    137,    142,    147,    151,    156),
-        },
-    }
-
-
-class B737_700_CFM56_7B27B(VelocitySpeed):
-    '''
-    Velocity speed tables for Boeing B737-700BBJ w/ CFMI CFM56-7B27B3 engines.
-
-    Note: V2 and VREF are recorded on Boeing B737 NG aircraft.
-    '''
-    interpolate = True
-    source = 'FDS Customer 69, 109 & 125 FCOM'
+    source = 'FDS Customer 69, 105, 109 & 125 FCOM'
     weight_unit = 't'
     tables = {
         'v2': {
@@ -571,10 +541,10 @@ class B737_700_CFM56_7B27B(VelocitySpeed):
                   25: (107, 111, 115, 119, 123, 127, 131, 134, 137, 140, 143, 146, None),
         },
         'vref': {
-            'weight': ( 45,  50,  55,  60,  65,  70,  75,  80,  85),
-                  15: (121, 127, 134, 140, 147, 152, 157, 162, 167),
-                  30: (117, 123, 129, 135, 141, 146, 151, 156, 161),
-                  40: (114, 120, 127, 133, 139, 144, 149, 154, 159),
+            'weight': ( 41,  45,  50,  55,  60,  65,  70,  75,  80,  85),
+                  15: (115, 121, 127, 134, 140, 147, 152, 157, 162, 167),
+                  30: (111, 117, 123, 129, 135, 141, 146, 151, 156, 161),
+                  40: (108, 114, 120, 127, 133, 139, 144, 149, 154, 159),
         }
     }
 
@@ -1166,10 +1136,7 @@ VELOCITY_SPEED_MAP = {
     ('B737-400', None): B737_400,
     ('B737-500', None): B737_500,
     ('B737-600', None): B737_600,
-    ('B737-700', 'CFM56-7B'): B737_700_CFM56_7B,
-    ('B737-700', 'CFM56-7B27B22'): B737_700_CFM56_7B27B,
-    ('B737-700', 'CFM56-7B27B24'): B737_700_CFM56_7B27B,
-    ('B737-700', 'CFM56-7B27B3'): B737_700_CFM56_7B27B,
+    ('B737-700', None): B737_700,
     ('B737-800', None): B737_800,
 
     ('B747-400', 'CF6-80C2B1F'): B747_400_CF6_80C2B1F,
