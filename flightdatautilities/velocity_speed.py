@@ -370,6 +370,29 @@ class A340_300(VelocitySpeed):
     }
 
 
+class A340_500(VelocitySpeed):
+    '''
+    Velocity speed tables for Airbus A340-500 series
+    '''
+    interpolate = True
+    source = 'FDS Customer 47 QRH with 13% CG and minimum V2 tables at 0ft ISA+15'
+    weight_unit = 't'
+    ### 'Vapp' ###
+    tables = {
+        'v2': {
+             'weight': (180, 200, 220, 240, 260, 280, 300, 320, 340, 360, 380),
+                '1+F': (149, 149, 151, 155, 160, 164, 169, 174, 178, 182, 186),
+                  '2': (149, 149, 149, 152, 156, 161, 166, 170, 174, 178, 182),
+                  '3': (149, 149, 149, 149, 153, 157, 162, 166, 171, 174, 178),
+        },
+        'vref': {
+            'weight': (180, 190, 210, 230, 250, 270, 290, 310, 330, 350, 380),
+                 '3': (135, 136, 140, 146, 152, 158, 164, 170, 175, 180, 187),
+              'Full': (135, 137, 142, 148, 155, 160, 166, 172, 177, 182, 189),
+        },
+    }
+
+
 class ATR42_300(VelocitySpeed):
     '''
     Velocity speed tables for ATR42-300 w/ PWC PW120 engines.
@@ -1117,6 +1140,7 @@ VELOCITY_SPEED_MAP = {
 
     ('A330-300', None): A330_300,
     ('A340-300', None): A340_300,
+    ('A340-500', None): A340_500,
 
     # BAE
     ('BAE146-100', None): BAE146_100,
