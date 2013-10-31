@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
+# vim:et:ft=python:nowrap:sts=4:sw=4:ts=4
 ##############################################################################
 
 '''
+Unit tests for aircraft velocity speed tables and functions.
 '''
 
 ##############################################################################
@@ -11,8 +13,18 @@
 import inspect
 import unittest
 
-from flightdatautilities import velocity_speed
-from flightdatautilities.velocity_speed import VelocitySpeed
+from flightdatautilities import aircrafttables as at
+from flightdatautilities.aircrafttables.interfaces import VelocitySpeed
+
+from flightdatautilities.aircrafttables import velocity_speed as vs
+
+
+##############################################################################
+# Test Configuration
+
+
+def setUpModule():
+    at.configure(package='flightdatautilities.aircrafttables')
 
 
 ##############################################################################
@@ -74,7 +86,7 @@ def _velocity_speed_table_generator():
         and issubclass(x, VelocitySpeed) \
         and not x == VelocitySpeed
 
-    for name, cls in inspect.getmembers(velocity_speed, f):
+    for name, cls in inspect.getmembers(vs, f):
         yield test, 'velocity_speed_table__%s' % name.lower(), cls
 
 
@@ -90,76 +102,71 @@ class TestVelocitySpeed(unittest.TestCase):
         self.velocity_speed.tables = {
             'v2': {
                 'weight': (100, 110, 120, 130, 140, 150, 160, 170, 180, 190),
-                       5: (127, 134, 139, 145, 151, 156, 161, 166, 171, 176),
-                      15: (122, 128, 134, 139, 144, 149, 154, 159, 164, 168),
-                      20: (118, 124, 129, 134, 140, 144, 149, 154, 159, 164),
+                     '5': (127, 134, 139, 145, 151, 156, 161, 166, 171, 176),
+                    '15': (122, 128, 134, 139, 144, 149, 154, 159, 164, 168),
+                    '20': (118, 124, 129, 134, 140, 144, 149, 154, 159, 164),
             },
             'vref': {
                 'weight': (100, 110, 120, 130, 140, 150, 160, 170, 180, 190),
-                       5: (114, 121, 128, 134, 141, 147, 153, 158, 164, 169),
-                      15: (109, 116, 122, 129, 141, 135, 146, 151, 157, 162),
-                      20: (105, 111, 118, 124, 130, 135, 141, 147, 152, 158),
+                     '5': (114, 121, 128, 134, 141, 147, 153, 158, 164, 169),
+                    '15': (109, 116, 122, 129, 141, 135, 146, 151, 157, 162),
+                    '20': (105, 111, 118, 124, 130, 135, 141, 147, 152, 158),
             },
         }
 
     def test_v2(self):
         self.velocity_speed.interpolate = False
-        self.assertEquals(self.velocity_speed.v2(20, 119000), 129)
-        self.assertEquals(self.velocity_speed.v2(20, 120000), 129)
-        self.assertEquals(self.velocity_speed.v2(20, 121000), 134)
-        #self.assertRaises(KeyError, self.velocity_speed.v2, 14, 165000)
+        self.assertEquals(self.velocity_speed.v2('20', 119000), 129)
+        self.assertEquals(self.velocity_speed.v2('20', 120000), 129)
+        self.assertEquals(self.velocity_speed.v2('20', 121000), 134)
+        #self.assertRaises(KeyError, self.velocity_speed.v2, '14', 165000)
 
     def test_v2_interpolated(self):
         self.velocity_speed.interpolate = True
-        self.assertEquals(self.velocity_speed.v2(20, 145000), 142)
-        self.assertEquals(self.velocity_speed.v2(20, 120000), 129)
-        self.assertEquals(self.velocity_speed.v2(5, 165000), 163.5)
-        self.assertEquals(self.velocity_speed.v2(20, 94000), None)
-        #self.assertRaises(KeyError, self.velocity_speed.v2, 14, 165000)
+        self.assertEquals(self.velocity_speed.v2('20', 145000), 142)
+        self.assertEquals(self.velocity_speed.v2('20', 120000), 129)
+        self.assertEquals(self.velocity_speed.v2('5', 165000), 163.5)
+        self.assertEquals(self.velocity_speed.v2('20', 94000), None)
+        #self.assertRaises(KeyError, self.velocity_speed.v2, '14', 165000)
 
     def test_v2_minimum(self):
         self.velocity_speed.interpolate = True
         self.velocity_speed.minimum_speed = 125
-        self.assertEquals(self.velocity_speed.v2(15, 100500), 125)
+        self.assertEquals(self.velocity_speed.v2('15', 100500), 125)
         self.velocity_speed.interpolate = False
-        self.assertEquals(self.velocity_speed.v2(15, 100500), 128)
-        #self.assertRaises(KeyError, self.velocity_speed.v2, 14, 165000)
+        self.assertEquals(self.velocity_speed.v2('15', 100500), 128)
+        #self.assertRaises(KeyError, self.velocity_speed.v2, '14', 165000)
 
     def test_v2_out_of_range(self):
         self.velocity_speed.interpolate = True
         self.velocity_speed.minimum_speed = 125
-        result = self.velocity_speed.v2(30, 100000)
+        result = self.velocity_speed.v2('30', 100000)
         self.assertEqual(result, None)
 
-        
     def test_vref(self):
         self.velocity_speed.minimum_speed = False
-        self.assertEquals(self.velocity_speed.vref(15, 119000), 122)
-        self.assertEquals(self.velocity_speed.vref(15, 120000), 122)
-        self.assertEquals(self.velocity_speed.vref(15, 121000), 129)
-        #self.assertRaises(KeyError, self.velocity_speed.vref, 14, 121000)
+        self.assertEquals(self.velocity_speed.vref('15', 119000), 122)
+        self.assertEquals(self.velocity_speed.vref('15', 120000), 122)
+        self.assertEquals(self.velocity_speed.vref('15', 121000), 129)
+        #self.assertRaises(KeyError, self.velocity_speed.vref, '14', 121000)
 
     def test_vref_interpolated(self):
         self.velocity_speed.interpolate = True
-        self.assertEquals(self.velocity_speed.vref(5, 120000), 128)
-        self.assertEquals(self.velocity_speed.vref(15, 120000), 122)
-        self.assertEquals(self.velocity_speed.vref(20, 145000), 132.5)
-        self.assertEquals(self.velocity_speed.vref(20, 94000), None)
-        #self.assertRaises(KeyError, self.velocity_speed.vref, 14, 165000)
+        self.assertEquals(self.velocity_speed.vref('5', 120000), 128)
+        self.assertEquals(self.velocity_speed.vref('15', 120000), 122)
+        self.assertEquals(self.velocity_speed.vref('20', 145000), 132.5)
+        self.assertEquals(self.velocity_speed.vref('20', 94000), None)
+        #self.assertRaises(KeyError, self.velocity_speed.vref, '14', 165000)
 
     def test_vref_minimum(self):
         self.velocity_speed.interpolate = True
         self.velocity_speed.minimum_speed = 115
-        self.assertEquals(self.velocity_speed.vref(15, 100500), 115)
+        self.assertEquals(self.velocity_speed.vref('15', 100500), 115)
         self.velocity_speed.interpolate = False
-        self.assertEquals(self.velocity_speed.vref(15, 100500), 116)
-        #self.assertRaises(KeyError, self.velocity_speed.vref, 14, 165000)
+        self.assertEquals(self.velocity_speed.vref('15', 100500), 116)
+        #self.assertRaises(KeyError, self.velocity_speed.vref, '14', 165000)
 
 
 @_generate_tests(_velocity_speed_table_generator)
 class TestVelocitySpeedTables(unittest.TestCase):
     pass
-
-
-##############################################################################
-# vim:et:ft=python:nowrap:sts=4:sw=4:ts=4

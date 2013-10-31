@@ -10,10 +10,19 @@ Unit tests for aircraft model information tables and functions.
 # Imports
 
 
-import numpy as np
 import unittest
 
-from flightdatautilities import model_information as mi
+from flightdatautilities import aircrafttables as at
+
+from flightdatautilities.aircrafttables import model_information as mi
+
+
+##############################################################################
+# Test Configuration
+
+
+def setUpModule():
+    at.configure(package='flightdatautilities.aircrafttables')
 
 
 ##############################################################################
@@ -23,31 +32,23 @@ from flightdatautilities import model_information as mi
 class TestFlapInformation(unittest.TestCase):
 
     def test__get_flap_detents(self):
-        detents = mi.get_flap_detents()
+        detents = at.get_flap_detents()
+        # All detents must be integers or floats:
+        self.assertTrue(all(isinstance(d, (int, float)) for d in detents))
         # We expect to have quite a lot of detents:
-        self.assertGreater(len(detents), 25)
-        self.assertLess(len(detents), 50)
-        # Maximum angle without percentage values:
-        self.assertLessEqual(max(set(detents) - set((50, 100))), 45)
+        self.assertGreater(len(detents), 10)
+        self.assertLess(len(detents), 20)
         # Must have a value for the retracted state:
         self.assertIn(0, detents)
-        # Must have special percent values for Hercules:
-        self.assertIn(50, detents)
-        self.assertIn(100, detents)
         # No duplicates:
         self.assertEqual(len(set(detents)), len(detents))
 
     def test__get_flap_map(self):
         # Ensure that we raise an exception if no valid arguments are provided:
-        self.assertRaises(KeyError, mi.get_flap_map, None, None, None)
-        self.assertRaises(KeyError, mi.get_flap_map, '', '', '')
+        self.assertRaises(KeyError, at.get_flap_map, None, None, None)
+        self.assertRaises(KeyError, at.get_flap_map, '', '', '')
         # Ensure we have what looks like a values mapping dictionary:
-        x = mi.get_flap_map(None, 'A340-500', 'A340')
-        self.assertIsInstance(x, dict)
-        self.assertTrue(all(isinstance(k, (float, int)) for k in x.iterkeys()))
-        self.assertTrue(all(isinstance(v, str) for v in x.itervalues()))
-        # Check the same again for something with a floating-point flap:
-        x = mi.get_flap_map(None, '1900D', '1900')
+        x = at.get_flap_map(None, 'B737-300', 'B737 Classic')
         self.assertIsInstance(x, dict)
         self.assertTrue(all(isinstance(k, (float, int)) for k in x.iterkeys()))
         self.assertTrue(all(isinstance(v, str) for v in x.itervalues()))
@@ -56,31 +57,23 @@ class TestFlapInformation(unittest.TestCase):
 class TestSlatInformation(unittest.TestCase):
 
     def test__get_slat_detents(self):
-        detents = mi.get_slat_detents()
+        detents = at.get_slat_detents()
+        # All detents must be integers or floats:
+        self.assertTrue(all(isinstance(d, (int, float)) for d in detents))
         # We expect to a certain number of values:
-        self.assertGreater(len(detents), 10)
-        self.assertLess(len(detents), 50)
-        # Maximum angle without percentage values:
-        self.assertLessEqual(max(set(detents) - set((50, 100))), 35)
+        self.assertGreater(len(detents), 0)
+        self.assertLess(len(detents), 10)
         # Must have a value for the retracted state:
         self.assertIn(0, detents)
-        # Must have special percent values for B787:
-        self.assertIn(50, detents)
-        self.assertIn(100, detents)
         # No duplicates:
         self.assertEqual(len(set(detents)), len(detents))
 
     def test__get_slat_map(self):
         # Ensure that we raise an exception if no valid arguments are provided:
-        self.assertRaises(KeyError, mi.get_slat_map, None, None, None)
-        self.assertRaises(KeyError, mi.get_slat_map, '', '', '')
+        self.assertRaises(KeyError, at.get_slat_map, None, None, None)
+        self.assertRaises(KeyError, at.get_slat_map, '', '', '')
         # Ensure we have what looks like a values mapping dictionary:
-        x = mi.get_slat_map(None, 'A340-500', 'A340')
-        self.assertIsInstance(x, dict)
-        self.assertTrue(all(isinstance(k, (float, int)) for k in x.iterkeys()))
-        self.assertTrue(all(isinstance(v, str) for v in x.itervalues()))
-        # Check the same again for something with a floating-point slat:
-        x = mi.get_slat_map(None, None, 'DC-9')
+        x = at.get_slat_map(None, 'A330-300', 'A330')
         self.assertIsInstance(x, dict)
         self.assertTrue(all(isinstance(k, (float, int)) for k in x.iterkeys()))
         self.assertTrue(all(isinstance(v, str) for v in x.itervalues()))
@@ -89,7 +82,9 @@ class TestSlatInformation(unittest.TestCase):
 class TestAileronInformation(unittest.TestCase):
 
     def test__get_aileron_detents(self):
-        detents = mi.get_aileron_detents()
+        detents = at.get_aileron_detents()
+        # All detents must be integers or floats:
+        self.assertTrue(all(isinstance(d, (int, float)) for d in detents))
         # Must have a value for the retracted state:
         self.assertIn(0, detents)
         # No duplicates:
@@ -97,10 +92,10 @@ class TestAileronInformation(unittest.TestCase):
 
     def test__get_aileron_map(self):
         # Ensure that we raise an exception if no valid arguments are provided:
-        self.assertRaises(KeyError, mi.get_aileron_map, None, None, None)
-        self.assertRaises(KeyError, mi.get_aileron_map, '', '', '')
+        self.assertRaises(KeyError, at.get_aileron_map, None, None, None)
+        self.assertRaises(KeyError, at.get_aileron_map, '', '', '')
         # Ensure we have what looks like a values mapping dictionary:
-        x = mi.get_aileron_map(None, 'A340-500', 'A340')
+        x = at.get_aileron_map(None, 'A330-300', 'A330')
         self.assertIsInstance(x, dict)
         self.assertTrue(all(isinstance(k, (float, int)) for k in x.iterkeys()))
         self.assertTrue(all(isinstance(v, str) for v in x.itervalues()))
@@ -109,9 +104,11 @@ class TestAileronInformation(unittest.TestCase):
 class TestConfInformation(unittest.TestCase):
 
     def test__get_conf_detents(self):
-        detents = mi.get_conf_detents()
+        detents = at.get_conf_detents()
+        # All detents must be strings:
+        self.assertTrue(all(isinstance(d, str) for d in detents))
         # We expect all values to be in the available set:
-        available = mi.AVAILABLE_CONF_STATES.itervalues()
+        available = at.constants.AVAILABLE_CONF_STATES.itervalues()
         self.assertLessEqual(set(detents), set(available))
         # Must have a value for the retracted state:
         self.assertIn('0', detents)
@@ -120,29 +117,29 @@ class TestConfInformation(unittest.TestCase):
 
     def test__get_conf_map(self):
         # Ensure that we raise an exception if no valid arguments are provided:
-        self.assertRaises(KeyError, mi.get_conf_map, None, None, None)
-        self.assertRaises(KeyError, mi.get_conf_map, '', '', '')
+        self.assertRaises(KeyError, at.get_conf_map, None, None, None)
+        self.assertRaises(KeyError, at.get_conf_map, '', '', '')
         # Ensure we have what looks like a values mapping dictionary:
-        x = mi.get_conf_map(None, 'A340-500', 'A340')
+        x = at.get_conf_map(None, 'A330-300', 'A330')
         self.assertIsInstance(x, dict)
         self.assertTrue(all(isinstance(k, (float, int)) for k in x.iterkeys()))
         self.assertTrue(all(isinstance(v, str) for v in x.itervalues()))
 
     def test__get_conf_angles(self):
         # Ensure that we raise an exception if no valid arguments are provided:
-        self.assertRaises(KeyError, mi.get_conf_angles, None, None, None)
-        self.assertRaises(KeyError, mi.get_conf_angles, '', '', '')
+        self.assertRaises(KeyError, at.get_conf_angles, None, None, None)
+        self.assertRaises(KeyError, at.get_conf_angles, '', '', '')
         # Ensure that the provided key argument is correct:
-        args = (None, None, 'A380')
+        args = (None, None, 'A330')
         try:
             for key in ('both', 'state', 'value'):
-                mi.get_conf_angles(*args, key=key)
+                at.get_conf_angles(*args, key=key)
         except ValueError:
             self.fail('ValueError from get_conf_angles() for valid key.')
-        self.assertRaises(ValueError, mi.get_lever_angles, *args, key='invalid')
+        self.assertRaises(ValueError, at.get_lever_angles, *args, key='invalid')
         # Ensure that we get the expected structure returned:
         for key, types in ('both', tuple), ('state', str), ('value', (float, int)):
-            x = mi.get_conf_angles(None, None, 'A380', key=key)
+            x = at.get_conf_angles(None, None, 'A330', key=key)
             self.assertTrue(all(isinstance(v, types) for v in x.iterkeys()))
             self.assertTrue(all(isinstance(v, tuple) for v in x.itervalues()))
 
@@ -161,7 +158,7 @@ class TestConfInformation(unittest.TestCase):
                 self.assertTrue(all(2 <= len(v) <= 3 for v in x.itervalues()))
                 self.assertEqual(len(set(len(v) for v in x.itervalues())), 1)
                 # Ensure all states are in the available conf states constant:
-                available = mi.AVAILABLE_CONF_STATES.itervalues()
+                available = at.constants.AVAILABLE_CONF_STATES.itervalues()
                 self.assertLessEqual(set(x.iterkeys()), set(available))
                 # Ensure that the angles are found in related mappings:
                 length = len(x.itervalues().next())
@@ -180,7 +177,9 @@ class TestConfInformation(unittest.TestCase):
 class TestLeverInformation(unittest.TestCase):
 
     def test__get_lever_detents(self):
-        detents = mi.get_lever_detents()
+        detents = at.get_lever_detents()
+        # All detents must be strings:
+        self.assertTrue(all(isinstance(d, str) for d in detents))
         # Must have a value for the retracted state:
         self.assertIn('0', detents)
         # No duplicates:
@@ -188,29 +187,29 @@ class TestLeverInformation(unittest.TestCase):
 
     def test__get_lever_map(self):
         # Ensure that we raise an exception if no valid arguments are provided:
-        self.assertRaises(KeyError, mi.get_lever_map, None, None, None)
-        self.assertRaises(KeyError, mi.get_lever_map, '', '', '')
+        self.assertRaises(KeyError, at.get_lever_map, None, None, None)
+        self.assertRaises(KeyError, at.get_lever_map, '', '', '')
         # Ensure we have what looks like a values mapping dictionary:
-        x = mi.get_lever_map(None, 'CRJ900', 'CRJ')
+        x = at.get_lever_map(None, 'Global Express XRS', 'Global')
         self.assertIsInstance(x, dict)
         self.assertTrue(all(isinstance(k, (float, int)) for k in x.iterkeys()))
         self.assertTrue(all(isinstance(v, str) for v in x.itervalues()))
 
     def test__get_lever_angles(self):
         # Ensure that we raise an exception if no valid arguments are provided:
-        self.assertRaises(KeyError, mi.get_lever_angles, None, None, None)
-        self.assertRaises(KeyError, mi.get_lever_angles, '', '', '')
+        self.assertRaises(KeyError, at.get_lever_angles, None, None, None)
+        self.assertRaises(KeyError, at.get_lever_angles, '', '', '')
         # Ensure that the provided key argument is correct:
-        args = (None, None, 'B787')
+        args = (None, None, 'Global')
         try:
             for key in ('both', 'state', 'value'):
-                mi.get_lever_angles(*args, key=key)
+                at.get_lever_angles(*args, key=key)
         except ValueError:
             self.fail('ValueError from get_lever_angles() for valid key.')
-        self.assertRaises(ValueError, mi.get_lever_angles, *args, key='invalid')
+        self.assertRaises(ValueError, at.get_lever_angles, *args, key='invalid')
         # Ensure that we get the expected structure returned:
         for key, types in ('both', tuple), ('state', str), ('value', (float, int)):
-            x = mi.get_lever_angles(None, None, 'Global', key=key)
+            x = at.get_lever_angles(None, None, 'Global', key=key)
             self.assertTrue(all(isinstance(v, types) for v in x.iterkeys()))
             self.assertTrue(all(isinstance(v, tuple) for v in x.itervalues()))
 
@@ -225,10 +224,22 @@ class TestLeverInformation(unittest.TestCase):
                 self.assertTrue(all(len(k) == 2 for k in x.iterkeys()))
                 self.assertTrue(all(len(v) == 2 for v in x.itervalues()))
                 # Ensure that the angles are found in related mappings:
-                length = len(x.itervalues().next())
                 s0 = set(v[0] for v in x.itervalues())
                 s1 = set(getattr(mi, 'SLAT_%s_MAP' % t)[name])
                 self.assertEqual(s0, s1, 'Broken slat values for %s' % name)
                 f0 = set(v[1] for v in x.itervalues())
                 f1 = set(getattr(mi, 'FLAP_%s_MAP' % t)[name])
                 self.assertEqual(f0, f1, 'Broken flap values for %s' % name)
+
+
+class TestStabilizerInformation(unittest.TestCase):
+
+    def test__get_stabilizer_limits(self):
+        # Ensure that we raise an exception if no valid arguments are provided:
+        self.assertRaises(KeyError, at.get_stabilizer_limits, None, None, None)
+        self.assertRaises(KeyError, at.get_stabilizer_limits, '', '', '')
+        # Ensure we have what looks like a values mapping dictionary:
+        x = at.get_stabilizer_limits(None, 'B737-600', 'B737 NG')
+        self.assertIsInstance(x, tuple)
+        self.assertTrue(all(isinstance(v, (float, int)) for v in x))
+        self.assertEqual(len(x), 2)
