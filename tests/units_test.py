@@ -11,15 +11,39 @@
 import unittest
 
 from decimal import Decimal
+from itertools import chain
 
-from flightdatautilities import units
+from flightdatautilities.units import *  # flake8: noqa
 
 
 ##############################################################################
 # Test Cases
 
 
-class TestConversion(unittest.TestCase):
+class TestUnitsModule(unittest.TestCase):
+
+    def test__check_definitions(self):
+
+        values = set(available())
+        constants =  set(available(values=False)[1])
+        # Check we have no redefinitions of units:
+        self.assertEqual(len(values), len(constants), 'Unit redefinition!')
+        # Check we have a category for every unit constant:
+        x = list(chain.from_iterable(UNIT_CATEGORIES.values()))
+        self.assertEqual(len(x), len(set(x)), 'Unit in multiple categories!')
+        self.assertItemsEqual(set(x), values)
+        # Check we have a description for every unit constant:
+        self.assertItemsEqual(set(UNIT_DESCRIPTIONS.keys()), values)
+        # Check we only correct to (and not from) standard units:
+        self.assertLessEqual(set(UNIT_CORRECTIONS.values()), values)
+        self.assertEqual(set(UNIT_CORRECTIONS.keys()) & values, set())
+        # Check we only convert to and from standard units:
+        self.assertLessEqual(set(STANDARD_CONVERSIONS.keys()), values)
+        self.assertLessEqual(set(STANDARD_CONVERSIONS.values()), values)
+        for mapping in CONVERSION_MULTIPLIERS, CONVERSION_FUNCTIONS:
+            for k, v in mapping.iteritems():
+                self.assertIn(k, values)
+                self.assertLessEqual(set(v.keys()), values)
 
     @unittest.skip('Test not implemented.')
     def test__normalise(self):
@@ -39,80 +63,93 @@ class TestConversion(unittest.TestCase):
     def test__convert(self):
 
         data = {
-            # Frequency:
-            (1, 'KHz', 'MHz'): 0.001,
-            (1, 'KHz', 'GHz'): 0.000001,
-            (1, 'MHz', 'KHz'): 1000.0,
-            (1, 'MHz', 'GHz'): 0.001,
-            (1, 'GHz', 'KHz'): 1000000.0,
-            (1, 'GHz', 'MHz'): 1000.0,
+            # Angles:
+            (1, DEGREE, RADIAN): 0.0174532925,
+            (1, RADIAN, DEGREE): 57.2957795,
             # Flow (Volume):
-            (1, 'lb/h', 'kg/h'): 0.453592,
-            (1, 'lb/h', 't/h'): 0.000453592,
-            (1, 'kg/h', 'lb/h'): 2.20462,
-            (1, 'kg/h', 't/h'): 0.001,
-            (1, 't/h', 'lb/h'): 2204.62,
-            (1, 't/h', 'kg/h'): 1000,
+            (1, LB_H, KG_H): 0.453592,
+            (1, LB_H, TONNE_H): 0.000453592,
+            (1, KG_H, LB_H): 2.20462,
+            (1, KG_H, TONNE_H): 0.001,
+            (1, TONNE_H, LB_H): 2204.62,
+            (1, TONNE_H, KG_H): 1000,
+            # Frequency:
+            (1, KHZ, MHZ): 0.001,
+            (1, KHZ, GHZ): 0.000001,
+            (1, MHZ, KHZ): 1000.0,
+            (1, MHZ, GHZ): 0.001,
+            (1, GHZ, KHZ): 1000000.0,
+            (1, GHZ, MHZ): 1000.0,
             # Length:
-            (1, 'ft', 'm'): 0.3048,
-            (1, 'ft', 'km'): 0.0003048,
-            (1, 'ft', 'mi'): 0.000189394,
-            (1, 'ft', 'nm'): 0.000164579,
-            (1, 'm', 'ft'): 3.28084,
-            (1, 'm', 'km'): 0.001,
-            (1, 'm', 'mi'): 0.000621371,
-            (1, 'm', 'nm'): 0.000539957,
-            (1, 'km', 'ft'): 3280.84,
-            (1, 'km', 'm'): 1000,
-            (1, 'km', 'mi'): 0.621371,
-            (1, 'km', 'nm'): 0.539957,
-            (1, 'mi', 'ft'): 5280,
-            (1, 'mi', 'm'): 1609.34,
-            (1, 'mi', 'km'): 1.60934,
-            (1, 'mi', 'nm'): 0.868976,
-            (1, 'nm', 'ft'): 6076.12,
-            (1, 'nm', 'm'): 1852,
-            (1, 'nm', 'km'): 1.852,
-            (1, 'nm', 'mi'): 1.15078,
+            (1, FT, METER): 0.3048,
+            (1, FT, KM): 0.0003048,
+            (1, FT, MILE): 0.000189394,
+            (1, FT, NM): 0.000164579,
+            (1, METER, FT): 3.28084,
+            (1, METER, KM): 0.001,
+            (1, METER, MILE): 0.000621371,
+            (1, METER, NM): 0.000539957,
+            (1, KM, FT): 3280.84,
+            (1, KM, METER): 1000,
+            (1, KM, MILE): 0.621371,
+            (1, KM, NM): 0.539957,
+            (1, MILE, FT): 5280,
+            (1, MILE, METER): 1609.34,
+            (1, MILE, KM): 1.60934,
+            (1, MILE, NM): 0.868976,
+            (1, NM, FT): 6076.12,
+            (1, NM, METER): 1852,
+            (1, NM, KM): 1.852,
+            (1, NM, MILE): 1.15078,
             # Mass:
-            (1, 'lb', 'kg'): 0.453592,
-            (1, 'lb', 't'): 0.000453592,
-            (1, 'kg', 'lb'): 2.20462,
-            (1, 'kg', 't'): 0.001,
-            (1, 't', 'lb'): 2204.62,
-            (1, 't', 'kg'): 1000,
+            (1, LB, KG): 0.453592,
+            (1, LB, TONNE): 0.000453592,
+            (1, KG, LB): 2.20462,
+            (1, KG, TONNE): 0.001,
+            (1, TONNE, LB): 2204.62,
+            (1, TONNE, KG): 1000,
             # Pressure:
-            (1, 'inHg', 'mB'): 33.86,
-            (1, 'inHg', 'psi'): 0.4910,         # Google: 0.49109778
-            (1, 'mB', 'inHg'): 0.029533,        # Google: 0.0295333727
-            (1, 'mB', 'psi'): 0.0145037738,
-            (1, 'psi', 'inHg'): 2.0362,         # Google: 2.03625437
-            (1, 'psi', 'mB'): 68.94757,         # Google: 68.9475729
+            (1, INHG, MILLIBAR): 33.86,
+            (1, INHG, PSI): 0.4910,             # Google: 0.49109778
+            (1, MILLIBAR, INHG): 0.029533,      # Google: 0.0295333727
+            (1, MILLIBAR, PSI): 0.0145037738,
+            (1, PSI, INHG): 2.0362,             # Google: 2.03625437
+            (1, PSI, MILLIBAR): 68.94757,       # Google: 68.9475729
             # Speed:
-            (1, 'kt', 'mph'): 1.15078,
-            (1, 'kt', 'fpm'): 101.2686,
-            (1, 'mph', 'kt'): 0.868976,
-            (1, 'mph', 'fpm'): 88.0002,
-            (1, 'fpm', 'kt'): 0.0098747300,
-            (1, 'fpm', 'mph'): 0.0113636364,
+            (1, KT, MPH): 1.15078,
+            (1, KT, FPM): 101.2686,
+            (1, MPH, KT): 0.868976,
+            (1, MPH, FPM): 88.0002,
+            (1, FPM, KT): 0.0098747300,
+            (1, FPM, MPH): 0.0113636364,
+            (1, FPM, FPS): 60.0,
+            (1, FPS, FPM): 0.016666666666666666,
             # Temperature:
-            (0, u'C', u'F'): 32,
-            (0, u'C', u'K'): 273.15,
-            (0, u'F', u'C'): -17.7778,
-            (0, u'F', u'K'): 255.372,
-            (0, u'K', u'C'): -273.15,
-            (0, u'K', u'F'): -459.67,
+            (0, CELSIUS, FAHRENHEIT): 32,
+            (0, CELSIUS, KELVIN): 273.15,
+            (0, FAHRENHEIT, CELSIUS): -17.7778,
+            (0, FAHRENHEIT, KELVIN): 255.372,
+            (0, KELVIN, CELSIUS): -273.15,
+            (0, KELVIN, FAHRENHEIT): -459.67,
             # Time:
-            (1, 'h', 'min'): 60,
-            (1, 'h', 's'): 3600,
-            (1, 'min', 'h'): 0.0166667,
-            (1, 'min', 's'): 60,
-            (1, 's', 'h'): 0.000277778,
-            (1, 's', 'min'): 0.0166667,
+            (1, HOUR, MINUTE): 60,
+            (1, HOUR, SECOND): 3600,
+            (1, MINUTE, HOUR): 0.0166667,
+            (1, MINUTE, SECOND): 60,
+            (1, SECOND, HOUR): 0.000277778,
+            (1, SECOND, MINUTE): 0.0166667,
+            # Volume:
+            (1, PINT, QUART): 0.5,
+            (1, QUART, PINT): 2,
             # Other:
-            (1, 'gs-ddm', 'dots'): 11.428571428571429,
-            (1, 'loc-ddm', 'dots'): 12.903225806451614,
-            (1, 'mV', 'dots'): 0.01333333333333333,
+            (1, GS_DDM, DOTS): 11.428571428571429,
+            (1, LOC_DDM, DOTS): 12.903225806451614,
+            (1, MILLIVOLT, DOTS): 0.01333333333333333,
+            (1, MICROAMP, DOTS): 0.01333333333333333,
+            (1, DOTS, GS_DDM): 0.0875,
+            (1, DOTS, LOC_DDM): 0.0775,
+            (1, DOTS, MILLIVOLT): 75,
+            (1, DOTS, MICROAMP): 75,
         }
 
         for arguments, expected in data.iteritems():
@@ -120,11 +157,11 @@ class TestConversion(unittest.TestCase):
             # Check forward conversion:
             i = arguments
             o = expected
-            self.assertAlmostEqual(units.convert(*i), o, places=dp)
+            self.assertAlmostEqual(convert(*i), o, places=dp)
             # Check backward conversion:
             i = [expected] + list(arguments)[:0:-1]
             o = arguments[0]
-            self.assertAlmostEqual(units.convert(*i), o, delta=0.001)
+            self.assertAlmostEqual(convert(*i), o, delta=0.001)
 
 
 ##############################################################################

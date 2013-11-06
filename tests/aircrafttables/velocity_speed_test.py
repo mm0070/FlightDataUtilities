@@ -13,7 +13,7 @@ Unit tests for aircraft velocity speed tables and functions.
 import inspect
 import unittest
 
-from flightdatautilities import aircrafttables as at
+from flightdatautilities import aircrafttables as at, units as ut
 from flightdatautilities.aircrafttables.interfaces import VelocitySpeed
 
 from flightdatautilities.aircrafttables import velocity_speed as vs
@@ -98,7 +98,7 @@ class TestVelocitySpeed(unittest.TestCase):
 
     def setUp(self):
         self.velocity_speed = VelocitySpeed()
-        self.velocity_speed.weight_unit = 't'
+        self.velocity_speed.weight_unit = ut.TONNE
         self.velocity_speed.tables = {
             'v2': {
                 'weight': (100, 110, 120, 130, 140, 150, 160, 170, 180, 190),

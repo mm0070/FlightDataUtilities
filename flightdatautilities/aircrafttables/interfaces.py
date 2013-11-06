@@ -17,7 +17,7 @@ from bisect import bisect_left
 
 import scipy.interpolate as interp
 
-from flightdatautilities import units
+from flightdatautilities import units as ut
 
 
 #############################################################################
@@ -48,7 +48,7 @@ class VelocitySpeed(object):
     interpolate = False
     minimum_speed = None
     source = None
-    weight_unit = 'kg'  # Can be one of 'lb', 'kg', 't' or None.
+    weight_unit = ut.KG  # Can be one of 'lb', 'kg', 't' or None.
 
     tables = {
         'v2': {'weight': ()},
@@ -162,7 +162,7 @@ class VelocitySpeed(object):
             return lookup[setting]
 
         # Convert the aircraft weight to match the lookup table:
-        weight = units.convert(weight, 'kg', self.weight_unit)
+        weight = ut.convert(weight, ut.KG, self.weight_unit)
 
         wt = lookup['weight']
         if not min(wt) <= weight <= max(wt) or weight is np.ma.masked:

@@ -31,6 +31,7 @@ When deciding on the table to select, we use the following order of precedence:
 # Imports
 
 
+from flightdatautilities import units as ut
 from flightdatautilities.aircrafttables.interfaces import VelocitySpeed
 
 
@@ -44,7 +45,7 @@ class B737_300(VelocitySpeed):
     '''
     interpolate = True
     source = 'FDS Customer 109: 737 FCOM'
-    weight_unit = 't'
+    weight_unit = ut.TONNE
     tables = {
         'v2': {
             'weight': ( 35,  40,  45,  50,  55,  60,  65),
