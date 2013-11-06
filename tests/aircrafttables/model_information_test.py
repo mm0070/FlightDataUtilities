@@ -194,6 +194,7 @@ class TestLeverInformation(unittest.TestCase):
         self.assertIsInstance(x, dict)
         self.assertTrue(all(isinstance(k, (float, int)) for k in x.iterkeys()))
         self.assertTrue(all(isinstance(v, str) for v in x.itervalues()))
+        # what about just checking the results?! why so abstract?!!
 
     def test__get_lever_angles(self):
         # Ensure that we raise an exception if no valid arguments are provided:
@@ -212,6 +213,7 @@ class TestLeverInformation(unittest.TestCase):
             x = at.get_lever_angles(None, None, 'Global', key=key)
             self.assertTrue(all(isinstance(v, types) for v in x.iterkeys()))
             self.assertTrue(all(isinstance(v, tuple) for v in x.itervalues()))
+            
 
     def test__lever_maps_integrity(self):
         for t in 'MODEL', 'SERIES', 'FAMILY':
@@ -222,7 +224,7 @@ class TestLeverInformation(unittest.TestCase):
                 self.assertTrue(all(isinstance(k, tuple) for k in x.iterkeys()))
                 self.assertTrue(all(isinstance(v, tuple) for v in x.itervalues()))
                 self.assertTrue(all(len(k) == 2 for k in x.iterkeys()))
-                self.assertTrue(all(len(v) == 2 for v in x.itervalues()))
+                self.assertTrue(all(len(v) == 3 for v in x.itervalues()))
                 # Ensure that the angles are found in related mappings:
                 s0 = set(v[0] for v in x.itervalues())
                 s1 = set(getattr(mi, 'SLAT_%s_MAP' % t)[name])

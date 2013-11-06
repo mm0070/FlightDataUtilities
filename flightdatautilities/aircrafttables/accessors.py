@@ -112,6 +112,7 @@ def get_lever_detents():
     detents = set(map(str, get_flap_detents()))  # initialise with flap detents
     for x in mi.LEVER_MODEL_MAP, mi.LEVER_SERIES_MAP, mi.LEVER_FAMILY_MAP:
         detents.update(chain.from_iterable(imap(extract, x.itervalues())))
+    detents.update(constants.LEVER_STATES.values()) # Include Conf Lever states
     return sortext.nsorted(detents)
 
 
@@ -339,6 +340,7 @@ def get_lever_angles(model=None, series=None, family=None, key='state'):
 
         {state: (slat, flap), ...}
         {value: (slat, flap), ...}
+        {state: (slat, flap, aileron), ...}
         {(value, state): (slat, flap), ...}
 
     :param model: Aircraft series e.g. B737-333
@@ -362,18 +364,20 @@ def get_lever_angles(model=None, series=None, family=None, key='state'):
     for k, m in izip(keys, maps):
         if k not in m:
             continue
+        d = m[k]        
         if key == 'both':
-            return m[k]
+            return d
         if key == 'state':
-            return {x[1]: v for x, v in m[k].iteritems()}
+            return {x[1]: v for x, v in d.iteritems()}
         if key == 'value':
-            return {x[0]: v for x, v in m[k].iteritems()}
-
+            return {x[0]: v for x, v in d.iteritems()}
+        
     # Fallback to using the flap mapping if no lever mapping:
     try:
         both = get_flap_map(model, series, family).items()
         values, states = zip(*both)
-        angles = zip([None] * len(values), values)
+        #             None slat            flap     None flaperon
+        angles = zip([None] * len(values), values, [None] * len(values))
     except KeyError:
         pass  # fall through to display message defined below...
     else:

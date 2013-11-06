@@ -109,7 +109,7 @@ AILERON_FAMILY_MAP = {
 #
 #   {
 #       'name': {
-#           'state': (slat, flap, aileron),
+#           'state': (slat, flap, flaperon),
 #           ...
 #       },
 #       ...
@@ -121,12 +121,12 @@ AILERON_FAMILY_MAP = {
 #   - state:    name of the state for the configuration parameter. (string)
 #   - slat:     slat angle in degrees for the state. (float or integer)
 #   - flap:     flap angle in degrees for the state. (float or integer)
-#   - aileron:  aileron angle in degrees for the state. (float or integer)
+#   - flaperon: aileron angle in degrees for the state. (float or integer)
 #
 # Additional import notes to follow:
 #
-#   - The aileron value is optional if the aircraft doesn't use it.
-#   - If not using aileron, to determine conf, only create a tuple of length 2.
+#   - The flaperon value is optional if the aircraft doesn't use it.
+#   - If not using flaperon, to determine conf, fill with None
 
 
 CONF_MODEL_MAP = {}
@@ -179,11 +179,11 @@ LEVER_SERIES_MAP = {}
 
 LEVER_FAMILY_MAP = {
     'Global': {
-        (0,  '0'):    (0, 0),      # FAA TCDS T00003NY Rev 16 & Smart Cockpit Global 5000 Flight Controls
-        (1,  '0+S'):  (20, 0),     # FAA TCDS T00003NY Rev 16 & Smart Cockpit Global 5000 Flight Controls
-        (6,  '6'):    (20, 6),     # FAA TCDS T00003NY Rev 16 & Smart Cockpit Global 5000 Flight Controls
-        (16, '16'):   (20, 16),    # FAA TCDS T00003NY Rev 16 & Smart Cockpit Global 5000 Flight Controls
-        (30, '30'):   (20, 30),    # FAA TCDS T00003NY Rev 16 & Smart Cockpit Global 5000 Flight Controls
+        (0,  '0'):    (0, 0, None),      # FAA TCDS T00003NY Rev 16 & Smart Cockpit Global 5000 Flight Controls
+        (1,  '0+S'):  (20, 0, None),     # FAA TCDS T00003NY Rev 16 & Smart Cockpit Global 5000 Flight Controls
+        (6,  '6'):    (20, 6, None),     # FAA TCDS T00003NY Rev 16 & Smart Cockpit Global 5000 Flight Controls
+        (16, '16'):   (20, 16, None),    # FAA TCDS T00003NY Rev 16 & Smart Cockpit Global 5000 Flight Controls
+        (30, '30'):   (20, 30, None),    # FAA TCDS T00003NY Rev 16 & Smart Cockpit Global 5000 Flight Controls
     },
 }
 
