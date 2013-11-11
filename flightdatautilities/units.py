@@ -323,6 +323,7 @@ STANDARD_CONVERSIONS = {
     # Angle:
     RADIAN: DEGREE,
     # Electricity:
+    MICROAMP: DOTS,
     MILLIVOLT: DOTS,
     # Flow (Volume):
     LB_H: KG_H,
