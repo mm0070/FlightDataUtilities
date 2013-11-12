@@ -46,6 +46,7 @@ VOLT = 'V'
 KVA = 'kVA'
 OHM = 'ohm'  # [1]
 MILLIVOLT = 'mV'
+MILLIAMP = 'mA'
 MICROAMP = 'uA'  # [1]
 
 # Flow (Volume):
@@ -385,6 +386,8 @@ UNIT_CORRECTIONS = {
     'millivolts': MILLIVOLT,
     'ua': MICROAMP,
     'microamps': MICROAMP,
+    'ma': MILLIAMP,
+    'milliamps': MILLIAMP,
     # Flow (Volume):
     'lb/hr': LB_H,
     'lbs/h': LB_H,
@@ -668,7 +671,7 @@ UNIT_CORRECTIONS = {
 UNIT_CATEGORIES = {
     'Acceleration': (G, RMS_G),
     'Angles': (DEGREE, RADIAN, DEGREE_S),
-    'Electricity': (AMP, VOLT, KVA, OHM, MILLIVOLT, MICROAMP),
+    'Electricity': (AMP, VOLT, KVA, OHM, MILLIVOLT, MICROAMP, MILLIAMP),
     'Flow (Volume)': (LB_H, KG_H, TONNE_H),
     'Force': (LBF, NEWTON),
     'Frequency': (HZ, KHZ, MHZ, GHZ),
@@ -698,6 +701,7 @@ UNIT_DESCRIPTIONS = {
     KVA: 'kilovolt-amps',
     OHM: 'ohms',
     MILLIVOLT: 'millivolts',
+    MILLIAMP: 'milliamperes',
     MICROAMP: 'microamperes',
     # Flow (Volume):
     LB_H: 'pounds per hour',
