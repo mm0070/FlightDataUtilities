@@ -94,37 +94,51 @@ def dmap(f, d):
     return dict(f(k, v) for k, v in d.iteritems())
 
 
-def dmerge(x, y):
+def dmerge(x, y, overwrite=()):
     '''
     Deep merges dictionary ``y`` into dictionary ``x``.
 
     If a key from ``y`` exists in ``x``, the value of ``y`` is used unless both
     values are dictionaries that can be merged.
 
+    The ``overwrite`` option allows for a list of keys in the nested dictionary
+    that should not be merged at any level, merely overwritten.
+
+    Beware! Although objects are merged, they may not be copied and thus are
+    shared references into the original dictionary that was merged in.
+
     :param x: The dictionary to recursively merge into.
     :type x: dict
     :param y: The dictionary to be merged in.
     :type y: dict
+    :param overwrite: A list of keys where the value should be overwritten.
+    :type overwrite: list or tuple
     '''
 
     if not isinstance(x, dict) or not isinstance(y, dict):
         raise TypeError('Arguments must be dictionaries.')
     for k, v in y.iteritems():
-        if isinstance(v, dict) and k in x.keys() and isinstance(x[k], dict):
-            dmerge(x[k], v)
-        else:
+        if not isinstance(v, dict):
             x[k] = v
+        elif k not in x.keys():
+            x[k] = v.copy()
+        elif not isinstance(x[k], dict):
+            x[k] = v.copy()
+        elif k in overwrite:
+            x[k] = v.copy()
+        else:
+            dmerge(x[k], v, overwrite=overwrite)
     return x
-            
-            
+
+
 def flatten_list_of_dicts(ld, merge_key):
     '''
-    Useful for django creating a single dictionary from queryset.values() 
+    Useful for django creating a single dictionary from queryset.values()
     list of dicts.
-    
-    If merge key is not unique, it will be overidden. Merge key will remain 
+
+    If merge key is not unique, it will be overidden. Merge key will remain
     within original dict. Raises KeyError if merge_key not present in all dicts
-    
+
     :param ld: List of dictionaries to merge
     :type ld: list of dict
     :param merge_key: Key which must be present in all dicts
@@ -159,7 +173,7 @@ def dict_filter(d, keep=None, remove=None):
                 pass
             return x
         return new_dict
-    
+
     if keep and remove:
         raise ValueError('Cannot keep and remove at the same time!')
     if keep:
@@ -170,9 +184,9 @@ def dict_filter(d, keep=None, remove=None):
         return_dict = dfilter(f, d)
     else:
         return_dict = d
-    
+
     # return return_dict # Was the end
-    
+
     # Extract the wildcard entries from d
     import re
     new_dict={}
@@ -186,10 +200,10 @@ def dict_filter(d, keep=None, remove=None):
                 pos = wild_one.match(thiskey)
                 if pos:
                     wildkey = key.replace("(*)","\\(\\*\\)") # This format for re()
-                    new_dict[thiskey]=replace_down(d[key], wildkey, thiskey) 
-    
+                    new_dict[thiskey]=replace_down(d[key], wildkey, thiskey)
+
     return dict(return_dict.items() + new_dict.items())
-    
+
 
 
 
