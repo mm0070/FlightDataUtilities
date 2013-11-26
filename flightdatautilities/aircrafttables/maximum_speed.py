@@ -34,7 +34,7 @@ from flightdatautilities.aircrafttables.interfaces import MaximumSpeed_Fixed
 #   - MaximumSpeed_Fixed:  integer or float.
 #   - MaximumSpeed_Range:  (low, high, value) where low to high is the altitude
 #                          range and value is an integer or float.
-# 
+#
 # Passing None instead will result in a masked zero array being returned.
 #
 # Passing an empty args tuple () is equivalent to (None, None).

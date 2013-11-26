@@ -213,7 +213,6 @@ class TestLeverInformation(unittest.TestCase):
             x = at.get_lever_angles(None, None, 'Global', key=key)
             self.assertTrue(all(isinstance(v, types) for v in x.iterkeys()))
             self.assertTrue(all(isinstance(v, tuple) for v in x.itervalues()))
-            
 
     def test__lever_maps_integrity(self):
         for t in 'MODEL', 'SERIES', 'FAMILY':
