@@ -334,7 +334,7 @@ def get_conf_angles(model=None, series=None, family=None, key='state'):
 
 def get_lever_angles(model=None, series=None, family=None, key='state'):
     '''
-    Accessor for fetching conf mapping parameters.
+    Accessor for fetching lever mapping parameters.
 
     Returns a dictionary in one of the followng forms::
 
@@ -393,7 +393,7 @@ def get_lever_angles(model=None, series=None, family=None, key='state'):
 
 
 ########################################
-# Limit Mappings
+# Stabilizer Limit Mappings
 
 
 def get_stabilizer_limits(model=None, series=None, family=None):
