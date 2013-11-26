@@ -35,6 +35,9 @@ PARAMETER_CORRECTIONS = {
     'Eng (*) Thrust Reverser In Transit': {1: 'In Transit'},
     'Eng (*) Thrust Reverser Unlocked': {1: 'Unlocked'},
     'Event Marker': {1: 'Event'},
+    'Flap Load Relief': {0: 'Normal', 1: 'Load Relief'},
+    'Flap Alternate Armed': {1: 'Armed'},  # FIXME: Add {0: 'Not Armed'}?
+    'Slat Alternate Armed': {1: 'Armed'},  # FIXME: Add {0: 'Not Armed'}?
     'Gear (*) Down': {1: 'Down', 0: 'Up'},
     'Gear (*) In Air': {1: 'Air', 0: 'Ground'},
     'Gear (*) On Ground': {1: 'Ground', 0: 'Air'},
