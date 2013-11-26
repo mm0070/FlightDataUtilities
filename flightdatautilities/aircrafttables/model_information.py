@@ -213,3 +213,40 @@ STABILIZER_SERIES_MAP = {
 
 
 STABILIZER_FAMILY_MAP = {}
+
+
+#############################################################################
+# Airbrake Coefficient
+
+# The format for the following mappings should match the following:
+#
+#   {
+#       'name': {
+#           'state': value,
+#           ...
+#       },
+#       ...
+#   }
+#
+# Where the arguments should abide by the following:
+#
+#   - name:   model, series or family name of the aircraft. (string)
+#   - state:  a configuration state name. (string)
+#   - value:  airbrake coefficient for the configuration state. (float)
+
+
+KAF_MODEL_MAP = {}
+
+
+KAF_SERIES_MAP = {}
+
+
+KAF_FAMILY_MAP = {
+    'A330': {
+        '1':    0.0000,     # FIXME: Lookup correct value as example...
+        '1+F':  0.0000,     # FIXME: Lookup correct value as example...
+        '2':    0.0000,     # FIXME: Lookup correct value as example...
+        '3':    0.0000,     # FIXME: Lookup correct value as example...
+        'Full': 0.0000,     # FIXME: Lookup correct value as example...
+    },
+}

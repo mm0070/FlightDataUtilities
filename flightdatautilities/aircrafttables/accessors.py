@@ -425,6 +425,39 @@ def get_stabilizer_limits(model=None, series=None, family=None):
     raise KeyError(message % keys)
 
 
+########################################
+# Airbrake Coefficient Mappings
+
+
+def get_kaf_map(model=None, series=None, family=None):
+    '''
+    Accessor for fetching airbrake coefficients.
+
+    Returns a dictionary in the following form::
+
+        {state: value, ...}
+
+    :param model: Aircraft series e.g. A340-555
+    :type model: string
+    :param series: Aircraft series e.g. A340-500
+    :type series: string
+    :param family: Aircraft family e.g. A340
+    :type family: string
+    :raises: KeyError if no mapping found
+    :returns: mapping of state to airbrake coefficient values
+    :rtype: dict
+    '''
+    keys = model, series, family
+    maps = mi.KAF_MODEL_MAP, mi.KAF_SERIES_MAP, mi.KAF_FAMILY_MAP
+
+    for k, m in izip(keys, maps):
+        if k in m:
+            return m[k]
+
+    message = "No airbrake coefficients for model '%s', series '%s', family '%s'."
+    raise KeyError(message % keys)
+
+
 ##############################################################################
 # Velocity Speed Accessors
 
