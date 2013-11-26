@@ -60,3 +60,16 @@ CONF_TO_LEVER = {
 ####'SF2':  LEVER_STATES[2],
 ####'SF3':  LEVER_STATES[3],
 }
+
+
+# Mapping to next configuration state for looking up the next VFE:
+CONF_VFE_NEXT_STATE = {
+    '0':    '1',     # Based on values in A320/A321 AFPS
+    '1':    '1+F',   # Based on values in A320/A321 AFPS
+    '1+F':  '2',     # Based on values in A320/A321 AFPS
+    '1*':   '2',     # Based on values in A320/A321 AFPS
+    '2':    '3',     # Based on values in A320/A321 AFPS
+    '2*':   '3',     # Based on values in A320/A321 AFPS
+    '3':    'Full',  # Based on values in A320/A321 AFPS
+    'Full': None,    # Based on values in A320/A321 AFPS; -30kt
+}
