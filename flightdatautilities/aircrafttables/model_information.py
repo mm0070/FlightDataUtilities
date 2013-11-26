@@ -250,3 +250,49 @@ KAF_FAMILY_MAP = {
         'Full': 0.0000,     # FIXME: Lookup correct value as example...
     },
 }
+
+
+#############################################################################
+# VLS1g Constant
+
+# The format for the following mappings should match the following:
+#
+#   {
+#       'name': {
+#           'engine': {
+#               'state': value,
+#               ...
+#            },
+#            ...
+#       },
+#       ...
+#   }
+#
+# Where the arguments should abide by the following:
+#
+#   - name:    model, series or family name of the aircraft. (string)
+#   - engine:  manufacturer name of the engine. (string)
+#   - state:   a configuration state name. (string)
+#   - value:   VLS1g constant for the configuration state. (float)
+
+
+VLS1G_MODEL_MAP = {}
+
+
+VLS1G_SERIES_MAP = {}
+
+
+VLS1G_FAMILY_MAP = {
+    'A330': {
+        'Rolls Royce': {
+            '0':    10.950,  # A320/A321 AFPS
+            '1':     9.820,  # A320/A321 AFPS
+            '1+F':   9.180,  # A320/A321 AFPS
+            '1*':    8.920,  # A320/A321 AFPS
+            '2':     8.650,  # A320/A321 AFPS
+            '2*':    8.540,  # A320/A321 AFPS
+            '3':     8.420,  # A320/A321 AFPS
+            'Full':  8.160,  # A320/A321 AFPS
+        },
+    },
+}

@@ -458,6 +458,39 @@ def get_kaf_map(model=None, series=None, family=None):
     raise KeyError(message % keys)
 
 
+########################################
+# VLS1g Mappings
+
+
+def get_vls1g_map(model=None, series=None, family=None, engine_manufacturer=None):
+    '''
+    Accessor for fetching VLS1g constants.
+
+    Returns a dictionary in the following form::
+
+        {state: value, ...}
+
+    :param model: Aircraft series e.g. A340-555
+    :type model: string
+    :param series: Aircraft series e.g. A340-500
+    :type series: string
+    :param family: Aircraft family e.g. A340
+    :type family: string
+    :raises: KeyError if no mapping found
+    :returns: mapping of state to VLS1g constant values
+    :rtype: dict
+    '''
+    keys = model, series, family
+    maps = mi.VLS1G_MODEL_MAP, mi.VLS1G_SERIES_MAP, mi.VLS1G_FAMILY_MAP
+
+    for k, m in izip(keys, maps):
+        if k in m and engine_manufacturer in m[k]:
+            return m[k][engine_manufacturer]
+
+    message = "No VLS1g constant for model '%s', series '%s', family '%s'."
+    raise KeyError(message % keys)
+
+
 ##############################################################################
 # Velocity Speed Accessors
 
