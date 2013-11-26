@@ -13,6 +13,8 @@
 # - Configuration parameter in Flight Data Analyser
 # - Updating the multi-states in LFLs.
 
+
+# Mapping of value to configuration states (for use by Airbus):
 AVAILABLE_CONF_STATES = {
     0: '0',
     1: '1',
@@ -25,10 +27,13 @@ AVAILABLE_CONF_STATES = {
     8: '5',
     9: 'Full',
 }
-# The reverse lookup
-AVAILABLE_CONF_STATES_REV = dict((v, k) for k, v in AVAILABLE_CONF_STATES.items())
 
-# Mapping of Airbus CONF to Lever positions (can be used by Falcon etc. too)
+
+# Reverse mapping of value to configuration states (for use by Airbus):
+AVAILABLE_CONF_STATES_REV = {v: k for k, v in AVAILABLE_CONF_STATES.items()}
+
+
+# Mapping of value to lever positions (for use by Airbus/Falcon):
 LEVER_STATES = {
     0: 'Lever 0',
     1: 'Lever 1',
@@ -36,19 +41,22 @@ LEVER_STATES = {
     3: 'Lever 3',
     4: 'Lever Full',
 }
+
+
+# Mapping of configuration state to lever positions:
 CONF_TO_LEVER = {
     # Airbus:
-    '0'   : LEVER_STATES[0],
-    '1'   : LEVER_STATES[1],
-    '1+F' : LEVER_STATES[1],
-    '1*'  : LEVER_STATES[2], # Lever is in position 2 when aircraft selects 1*
-    '2'   : LEVER_STATES[2],
-    '2*'  : LEVER_STATES[3], # Lever is in position 3 when aircraft selects 2*
-    '3'   : LEVER_STATES[3],
+    '0':    LEVER_STATES[0],
+    '1':    LEVER_STATES[1],
+    '1+F':  LEVER_STATES[1],
+    '1*':   LEVER_STATES[2],  # Lever position is 2 when aircraft selects 1*
+    '2':    LEVER_STATES[2],
+    '2*':   LEVER_STATES[3],  # Lever position is 3 when aircraft selects 2*
+    '3':    LEVER_STATES[3],
     'Full': LEVER_STATES[4],
-    # Falcon:
-    ##'SF0': LEVER_STATES[0],
-    ##'SF1': LEVER_STATES[1],
-    ##'SF2': LEVER_STATES[2],
-    ##'SF3': LEVER_STATES[3],
+##### Falcon:
+####'SF0':  LEVER_STATES[0],
+####'SF1':  LEVER_STATES[1],
+####'SF2':  LEVER_STATES[2],
+####'SF3':  LEVER_STATES[3],
 }
