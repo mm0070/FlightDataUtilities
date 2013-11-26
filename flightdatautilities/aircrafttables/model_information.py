@@ -296,3 +296,70 @@ VLS1G_FAMILY_MAP = {
         },
     },
 }
+
+
+##############################################################################
+# (Recommended) Flap Manoeuvring Speed Tables
+
+# The format for the following mappings should match the following:
+#
+#   {
+#       'name': {
+#           'state': value,
+#           ...
+#       },
+#       ...
+#   }
+#
+# Where the arguments should abide by the following:
+#
+#   - name:   model, series or family name of the aircraft. (string)
+#   - state:  a flap state name. (string)
+#   - value:  arguments for determining flap manoeuvring speed. (mixed)
+#
+# The format of value is one of the following:
+#
+#   - (detent, offset)
+#   - ((min_wt, max_wt, speed), ...)
+#
+# Where the parameters are:
+#
+#   - detent: flap detent for vref lookup table, e.g. '30' --> Vref30 (string)
+#   - offset: a speed offset to apply in knots (integer)
+#   - min_wt: the lower end of a weight range (integer)
+#   - max_wt: the upper end of a weight range (integer)
+#   - speed:  a fixed speed value to be used for the weight range (integer)
+#
+# None can be specified for the value where a flap setting is unavailable.
+#
+# None can be used to specify that one side of a weight range is unbounded.
+
+
+FMS_MODEL_MAP = {}
+
+
+FMS_SERIES_MAP = {}
+
+
+FMS_FAMILY_MAP = {
+    'B737 Classic': {
+        # Weight Ranges:
+        # kg: (w <=  53070,  53070 < w <=  62823,  62823 < w)
+        # lb: (w <= 117000, 117000 < w <= 138500, 138500 < w)
+        # Applicable to aircraft with the following installed:
+        # - Rudder Pressure Reducer (RDR)
+        # - Rudder System Enhancement Program (RSEP)
+        # Adjustments for aircraft without modifications:
+        # - Add 10 kt for flap 0, 1 & 5 if RDR deactivated or not installed.
+        # - Add 10 kt for flap 5 & 10 if RSEP deactivated or not installed.
+        '0':  ((None, 53070, 210), (53070, 62823, 220), (62823, None, 230)),    # B737 FCTM
+        '1':  ((None, 53070, 190), (53070, 62823, 200), (62823, None, 210)),    # B737 FCTM
+        '2':  None,                                                             # Not defined...
+        '5':  ((None, 53070, 170), (53070, 62823, 180), (62823, None, 190)),    # B737 FCTM
+        '10': ((None, 53070, 160), (53070, 62823, 170), (62823, None, 180)),    # B737 FCTM
+        '15': ((None, 53070, 150), (53070, 62823, 160), (62823, None, 170)),    # B737 FCTM
+        '25': ((None, 53070, 140), (53070, 62823, 150), (62823, None, 160)),    # B737 FCTM
+        '30': ('30', 0),                                                        # B737 FCTM
+        '40': ('40', 0),                                                        # B737 FCTM
+    },
+}

@@ -491,6 +491,39 @@ def get_vls1g_map(model=None, series=None, family=None, engine_manufacturer=None
     raise KeyError(message % keys)
 
 
+########################################
+# Flap Manoeuvring Speed Mappings
+
+
+def get_fms_map(model=None, series=None, family=None):
+    '''
+    Accessor for fetching flap manoeuvring speed tables.
+
+    Returns a dictionary in the following form::
+
+        {state: value, ...}
+
+    :param model: Aircraft series e.g. B737-333
+    :type model: string
+    :param series: Aircraft series e.g. B737-300
+    :type series: string
+    :param family: Aircraft family e.g. B737 Classic
+    :type family: string
+    :raises: KeyError if no mapping found
+    :returns: mapping of state to flap manoeuvring speed parameters
+    :rtype: dict
+    '''
+    keys = model, series, family
+    maps = mi.FMS_MODEL_MAP, mi.FMS_SERIES_MAP, mi.FMS_FAMILY_MAP
+
+    for k, m in izip(keys, maps):
+        if k in m:
+            return m[k]
+
+    message = "No flap manoeuvring speed table for model '%s', series '%s', family '%s'."
+    raise KeyError(message % keys)
+
+
 ##############################################################################
 # Velocity Speed Accessors
 
