@@ -15,7 +15,7 @@ def dcompact(d):
     :rtype: dict
     '''
     # New output dictionary:
-    o = {}
+    o = d.__class__()
 
     # Filter out any unset/empty values in the dictionary:
     for k, v in d.iteritems():
@@ -48,7 +48,7 @@ def dflatten(d, glue=' ', manipulate=lambda k: k):
     :rtype: dict
     '''
     # New output dictionary:
-    o = {}
+    o = d.__class__()
 
     # Loop over dictionary items and recursively flatten:
     for k0, v0 in d.iteritems():
@@ -77,7 +77,7 @@ def dfilter(f, d):
     :return: A dictionary filtered according to the specified filter function.
     :rtype: dict
     '''
-    return dict((k, v) for k, v in d.iteritems() if f(k, v))
+    return d.__class__((k, v) for k, v in d.iteritems() if f(k, v))
 
 
 def dmap(f, d):
@@ -91,7 +91,7 @@ def dmap(f, d):
     :return: A dictionary where values have been mapped by the function.
     :rtype: dict
     '''
-    return dict(f(k, v) for k, v in d.iteritems())
+    return d.__class__(f(k, v) for k, v in d.iteritems())
 
 
 def dmerge(x, y, overwrite=()):
