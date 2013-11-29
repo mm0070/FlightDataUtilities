@@ -144,8 +144,7 @@ def flatten_list_of_dicts(ld, merge_key):
     :param merge_key: Key which must be present in all dicts
     :type merge_key: object
     '''
-    #py2.7+ use: return {d[merge_key] : d for d in ld}
-    return dict(((d[merge_key], d) for d in ld))
+    return {d[merge_key]: d for d in ld}
 
 
 # XXX: Deprecated: Badly engineered - just use dfilter() above!
@@ -203,8 +202,6 @@ def dict_filter(d, keep=None, remove=None):
                     new_dict[thiskey]=replace_down(d[key], wildkey, thiskey)
 
     return dict(return_dict.items() + new_dict.items())
-
-
 
 
 ################################################################################
