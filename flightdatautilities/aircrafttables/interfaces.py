@@ -142,7 +142,7 @@ class VelocitySpeed(object):
         :raises: ValueError -- when weight units cannot be converted.
         '''
         # Attempt to coerce the setting value if it isn't a string:
-        if not isinstance(setting, str):
+        if not isinstance(setting, basestring):
             msg = "Non-string detent provided - %r - attempting to coerce..."
             logger.warning(msg, setting)
             if isinstance(setting, float) and setting.is_integer():
