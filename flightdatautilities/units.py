@@ -56,6 +56,8 @@ TONNE_H = 't/h'
 
 # Force:
 LBF = 'lbf'
+KGF = 'kgf'
+DECANEWTON = 'daN'
 NEWTON = 'N'
 
 # Frequency:
@@ -144,6 +146,27 @@ CONVERSION_MULTIPLIERS = {
     TONNE_H: {
         LB_H: 2204.622621849,
         KG_H: 1000.0,
+    },
+    # Force:
+    LBF: {
+        KGF: 0.45359237,
+        DECANEWTON: 0.444822162,
+        NEWTON: 4.44822162,
+    },
+    KGF: {
+        LBF: 2.20462262,
+        DECANEWTON: 0.980665,
+        NEWTON: 9.80665,
+    },
+    DECANEWTON: {
+        LBF: 2.24808943,
+        KGF: 1.01971621,
+        NEWTON: 10,
+    },
+    NEWTON: {
+        LBF: 0.224808943,
+        KGF: 0.101971621,
+        DECANEWTON: 0.1,
     },
     # Frequency:
     HZ: {
@@ -329,6 +352,9 @@ STANDARD_CONVERSIONS = {
     # Flow (Volume):
     LB_H: KG_H,
     TONNE_H: KG_H,
+    # Force:
+    LBF: DECANEWTON,
+    KGF: DECANEWTON,
     # Length:
     MILE: NM,
     # Mass:
@@ -414,6 +440,12 @@ UNIT_CORRECTIONS = {
     'tonnes/hr': TONNE_H,
     # Force:
     'pound-force': LBF,
+    'kilogram-force': KGF,
+    'kilopond': KGF,
+    'kp': KGF,
+    'decanewton': DECANEWTON,
+    'dan': DECANEWTON,
+    'DAN': DECANEWTON,
     'Newton': NEWTON,
     'newton': NEWTON,
     'n': NEWTON,
@@ -673,7 +705,7 @@ UNIT_CATEGORIES = {
     'Angles': (DEGREE, RADIAN, DEGREE_S),
     'Electricity': (AMP, VOLT, KVA, OHM, MILLIVOLT, MICROAMP, MILLIAMP),
     'Flow (Volume)': (LB_H, KG_H, TONNE_H),
-    'Force': (LBF, NEWTON),
+    'Force': (LBF, KGF, DECANEWTON, NEWTON),
     'Frequency': (HZ, KHZ, MHZ, GHZ),
     'Length': (FT, METER, KM, MILE, NM, INCH),
     'Mass': (LB, KG, TONNE),
@@ -709,6 +741,8 @@ UNIT_DESCRIPTIONS = {
     TONNE_H: 'tonnes per hour',
     # Force:
     LBF: 'pound-force',
+    KGF: 'kilogram-force',
+    DECANEWTON: 'decanewton',
     NEWTON: 'Newton',
     # Frequency:
     HZ: 'hertz',

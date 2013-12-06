@@ -73,6 +73,19 @@ class TestUnitsModule(unittest.TestCase):
             (1, KG_H, TONNE_H): 0.001,
             (1, TONNE_H, LB_H): 2204.62,
             (1, TONNE_H, KG_H): 1000,
+            # Force:
+            (1, LBF, KGF): 0.45359237,
+            (1, LBF, DECANEWTON): 0.444822162,
+            (1, LBF, NEWTON): 4.44822162,
+            (1, KGF, LBF): 2.20462262,
+            (1, KGF, DECANEWTON): 0.980665,
+            (1, KGF, NEWTON): 9.80665,
+            (1, DECANEWTON, LBF): 2.24808943,
+            (1, DECANEWTON, KGF): 1.01971621,
+            (1, DECANEWTON, NEWTON): 10,
+            (1, NEWTON, LBF): 0.224808943,
+            (1, NEWTON, KGF): 0.101971621,
+            (1, NEWTON, DECANEWTON): 0.1,
             # Frequency:
             (1, KHZ, MHZ): 0.001,
             (1, KHZ, GHZ): 0.000001,
@@ -157,11 +170,13 @@ class TestUnitsModule(unittest.TestCase):
             # Check forward conversion:
             i = arguments
             o = expected
-            self.assertAlmostEqual(convert(*i), o, places=dp)
+            m = 'Invalid conversion from %s --> %s' % i[1:]
+            self.assertAlmostEqual(convert(*i), o, places=dp, msg=m)
             # Check backward conversion:
-            i = [expected] + list(arguments)[:0:-1]
+            i = tuple([expected] + list(arguments)[:0:-1])
             o = arguments[0]
-            self.assertAlmostEqual(convert(*i), o, delta=0.001)
+            m = 'Invalid reverse conversion from %s --> %s' % i[1:]
+            self.assertAlmostEqual(convert(*i), o, delta=0.001, msg=m)
 
 
 ##############################################################################
