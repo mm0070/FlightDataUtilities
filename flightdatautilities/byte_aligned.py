@@ -18,6 +18,56 @@ ORDINAL = ('first', 'second', 'third', 'fourth')
 SUPPORTED_WPS = [64, 128, 256, 512, 1024, 2048]
 
 
+def check_sync(file_obj, wps, word_index, pattern_name):
+    '''
+    Check sync words in the array.
+
+    Performs analysis of sync words in the file to check if there are no
+    sync problems.
+    '''
+    array = np.fromfile(file_obj, dtype=np.short)
+
+    array &= 0xFFF
+
+    s1 = np.array(
+        np.nonzero(array == SYNC_PATTERNS[pattern_name][0])).flatten()
+    s2 = np.array(
+        np.nonzero(array == SYNC_PATTERNS[pattern_name][1])).flatten()
+    s3 = np.array(
+        np.nonzero(array == SYNC_PATTERNS[pattern_name][2])).flatten()
+    s4 = np.array(
+        np.nonzero(array == SYNC_PATTERNS[pattern_name][3])).flatten()
+    syncs = np.concatenate((s1, s2, s3, s4))
+    syncs = np.sort(syncs)
+    syncs_i = iter(syncs)
+    # print 'Sync words\n', syncs
+    prev_sync = next(syncs_i)
+    ix = prev_sync
+    while ix < array.size:
+        next_sync = ix + wps
+        found = syncs == next_sync
+        if np.any(found):
+            ix = next_sync
+        else:
+            try:
+                last_ix = ix
+                ix = next(syncs_i)
+                while ix < next_sync:
+                    ix = next(syncs_i)
+                logger.warning(
+                    'Sync lost at word %d, next sync not found at %d, '
+                    'found at %d instead', last_ix, next_sync, ix)
+            except StopIteration:
+                break
+
+    syncs = np.ediff1d(syncs, to_begin=0, to_end=0)
+    syncs[0] = syncs[1]
+    syncs[-1] = syncs[-2]
+    # print 'Distances\n', syncs
+    syncs = np.ediff1d(syncs, to_begin=0, to_end=0)
+    # print 'Slips\n', syncs
+
+
 def inspect(file_obj, words_to_read):
     if isinstance(file_obj, bz2.BZ2File):
         words = np.fromstring(file_obj.read(words_to_read * 2), dtype=np.short)
@@ -75,7 +125,7 @@ def inspect(file_obj, words_to_read):
         logger.info('Found complete %d wps frame at word %d (byte %d) '
                     'with %s sync pattern.',
                     wps, word_index, word_index * 2, pattern_name)
-        return
+        return wps, word_index, pattern_name
     logger.info('Could not find synchronised flight data.')
 
 
@@ -92,19 +142,26 @@ def main():
                         help='Number of words to read from the file.')
     parser.add_argument('--debug', action='store_true',
                         help='Enable debug logging.')
+    parser.add_argument('--check-sync', action='store_true',
+                        help='Check sync in the whole data.')
 
     args = parser.parse_args()
 
     if args.debug:
         logger.setLevel(logging.DEBUG)
-    
+
     if os.path.splitext(args.file_path)[1].lower() == '.bz2':
         file_obj = bz2.BZ2File(args.file_path)
     else:
         file_obj = open(args.file_path, 'rb')
-    
-    inspect(file_obj, args.words)
-    
+
+    res = inspect(file_obj, args.words)
+
+    if res and args.check_sync:
+        wps, word_index, pattern_name = res
+        file_obj.seek(0)
+        check_sync(file_obj, wps, word_index, pattern_name)
+
     file_obj.close()
 
 
