@@ -1,5 +1,12 @@
+
+try:
+    # bz2file provides support for multiple streams and a compatible interface.
+    import bz2file as bz2
+except ImportError:
+    # Fallback to standard library.
+    import bz2
+
 import argparse
-import bz2
 import logging
 import numpy as np
 import os
@@ -17,10 +24,10 @@ SUPPORTED_WPS = [64, 128, 256, 512, 1024, 2048]
 
 
 def inspect(file_obj, words_to_read):
-    if isinstance(file_obj, bz2.BZ2File):
-        words = np.fromstring(file_obj.read(words_to_read * 2), dtype=np.short)
-    else:
+    if isinstance(file_obj, file):
         words = np.fromfile(file_obj, dtype=np.short, count=words_to_read)
+    else:
+        words = np.fromstring(file_obj.read(words_to_read * 2), dtype=np.short)
     
     words &= 0xFFF
 
@@ -61,7 +68,7 @@ def inspect(file_obj, words_to_read):
             continue
         logger.info('Found complete %d wps frame at word %d (byte %d) with %s sync pattern.',
                     wps, word_index, word_index * 2, pattern_name)
-        return
+        return wps
     logger.info('Could not find synchronised flight data.')
 
 
