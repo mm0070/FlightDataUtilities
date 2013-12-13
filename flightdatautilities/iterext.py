@@ -61,8 +61,8 @@ def nested_groupby(iterable, function_list, manipulate=None, output=list):
     '''
     if not len(function_list):
         return manipulate(iterable) if manipulate else list(iterable)
-    return output([(k, nested_groupby(v, function_list[1:], manipulate, output))
-                  for k, v in groupby(iterable, function_list[0])])
+    return output((k, nested_groupby(v, function_list[1:], manipulate, output))
+                  for k, v in groupby(iterable, function_list[0]))
 
 
 ##############################################################################
