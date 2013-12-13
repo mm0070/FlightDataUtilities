@@ -13,6 +13,8 @@ logger.setLevel(logging.INFO)
 SYNC_PATTERNS = {'Standard': (0x0247, 0x05B8, 0x0A47, 0x0DB8),
                  'Reversed': (0x0E24, 0x01DA, 0x0E25, 0x01DB)}
 
+ORDINAL = ('first', 'second', 'third', 'fourth')
+
 SUPPORTED_WPS = [64, 128, 256, 512, 1024, 2048]
 
 
@@ -21,14 +23,21 @@ def inspect(file_obj, words_to_read):
         words = np.fromstring(file_obj.read(words_to_read * 2), dtype=np.short)
     else:
         words = np.fromfile(file_obj, dtype=np.short, count=words_to_read)
-    
+
     words &= 0xFFF
 
-    for word_index, word in enumerate(words[:words_to_read - max(SUPPORTED_WPS)]):
+    for word_index, word in enumerate(
+            words[:words_to_read - max(SUPPORTED_WPS)]):
+        # 1. looking for first sync word
         for pattern_name, pattern in SYNC_PATTERNS.items():
             try:
                 pattern_index = pattern.index(word)
-                logger.debug('Found first sync word at %d.', word_index)
+                logger.debug('Found %s sync word 0x%x at %d',
+                             ORDINAL[pattern_index], word, word_index)
+                if pattern_index > 0:
+                    # if it isnot the first superframe, keep looking
+                    continue
+
                 break
             except ValueError:
                 continue
@@ -39,8 +48,10 @@ def inspect(file_obj, words_to_read):
         pattern_index = (pattern_index + 1) % 4
 
         for wps in SUPPORTED_WPS:
-            if words[word_index + wps] == pattern[pattern_index]:
-                logger.debug('Found second sync word at %d.', word_index)
+            ix = word_index + wps
+            if words[ix] == pattern[pattern_index]:
+                logger.debug('Found second sync word 0x%x at %d.',
+                             words[ix], ix)
                 break
         else:
             # Sync word not found at any expected subframe boundary.
@@ -48,18 +59,21 @@ def inspect(file_obj, words_to_read):
 
         pattern_index = (pattern_index + 1) % 4
 
-        if words[word_index + (2 * wps)] == pattern[pattern_index]:
-            logger.debug('Found third sync word at %d', word_index)
+        ix = word_index + (2 * wps)
+        if words[ix] == pattern[pattern_index]:
+            logger.debug('Found third sync word 0x%x at %d', words[ix], ix)
         else:
             continue
 
         pattern_index = (pattern_index + 1) % 4
 
-        if words[word_index + (3 * wps)] == pattern[pattern_index]:
-            logger.debug('Found fourth sync word at %d', word_index)
+        ix = word_index + (3 * wps)
+        if words[ix] == pattern[pattern_index]:
+            logger.debug('Found fourth sync word 0x%x at %d', words[ix], ix)
         else:
             continue
-        logger.info('Found complete %d wps frame at word %d (byte %d) with %s sync pattern.',
+        logger.info('Found complete %d wps frame at word %d (byte %d) '
+                    'with %s sync pattern.',
                     wps, word_index, word_index * 2, pattern_name)
         return
     logger.info('Could not find synchronised flight data.')
