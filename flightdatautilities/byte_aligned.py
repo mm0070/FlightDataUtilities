@@ -138,9 +138,10 @@ def inspect(file_obj_or_str, words_to_read):
         logger.info('Found complete %d wps frame at word %d (byte %d) '
                     'with %s sync pattern.',
                     wps, word_index, word_index * 2, pattern_name)
-        
+
         return wps, word_index, pattern_name
     logger.info('Could not find synchronised flight data.')
+    return None, None, None
 
 
 def main():
