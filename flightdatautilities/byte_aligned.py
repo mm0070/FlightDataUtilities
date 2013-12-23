@@ -75,11 +75,17 @@ def check_sync(file_obj, wps, word_index, pattern_name):
     # print 'Slips\n', syncs
 
 
-def inspect(file_obj, words_to_read):
-    if isinstance(file_obj, file):
-        words = np.fromfile(file_obj, dtype=np.short, count=words_to_read)
+def inspect(file_obj_or_str, words_to_read):
+    if isinstance(file_obj_or_str, file):
+        words = np.fromfile(file_obj_or_str, dtype=np.short,
+                            count=words_to_read)
+    elif isinstance(file_obj_or_str, str):
+        words = np.fromstring(file_obj_or_str[:words_to_read * 2],
+                              dtype=np.short)
     else:
-        words = np.fromstring(file_obj.read(words_to_read * 2), dtype=np.short)
+        # Assuming some kind of file object, e.g. bz2.BZ2File
+        words = np.fromstring(file_obj_or_str.read(words_to_read * 2),
+                              dtype=np.short)
 
     words &= 0xFFF
 
