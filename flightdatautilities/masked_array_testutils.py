@@ -1,272 +1,68 @@
-"""Miscellaneous functions for testing masked arrays and subclasses
-
-:author: Pierre Gerard-Marchant
-:contact: pierregm_at_uga_dot_edu
-:version: $Id: testutils.py 3529 2007-11-13 08:01:14Z jarrod.millman $
-
-
-Unused code commented out, and assert_mask_equal merged with 
-assert_array_approx_equal to form assert_masked_array_approx_equal for
-FDS testing.  
-
-assert_mask_eqivalent derived from assert_mask_equal to allow for equivalent
-unmasked arrays.
-
-Dave Jesse 2011-11-12
-
-"""
-__author__ = "Pierre GF Gerard-Marchant ($Author: jarrod.millman $)"
-__version__ = "1.0"
-__revision__ = "$Revision: 3529 $"
-__date__ = "$Date: 2007-11-13 10:01:14 +0200 (Tue, 13 Nov 2007) $"
-
-
-import numpy as np
-from numpy import float_
-import numpy.core.umath as umath
-from numpy.testing import *
-import numpy.testing.utils as utils
-
-##from numpy import mask_or,getmask,masked_array,nomask,masked,filled,\
-                 ##equal, less
-from numpy.ma import mask_or,getmask,masked_array,nomask,masked,filled
-
-
-#------------------------------------------------------------------------------
-def approx (a, b, fill_value=True, rtol=1.e-5, atol=1.e-8):
-    """Returns true if all components of a and b are equal subject to given tolerances.
-
-If fill_value is True, masked values considered equal. Otherwise, masked values
-are considered unequal.
-The relative error rtol should be positive and << 1.0
-The absolute error atol comes into play for those elements of b that are very
-small or zero; it says how small a must be also.
-    """
-    m = mask_or(getmask(a), getmask(b))
-    d1 = filled(a)
-    d2 = filled(b)
-    if d1.dtype.char == "O" or d2.dtype.char == "O":
-        return np.equal(d1,d2).ravel()
-    x = filled(masked_array(d1, copy=False, mask=m), fill_value).astype(float_)
-    y = filled(masked_array(d2, copy=False, mask=m), 1).astype(float_)
-    d = np.less_equal(umath.absolute(x-y), atol + rtol * umath.absolute(y))
-    return d.ravel()
+# -*- coding: utf-8 -*-
+# vim:et:ft=python:nowrap:sts=4:sw=4:ts=4
+##############################################################################
 
 '''
-def almost(a, b, decimal=6, fill_value=True):
-    """Returns True if a and b are equal up to decimal places.
-If fill_value is True, masked values considered equal. Otherwise, masked values
-are considered unequal.
-    """
-    m = mask_or(getmask(a), getmask(b))
-    d1 = filled(a)
-    d2 = filled(b)
-    if d1.dtype.char == "O" or d2.dtype.char == "O":
-        return np.equal(d1,d2).ravel()
-    x = filled(masked_array(d1, copy=False, mask=m), fill_value).astype(float_)
-    y = filled(masked_array(d2, copy=False, mask=m), 1).astype(float_)
-    d = np.around(np.abs(x-y),decimal) <= 10.0**(-decimal)
-    return d.ravel()
+Additional functions for testing masked arrays.
 
-
-#................................................
-def _assert_equal_on_sequences(actual, desired, err_msg=''):
-    "Asserts the equality of two non-array sequences."
-    assert_equal(len(actual),len(desired),err_msg)
-    for k in range(len(desired)):
-        assert_equal(actual[k], desired[k], 'item=%r\n%s' % (k,err_msg))
-    return
-
-def assert_equal_records(a,b):
-    """Asserts that two records are equal. Pretty crude for now."""
-    assert_equal(a.dtype, b.dtype)
-    for f in a.dtype.names:
-        (af, bf) = (operator.getitem(a,f), operator.getitem(b,f))
-        if not (af is masked) and not (bf is masked):
-            assert_equal(operator.getitem(a,f), operator.getitem(b,f))
-    return
-
-
-def assert_equal(actual,desired,err_msg=''):
-    """Asserts that two items are equal.
-    """
-    # Case #1: dictionary .....
-    if isinstance(desired, dict):
-        if not isinstance(actual, dict):
-            raise AssertionError(repr(type(actual)))
-        assert_equal(len(actual),len(desired),err_msg)
-        for k,i in desired.items():
-            if not k in actual:
-                raise AssertionError("%s not in %s" % (k,actual))
-            assert_equal(actual[k], desired[k], 'key=%r\n%s' % (k,err_msg))
-        return
-    # Case #2: lists .....
-    if isinstance(desired, (list,tuple)) and isinstance(actual, (list,tuple)):
-        return _assert_equal_on_sequences(actual, desired, err_msg='')
-    if not (isinstance(actual, ndarray) or isinstance(desired, ndarray)):
-        msg = build_err_msg([actual, desired], err_msg,)
-        if not desired == actual:
-            raise AssertionError(msg)
-        return
-    # Case #4. arrays or equivalent
-    if ((actual is masked) and not (desired is masked)) or \
-        ((desired is masked) and not (actual is masked)):
-        msg = build_err_msg([actual, desired],
-                            err_msg, header='', names=('x', 'y'))
-        raise ValueError(msg)
-    actual = np.array(actual, copy=False, subok=True)
-    desired = np.array(desired, copy=False, subok=True)
-    (actual_dtype, desired_dtype) = (actual.dtype, desired.dtype)
-    if actual_dtype.char == "S" and desired_dtype.char == "S":
-        return _assert_equal_on_sequences(actual.tolist(),
-                                          desired.tolist(),
-                                          err_msg='')
-#    elif actual_dtype.char in "OV" and desired_dtype.char in "OV":
-#        if (actual_dtype != desired_dtype) and actual_dtype:
-#            msg = build_err_msg([actual_dtype, desired_dtype],
-#                                err_msg, header='', names=('actual', 'desired'))
-#            raise ValueError(msg)
-#        return _assert_equal_on_sequences(actual.tolist(),
-#                                          desired.tolist(),
-#                                          err_msg='')
-    return assert_array_equal(actual, desired, err_msg)
-
-
-def fail_if_equal(actual,desired,err_msg='',):
-    """Raises an assertion error if two items are equal.
-    """
-    if isinstance(desired, dict):
-        if not isinstance(actual, dict):
-            raise AssertionError(repr(type(actual)))
-        fail_if_equal(len(actual),len(desired),err_msg)
-        for k,i in desired.items():
-            if not k in actual:
-                raise AssertionError(repr(k))
-            fail_if_equal(actual[k], desired[k], 'key=%r\n%s' % (k,err_msg))
-        return
-    if isinstance(desired, (list,tuple)) and isinstance(actual, (list,tuple)):
-        fail_if_equal(len(actual),len(desired),err_msg)
-        for k in range(len(desired)):
-            fail_if_equal(actual[k], desired[k], 'item=%r\n%s' % (k,err_msg))
-        return
-    if isinstance(actual, np.ndarray) or isinstance(desired, np.ndarray):
-        return fail_if_array_equal(actual, desired, err_msg)
-    msg = build_err_msg([actual, desired], err_msg)
-    if not desired != actual:
-        raise AssertionError(msg)
-assert_not_equal = fail_if_equal
-
-
-def assert_almost_equal(actual, desired, decimal=7, err_msg='', verbose=True):
-    """Asserts that two items are almost equal.
-    The test is equivalent to abs(desired-actual) < 0.5 * 10**(-decimal)
-    """
-    if isinstance(actual, np.ndarray) or isinstance(desired, np.ndarray):
-        return assert_array_almost_equal(actual, desired, decimal=decimal,
-                                         err_msg=err_msg, verbose=verbose)
-    msg = build_err_msg([actual, desired],
-                        err_msg=err_msg, verbose=verbose)
-    if not round(abs(desired - actual),decimal) == 0:
-        raise AssertionError(msg)
-
-
-assert_close = assert_almost_equal
+These build on the functions provided in the ``numpy.ma.testutils`` module.
 '''
 
-def assert_array_compare(comparison, x, y, err_msg='', verbose=True, header='',
-                         fill_value=True):
-    """Asserts that a comparison relation between two masked arrays is satisfied
-    elementwise."""
-    # Fill the data first
-#    xf = filled(x)
-#    yf = filled(y)
-    # Allocate a common mask and refill
-    m = np.ma.mask_or(getmask(x), getmask(y))
-    x = masked_array(x, copy=False, mask=m, keep_mask=False, subok=False)
-    y = masked_array(y, copy=False, mask=m, keep_mask=False, subok=False)
-    if ((x is masked) and not (y is masked)) or \
-        ((y is masked) and not (x is masked)):
-        msg = build_err_msg([x, y], err_msg=err_msg, verbose=verbose,
-                            header=header, names=('x', 'y'))
-        raise ValueError(msg)
-    # OK, now run the basic tests on filled versions
-    return utils.assert_array_compare(comparison,
-                                      x.filled(fill_value),
-                                      y.filled(fill_value),
-                                      err_msg=err_msg,
-                                      verbose=verbose, header=header)
-
-'''
-def assert_array_equal(x, y, err_msg='', verbose=True):
-    """Checks the elementwise equality of two masked arrays."""
-    assert_array_compare(operator.__eq__, x, y,
-                         err_msg=err_msg, verbose=verbose,
-                         header='Arrays are not equal')
+##############################################################################
+# Imports
 
 
-def fail_if_array_equal(x, y, err_msg='', verbose=True):
-    "Raises an assertion error if two masked arrays are not equal (elementwise)."
-    def compare(x,y):
-        return (not np.alltrue(approx(x, y)))
+from numpy.ma.testutils import *  # noqa
+
+
+##############################################################################
+# Functions
+
+
+def assert_masked_array_approx_equal(x, y, decimal=6, err_msg='', verbose=True):
+    '''
+    Checks the elementwise equality of two masked arrays, up to a given
+    number of decimals. Also checks that the masks are equivalent.
+    '''
+    compare = lambda x, y: approx(x, y, rtol=10. ** -decimal)
     assert_array_compare(compare, x, y, err_msg=err_msg, verbose=verbose,
-                         header='Arrays are not equal')
-'''
+                         header='Arrays are not approx equal')
+    assert_mask_equivalent(x.mask, y.mask, err_msg='Masks are not equivalent')
 
-def assert_masked_array_approx_equal (x, y, decimal=6, err_msg='', verbose=True):
-    """Checks the elementwise equality of two masked arrays, up to a given
-    number of decimals."""
-    def compare(x, y):
-        "Returns the result of the loose comparison between x and y)."
-        return approx(x,y, rtol=10.**-decimal)
+
+def assert_masked_array_almost_equal(x, y, decimal=6, err_msg='', verbose=True):
+    '''
+    Checks the elementwise equality of two masked arrays, up to a given
+    number of decimals. Also checks that the masks are equivalent.
+    '''
+    compare = lambda x, y: almost(x, y, decimal)
     assert_array_compare(compare, x, y, err_msg=err_msg, verbose=verbose,
                          header='Arrays are not almost equal')
-    assert_mask_eqivalent(x.mask, y.mask, err_msg='Masks are not equal')
+    assert_mask_equivalent(x.mask, y.mask, err_msg='Masks are not equivalent')
 
 
-'''
-def assert_array_almost_equal(x, y, decimal=6, err_msg='', verbose=True):
-    """Checks the elementwise equality of two masked arrays, up to a given
-    number of decimals."""
-    def compare(x, y):
-        "Returns the result of the loose comparison between x and y)."
-        return almost(x,y,decimal)
+def assert_masked_array_equal(x, y, err_msg='', verbose=True):
+    '''
+    Checks the elementwise equality of two masked arrays. Also checks that the
+    masks are equivalent.
+    '''
+    compare = operator.__eq__
     assert_array_compare(compare, x, y, err_msg=err_msg, verbose=verbose,
-                         header='Arrays are not almost equal')
+                         header='Arrays are not equal')
+    assert_mask_equivalent(x.mask, y.mask, err_msg='Masks are not equivalent')
 
 
-def assert_array_less(x, y, err_msg='', verbose=True):
-    "Checks that x is smaller than y elementwise."
-    assert_array_compare(operator.__lt__, x, y,
-                         err_msg=err_msg, verbose=verbose,
-                         header='Arrays are not less-ordered')
-
-
-def assert_mask_equal(m1, m2, err_msg=''):
-    """Asserts the equality of two masks."""
-    if m1 is nomask:
-        assert(m2 is nomask)
-    if m2 is nomask:
-        assert(m1 is nomask)
-    assert_array_equal(m1, m2, err_msg=err_msg)
-'''
-
-def assert_mask_eqivalent(m1, m2, err_msg=''):
-    """
+def assert_mask_equivalent(m1, m2, err_msg=''):
+    '''
     Asserts the equality of two masks.
-    
-    Amended by FDS to allow for one test array to have no mask and the other
-    to have a mask array where each element is False.
-    """
-    if m1 is nomask:
-        if m2 is nomask:
-            return # neither has a mask, so pass test.
-        else:
-            assert m2.any() == False, err_msg
-            # If m2 is an array but all False the
-            # two are functionally equivalent.
-    if m2 is nomask:
-        if m1 is nomask:
-            return
-        else:
-            assert m1.any() == False, err_msg
+
+    This is an amended version of ``np.ma.testutils.assert_mask_equal`` to
+    allow for one test array to have no mask and the other to have a mask array
+    where each element is ``False``. We want to handle this situation as the
+    two arrays are functionally equivalent.
+    '''
+    if m1 is nomask or not m1.any():
+        assert_(m2 is nomask or not m2.any(), msg=err_msg)
+    if m2 is nomask or not m2.any():
+        assert_(m1 is nomask or not m1.any(), msg=err_msg)
     assert_array_equal(m1, m2, err_msg=err_msg)
