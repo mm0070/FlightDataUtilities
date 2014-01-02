@@ -43,8 +43,7 @@ class B737_300(VelocitySpeed):
     '''
     Velocity speed tables for Boeing B737-300 w/ CFM56-3 20K engines.
     '''
-    interpolate = True
-    source = 'FDS Customer 109: 737 FCOM'
+    source = 'FDS Customer 109; B737 FCOM'
     weight_unit = ut.TONNE
     tables = {
         'v2': {
@@ -59,6 +58,8 @@ class B737_300(VelocitySpeed):
                 '30': (111, 119, 127, 134, 141, 147, 154),
                 '40': (107, 115, 123, 131, 138, 146, 153),
         },
+        'vmo': 340,
+        'mmo': 0.82,
     }
 
 

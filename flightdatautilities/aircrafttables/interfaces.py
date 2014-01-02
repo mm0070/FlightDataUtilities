@@ -13,9 +13,6 @@ import logging
 import numpy as np
 
 from abc import ABCMeta
-from bisect import bisect_left
-
-import scipy.interpolate as interp
 
 from flightdatautilities import units as ut
 
@@ -37,339 +34,227 @@ class VelocitySpeed(object):
 
     There are a number of flags that can be set to configure the table:
 
-    - interpolate -- whether to interpolate between table values.
     - minimum_speed -- the absolute minimum speed.
     - source -- reference to the documentation or source of lookup table.
+    - weight_scale -- how the weight values in the table are scaled.
     - weight_unit -- the unit for all of the weights in the table.
     '''
 
     __meta__ = ABCMeta
 
-    interpolate = False
-    minimum_speed = None
     source = None
+    minimum_speed = None
+    weight_scale = 1     # Can be used to scale values, e.g. 1000 lb.
     weight_unit = ut.KG  # Can be one of 'lb', 'kg', 't' or None.
+    tables = {}          # Can contain the following keys: v2, vref, vmo, mmo.
+    fallback = {}        # Can contain the following keys: v2, vref.
 
-    tables = {
-        'v2': {'weight': ()},
-        'vref': {'weight': ()},
-    }
-
-    @property
-    def v2_settings(self):
+    def _build_array(self, array, mask=None, value=0.0):
         '''
-        Provides a list of available flap/conf settings for V2.
-
-        :returns: a list of flap/conf settings.
-        :rtype: list
-        '''
-        settings = self.tables['v2'].keys()
-        if 'weight' in settings:
-            settings.remove('weight')
-        return sorted(settings)
-
-    @property
-    def vref_settings(self):
-        '''
-        Provides a list of available flap/conf settings for Vref.
-
-        :returns: a list of flap/conf settings.
-        :rtype: list
-        '''
-        settings = self.tables['vref'].keys()
-        if 'weight' in settings:
-            settings.remove('weight')
-        return sorted(settings)
-
-    def v2(self, setting, weight=None):
-        '''
-        Look up a value for V2.
-
-        Will use interpolation if configured and convert units if necessary.
-
-        None will be returned if weight is outside of the table range or no
-        entries are available in the table for the provided flap/conf value.
-
-        :param setting: Flap or conf setting to use in lookup.
-        :type setting: string
-        :param weight: Weight of the aircraft.
-        :type weight: float
-        :returns: V2 value or None.
-        :rtype: float
-        :raises: KeyError -- when table or flap/conf settings is not found.
-        :raises: ValueError -- when weight units cannot be converted.
-        '''
-        return self._get_velocity_speed(self.tables['v2'], setting, weight)
-
-    def vref(self, setting, weight=None):
-        '''
-        Look up a value for Vref.
-
-        Will use interpolation if configured and convert units if necessary.
-
-        None will be returned if weight is outside of the table range or no
-        entries are available in the table for the provided flap/conf value.
-
-        :param setting: Flap or conf setting to use in lookup.
-        :type setting: string
-        :param weight: Weight of the aircraft.
-        :type weight: float
-        :returns: Vref value or None.
-        :rtype: float
-        :raises: KeyError -- when table or flap/conf settings is not found.
-        :raises: ValueError -- when weight units cannot be converted.
-        '''
-        return self._get_velocity_speed(self.tables['vref'], setting, weight)
-
-    def _get_velocity_speed(self, lookup, setting, weight=None):
-        '''
-        Looks up the velocity speed in the provided lookup table.
-
-        Will use interpolation if configured and convert units if necessary.
-
-        None will be returned if weight is outside of the table range or no
-        entries are available in the table for the provided flap/conf value.
-
-        :param lookup: The velocity speed lookup table.
-        :type lookup: dict
-        :param setting: Flap or conf setting to use in lookup.
-        :type setting: string
-        :param weight: Weight of the aircraft.
-        :type weight: float
-        :returns: A velocity speed value or None.
-        :rtype: float
-        :raises: KeyError -- when flap/conf settings is not found.
-        :raises: ValueError -- when weight units cannot be converted.
-        '''
-        # Attempt to coerce the setting value if it isn't a string:
-        if not isinstance(setting, basestring):
-            msg = "Non-string detent provided - %r - attempting to coerce..."
-            logger.warning(msg, setting)
-            if isinstance(setting, float) and setting.is_integer():
-                setting = str(int(setting))
-            else:
-                setting = str(setting)
-
-        if setting not in lookup:
-            msg = "Velocity speed table '%s' has no entry for flap/conf '%s'."
-            arg = (self.__class__.__name__, setting)
-            logger.error(msg, *arg)
-            # raise KeyError(msg % arg)
-            return None
-
-        # If table which doesn't have weights return fixed value:
-        if self.weight_unit is None:
-            return lookup[setting]
-
-        # Convert the aircraft weight to match the lookup table:
-        weight = ut.convert(weight, ut.KG, self.weight_unit)
-
-        wt = lookup['weight']
-        if not min(wt) <= weight <= max(wt) or weight is np.ma.masked:
-            msg = "Weight '%s' outside of range for velocity speed table '%s'."
-            arg = (weight, self.__class__.__name__)
-            logger.warning(msg, *arg)
-            return None
-
-        # Determine the value for the velocity speed:
-        if self.interpolate:
-            f = interp.interp1d(lookup['weight'], lookup[setting])
-            value = f(weight)
-        else:
-            index = bisect_left(lookup['weight'], weight)
-            value = lookup[setting][index]
-
-        # Return a minimum speed if we have one and the value is below it:
-        if self.minimum_speed is not None and value < self.minimum_speed:
-            return self.minimum_speed
-
-        return value
-
-
-class MaximumSpeed(object):
-    '''
-    '''
-
-    __meta__ = ABCMeta
-
-    def __init__(self, vmo=None, mmo=None):
-        '''
-        Initialises an object from which we can generate VMO/MMO data arrays.
-
-        :param vmo:
-        :type vmo: int or tuple
-        :param mmo:
-        :type mmo: float or tuple
-        '''
-        self.vmo = vmo
-        self.mmo = mmo
-
-    def _prepare_array(self, array, mask=None):
-        '''
-        Prepares an array to put VMO/MMO values into based on another array.
+        Prepares an array to put v-speed values into based on another array.
 
         If the mask parameter is not provided, the mask will be copied from the
-        provided array, usually the pressure altitude array.
+        provided array.
 
         :param array:
         :type array: np.ma.array
         :param mask:
         :type mask: np.ma.array or bool or None
+        :param value:
+        :type value: int or float
         :returns:
         :rtype: np.ma.array
         '''
-        mask = array.mask if mask is None else mask
-        return np.ma.array(np.zeros_like(array.data), mask=mask, dtype=float)
+        return np.ma.array(
+            data=np.ones_like(array.data) * value,
+            mask=array.mask if mask is None else mask,
+            dtype=np.float,
+        )
 
-    def get_mmo_array(self, alt_std):
+    def _determine_vspeed(self, name, **kwargs):
         '''
-        Returns an array of MMO values for the provided pressure altitude.
+        Look up a value from tables for V2.
 
-        :param alt_std:
-        :type alt_std: np.ma.array
-        :returns:
-        :rtype: np.ma.array
+        Will use interpolation and convert units if necessary.
+
+        A masked array or value will be returned if provided parameter arrays
+        are outside of ranges defined within the lookup tables.
+
+        :param name:
+        :type name: string
+        :param kwargs:
+        :type kwargs: dict
+        :returns: one or more velocity speed values.
+        :rtype: float or np.ma.array
+        :raises: KeyError -- when table or flap/conf detents is not found.
+        :raises: ValueError -- when weight units cannot be converted.
         '''
-        raise NotImplementedError
+        if name in ('v2', 'vref'):
+            detent = kwargs['detent']
+            weight = kwargs['weight']
+            scalar = isinstance(weight, (type(None), int, float))
+            if weight is not None:
+                weight = np.ma.array(weight, copy=True, dtype=np.double, ndmin=1)
+            else:
+                weight = np.ma.array(data=[0.0], dtype=np.double, mask=True)
 
-    def get_mmo_value(self, alt_std):
+            # Attempt to coerce the detent value if it isn't a string:
+            if not isinstance(detent, basestring):
+                msg = "Non-string detent provided - %r - coercing..."
+                logger.warning(msg, detent)
+                if isinstance(detent, float) and detent.is_integer():
+                    detent = str(int(detent))
+                else:
+                    detent = str(detent)
+
+            # Attempt to lookup values from standard and fallback tables:
+            use_fallback = self.weight_unit is None \
+                or weight.all() is np.ma.masked
+            if not use_fallback:
+                try:
+                    lookup = self.tables[name][detent]
+                except KeyError:
+                    use_fallback = True
+            if use_fallback:
+                try:
+                    lookup = self.fallback[name][detent]
+                except KeyError:
+                    lookup = None
+                    logger.error("Velocity speed table '%s' has no '%s' entry "
+                                 "for flap/conf '%s'.", self.__class__.__name__,
+                                 name, detent)
+                else:
+                    logger.info("Using fixed '%s' fallback values from "
+                                "velocity speed table '%s'.", name,
+                                self.__class__.__name__)
+
+            # Generate an array of velocity speed values for given parameters:
+            if lookup is None:
+                array = self._build_array(weight, mask=True)
+            elif isinstance(lookup, (int, float)):
+                array = self._build_array(weight, mask=False, value=lookup)
+            elif isinstance(lookup, tuple):
+                x, y = self.tables[name]['weight'], lookup
+                # Scale the lookup table weights if necessary:
+                if not self.weight_scale == 1:
+                    x = map(lambda w: int(w * self.weight_scale), x)
+                # Convert the aircraft weight to match the lookup table:
+                if not self.weight_unit == ut.KG:
+                    weight *= ut.multiplier(ut.KG, self.weight_unit)
+                # Check whether we have any out-of-bounds values, and warn:
+                if ((weight < min(x)) | (max(x) < weight)).any():
+                    logger.warning("Encountered some weight values outside of "
+                                   "range for velocity speed table '%s'.",
+                                   self.__class__.__name__)
+                # Determine the value for the velocity speed:
+                array = np.interp(weight, x, y, np.nan, np.nan)
+                array = np.ma.fix_invalid(array, mask=weight.mask, fill_value=0.0)
+                # If we have a minimum speed, enforce it throughout the array:
+                if self.minimum_speed is not None:
+                    condition = (array < self.minimum_speed) & (~array.mask)
+                    array[condition] = self.minimum_speed
+            else:
+                raise ValueError('Invalid v-speed table structure.')
+
+            return array[0] if scalar else array
+
+        if name in ('vmo', 'mmo'):
+            altitude = kwargs['altitude']
+            scalar = isinstance(altitude, (int, float))
+            altitude = np.ma.array(altitude, ndmin=1)
+
+            # Attempt to lookup values from standard tables:
+            try:
+                lookup = self.tables[name]
+            except KeyError:
+                lookup = None
+                logger.error("Velocity speed table '%s' has no '%s' entry.",
+                             self.__class__.__name__, name)
+
+            # Generate an array of velocity speed values for given parameters:
+            if lookup is None:
+                array = self._build_array(altitude, mask=True)
+            elif isinstance(lookup, (int, float)):
+                array = self._build_array(altitude, mask=False, value=lookup)
+            elif isinstance(lookup, dict):
+                x, y = lookup['altitude'], lookup['speed']
+                array = np.interp(altitude, x, y, np.nan, np.nan)
+                array = np.ma.fix_invalid(array, mask=altitude.mask, fill_value=0.0)
+            else:
+                raise ValueError('Invalid v-speed table structure.')
+
+            return array[0] if scalar else array
+
+        raise ValueError('Unknown velocity speed table name: %s', name)
+
+    def v2(self, detent, weight=None):
         '''
-        Returns an MMO value for the provided pressure altitude value.
+        Look up values from tables for V2.
 
-        :param alt_std:
-        :type alt_std: int or float
-        :returns:
-        :rtype: np.ma.array
+        Will use interpolation and convert units if necessary.
+
+        A masked array or value will be returned if provided parameter arrays
+        are outside of ranges defined within the lookup tables.
+
+        :param detent: flap or configuration detent to use in look-up.
+        :type detent: string
+        :param weight: weight of the aircraft.
+        :type weight: float or np.ma.array
+        :returns: one or more values of V2.
+        :rtype: float or np.ma.array
+        :raises: KeyError -- when table or flap/conf detents is not found.
+        :raises: ValueError -- when weight units cannot be converted.
         '''
-        if not isinstance(alt_std, (int, float)):
-            raise ValueError('Expected an integer or float for altitude.')
-        return self.get_mmo_array(np.ma.array([alt_std]))[0]
+        return self._determine_vspeed('v2', detent=detent, weight=weight)
 
-    def get_vmo_array(self, alt_std):
+    def vref(self, detent, weight=None):
         '''
-        Returns an array of VMO values for the provided pressure altitude.
+        Look up values from tables for Vref.
 
-        :param alt_std:
-        :type alt_std: np.ma.array
-        :returns:
-        :rtype: np.ma.array
+        Will use interpolation and convert units if necessary.
+
+        A masked array or value will be returned if provided parameter arrays
+        are outside of ranges defined within the lookup tables.
+
+        :param detent: flap or configuration detent to use in look-up.
+        :type detent: string
+        :param weight: weight of the aircraft.
+        :type weight: float or np.ma.array
+        :returns: one or more values of Vref.
+        :rtype: float or np.ma.array
+        :raises: KeyError -- when table or flap/conf detents is not found.
+        :raises: ValueError -- when weight units cannot be converted.
         '''
-        raise NotImplementedError
+        return self._determine_vspeed('vref', detent=detent, weight=weight)
 
-    def get_vmo_value(self, alt_std):
+    def vmo(self, altitude):
         '''
-        Returns a VMO value for the provided pressure altitude value.
+        Look up values from tables for VMO.
 
-        :param alt_std:
-        :type alt_std: int or float
-        :returns:
-        :rtype: np.ma.array
+        Will use interpolation and convert units if necessary.
+
+        A masked array or value will be returned if provided parameter arrays
+        are outside of ranges defined within the lookup tables.
+
+        :param altitude: pressure altitude.
+        :type altitude: float or np.ma.array
+        :returns: one or more values of VMO.
+        :rtype: float or np.ma.array
         '''
-        if not isinstance(alt_std, (int, float)):
-            raise ValueError('Expected an integer or float for altitude.')
-        return self.get_vmo_array(np.ma.array([alt_std]))[0]
+        return self._determine_vspeed('vmo', altitude=altitude)
 
-
-##############################################################################
-# Shared Classes
-
-
-class MaximumSpeed_Fixed(MaximumSpeed):
-    '''
-    Provides arrays of fixed constant VMO or MMO values.
-
-    The same value is returned for any value of pressure altitude.
-    '''
-
-    def get_mmo_array(self, alt_std):
+    def mmo(self, altitude):
         '''
-        Returns an array of MMO values for the provided pressure altitude.
+        Look up values from tables for MMO.
 
-        :param alt_std:
-        :type alt_std: np.ma.array
-        :returns:
-        :rtype: np.ma.array
+        Will use interpolation and convert units if necessary.
+
+        A masked array or value will be returned if provided parameter arrays
+        are outside of ranges defined within the lookup tables.
+
+        :param altitude: pressure altitude.
+        :type altitude: float or np.ma.array
+        :returns: one or more values of MMO.
+        :rtype: float or np.ma.array
         '''
-        if self.mmo is None:
-            return self._prepare_array(alt_std, mask=True)
-        else:
-            array = self._prepare_array(alt_std, mask=False)
-            array.fill(self.mmo)
-            return array
-
-    def get_vmo_array(self, alt_std):
-        '''
-        Returns an array of VMO values for the provided pressure altitude.
-
-        :param alt_std:
-        :type alt_std: np.ma.array
-        :returns:
-        :rtype: np.ma.array
-        '''
-        if self.vmo is None:
-            return self._prepare_array(alt_std, mask=True)
-        else:
-            array = self._prepare_array(alt_std, mask=False)
-            array.fill(self.vmo)
-            return array
-
-
-class MaximumSpeed_Range(MaximumSpeed):
-    '''
-    Provides arrays of variable VMO or MMO values depending on altitude range.
-    '''
-
-    def _prepare_condition(self, alt_std, low, high):
-        '''
-        :param alt_std:
-        :type alt_std: np.ma.array
-        :param low:
-        :type low:
-        :param high:
-        :type high:
-        :returns:
-        :rtype: np.ma.array
-        '''
-        if low is not None and high is not None:
-            return (low < alt_std) & (alt_std <= high)
-        if low is None:
-            return alt_std <= high
-        if high is None:
-            return low < alt_std
-        return np.array([], dtype=bool)
-
-    def get_mmo_array(self, alt_std):
-        '''
-        Returns an array of MMO values for the provided pressure altitude.
-
-        :param alt_std:
-        :type alt_std: np.ma.array
-        :returns:
-        :rtype: np.ma.array
-        '''
-        if self.mmo is None:
-            return self._prepare_array(alt_std, mask=True)
-        else:
-            array = self._prepare_array(alt_std, mask=True)
-            for low, high, mmo in self.mmo:
-                condition = self._prepare_condition(alt_std, low, high)
-                array[condition] = mmo
-            return array
-
-    def get_vmo_array(self, alt_std):
-        '''
-        Returns an array of VMO values for the provided pressure altitude.
-
-        :param alt_std:
-        :type alt_std: np.ma.array
-        :returns:
-        :rtype: np.ma.array
-        '''
-        if self.vmo is None:
-            return self._prepare_array(alt_std, mask=True)
-        else:
-            array = self._prepare_array(alt_std, mask=True)
-            for low, high, vmo in self.vmo:
-                condition = self._prepare_condition(alt_std, low, high)
-                array[condition] = vmo
-            return array
+        return self._determine_vspeed('mmo', altitude=altitude)

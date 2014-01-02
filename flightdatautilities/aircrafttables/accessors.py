@@ -17,7 +17,6 @@ from flightdatautilities.aircrafttables import constants
 
 # Note: These are overridden as part of the aircraft table configuration!
 from flightdatautilities.aircrafttables import model_information as mi
-from flightdatautilities.aircrafttables import maximum_speed as ms
 from flightdatautilities.aircrafttables import velocity_speed as vs
 
 
@@ -33,7 +32,6 @@ __all__ = (
     'get_slat_detents', 'get_slat_map',
     'get_stabilizer_limits',
     'get_vspeed_map',
-    'get_max_speed_table',
 )
 
 
@@ -566,36 +564,4 @@ def get_vspeed_map(model=None, series=None, family=None, engine_series=None, eng
             return m[k]
 
     message = "No velocity speed table for model '%s', series '%s', family '%s'."
-    raise KeyError(message % keys)
-
-
-##############################################################################
-# VMO/MMO Accessors
-
-
-def get_max_speed_table(model=None, series=None, family=None):
-    '''
-    Accessor for fetching maximum speed tables for VMO/MMO.
-
-    Returns an instance of a MaximumSpeed object with callable methods.
-
-    :param model: Aircraft series e.g. B737-333
-    :type model: string
-    :param series: Aircraft series e.g. B737-300
-    :type series: string
-    :param family: Aircraft family e.g. B737 Classic
-    :type family: string
-    :raises: KeyError if no table is found
-    :returns: lookup object for maximum speeds.
-    :rtype: MaximumSpeed
-    '''
-    keys = model, series, family
-    maps = ms.MAX_SPEED_MODEL_MAP, ms.MAX_SPEED_SERIES_MAP, ms.MAX_SPEED_FAMILY_MAP
-
-    for k, m in izip(keys, maps):
-        if k in m:
-            procedure, args = m[k]
-            return procedure(*args)
-
-    message = "No VMO/MMO table for model '%s', series '%s', family '%s'."
     raise KeyError(message % keys)

@@ -66,8 +66,8 @@ SLAT_SERIES_MAP = {}
 
 
 SLAT_FAMILY_MAP = {
-    'A330':       (0, 16, 20, 23),  # Smart Cockpit A330 General Limitions Rev 19
-    'Global':     (0, 20),          # FAA TCDS T00003NY Rev 16 & Smart Cockpit G5000 Limitations Vol 1 & LFL
+    'A330':   (0, 16, 20, 23),  # Smart Cockpit A330 General Limitions Rev 19
+    'Global': (0, 20),          # FAA TCDS T00003NY Rev 16 & Smart Cockpit G5000 Limitations Vol 1 & LFL
 }
 
 
@@ -179,11 +179,11 @@ LEVER_SERIES_MAP = {}
 
 LEVER_FAMILY_MAP = {
     'Global': {
-        (0,  '0'):    (0, 0, None),      # FAA TCDS T00003NY Rev 16 & Smart Cockpit Global 5000 Flight Controls
-        (1,  '0+S'):  (20, 0, None),     # FAA TCDS T00003NY Rev 16 & Smart Cockpit Global 5000 Flight Controls
-        (6,  '6'):    (20, 6, None),     # FAA TCDS T00003NY Rev 16 & Smart Cockpit Global 5000 Flight Controls
-        (16, '16'):   (20, 16, None),    # FAA TCDS T00003NY Rev 16 & Smart Cockpit Global 5000 Flight Controls
-        (30, '30'):   (20, 30, None),    # FAA TCDS T00003NY Rev 16 & Smart Cockpit Global 5000 Flight Controls
+        (0,  '0'):   (0, 0, None),    # FAA TCDS T00003NY Rev 16 & Smart Cockpit Global 5000 Flight Controls
+        (1,  '0+S'): (20, 0, None),   # FAA TCDS T00003NY Rev 16 & Smart Cockpit Global 5000 Flight Controls
+        (6,  '6'):   (20, 6, None),   # FAA TCDS T00003NY Rev 16 & Smart Cockpit Global 5000 Flight Controls
+        (16, '16'):  (20, 16, None),  # FAA TCDS T00003NY Rev 16 & Smart Cockpit Global 5000 Flight Controls
+        (30, '30'):  (20, 30, None),  # FAA TCDS T00003NY Rev 16 & Smart Cockpit Global 5000 Flight Controls
     },
 }
 
@@ -243,11 +243,11 @@ KAF_SERIES_MAP = {}
 
 KAF_FAMILY_MAP = {
     'A330': {
-        '1':    0.0000,     # FIXME: Lookup correct value as example...
-        '1+F':  0.0000,     # FIXME: Lookup correct value as example...
-        '2':    0.0000,     # FIXME: Lookup correct value as example...
-        '3':    0.0000,     # FIXME: Lookup correct value as example...
-        'Full': 0.0000,     # FIXME: Lookup correct value as example...
+        '1':    0.0000,  # FIXME: Lookup correct value as example...
+        '1+F':  0.0000,  # FIXME: Lookup correct value as example...
+        '2':    0.0000,  # FIXME: Lookup correct value as example...
+        '3':    0.0000,  # FIXME: Lookup correct value as example...
+        'Full': 0.0000,  # FIXME: Lookup correct value as example...
     },
 }
 

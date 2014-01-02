@@ -10,7 +10,7 @@ Unit tests for aircraft model information tables and functions.
 # Imports
 
 
-from flightdatautilities.aircrafttables.accessors import *  # flake8: noqa
+from flightdatautilities.aircrafttables.accessors import *  # noqa
 
 
 ##############################################################################
@@ -24,7 +24,6 @@ def configure(package):
     The package provided should contain the following modules:
 
     - model_information
-    - maximum_speed
     - velocity_speed
 
     :param package: the name of the package containing the required modules.
@@ -37,7 +36,6 @@ def configure(package):
 
     paths = {
         'mi': 'model_information',
-        'ms': 'maximum_speed',
         'vs': 'velocity_speed',
     }
 
