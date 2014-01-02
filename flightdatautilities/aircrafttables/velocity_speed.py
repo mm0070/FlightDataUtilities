@@ -38,6 +38,65 @@ from flightdatautilities.aircrafttables.interfaces import VelocitySpeed
 ##############################################################################
 # Velocity Speed Table Classes
 
+# Velocity speed class definitions must define the following:
+#
+#   - source:   documentation sources for the values in the tables. (string)
+#   - tables:   a dictionary containing the lookup tables.
+#
+# A number of other attributes may need to be defined:
+#
+#   - weight_scale: a number to scale the weights by, e.g. 1000. (integer)
+#   - weight_unit:  unit of the weight values, i.e. None, LB, KG, TONNE.
+#   - fallback:     a dictionary containing fallback values.
+#
+# The standard tables may contain a number of entries:
+#
+#   - v2:   a dictionary of tuples of weights and speeds by flap detent.
+#   - vref: a dictionary of tuples of weights and speeds by flap detent.
+#   - vmo:  a table for maximum operating speed.
+#   - mmo:  a table for maximum operating mach.
+#
+# The fallback tables may contain a number of entries:
+#
+#   - v2:   a dictionary of fixed speeds by flap detent.
+#   - vref: a dictionary of fixed speeds by flap detent.
+#
+# The entry for v2/vref standard tables should match the format:
+#
+#   {
+#       'weight': (100, 200, 300, 400, 500),
+#           '25': (110, 115, 120, 125, 130),
+#           '30': (105, 110, 115, 120, 125),
+#   }
+#
+# The entry for v2/vref fallback tables should match the format:
+#
+#   {
+#       '25': 120,
+#       '30': 115,
+#   }
+#
+# The entry for vmo/mmo may be one of the folloing:
+#
+#   - none:     will result in a masked, zeroed array.
+#
+#       {..., 'vmo': None, ...}
+#
+#   - fixed:    a fixed value regardless of altitude (integer/float)
+#
+#       {..., 'vmo': 350, ...}
+#
+#   - dict:     a dictionary of altitudes and speed values.
+#               interpolates between values - repeat altitude value to step.
+#               should propagate minimum value to sea level.
+#               should propagate maximum value to maximum operating altitude.
+#
+#       {..., 'vmo': {
+#           'altitude': (  0, 10000, 10000, 20000, 40000),
+#              'speed': (350,   330,   300,   300,   300)
+#       }, ...}
+#
+
 
 class B737_300(VelocitySpeed):
     '''
