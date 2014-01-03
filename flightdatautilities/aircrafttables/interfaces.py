@@ -108,25 +108,30 @@ class VelocitySpeed(object):
                     detent = str(detent)
 
             # Attempt to lookup values from standard and fallback tables:
-            use_fallback = self.weight_unit is None \
-                or weight.all() is np.ma.masked
-            if not use_fallback:
+            try_fallback = self.weight_unit is None or weight.mask.all()
+            if try_fallback:
+                msg = "Trying fallback %s values in table %s (weight masked)."
+                logger.info(msg, name, self.__class__.__name__)
+            else:
                 try:
                     lookup = self.tables[name][detent]
                 except KeyError:
-                    use_fallback = True
-            if use_fallback:
+                    try_fallback = True
+                    msg = "Trying fallback %s values in table %s for detent %s."
+                    logger.warning(msg, name, self.__class__.__name__, detent)
+                else:
+                    msg = "Using standard %s values from table %s."
+                    logger.info(msg, name, self.__class__.__name__)
+            if try_fallback:
                 try:
                     lookup = self.fallback[name][detent]
                 except KeyError:
                     lookup = None
-                    logger.error("Velocity speed table '%s' has no '%s' entry "
-                                 "for flap/conf '%s'.", self.__class__.__name__,
-                                 name, detent)
+                    msg = "Missing %s values in table %s for detent %s."
+                    logger.error(msg, name, self.__class__.__name__, detent)
                 else:
-                    logger.info("Using fixed '%s' fallback values from "
-                                "velocity speed table '%s'.", name,
-                                self.__class__.__name__)
+                    msg = "Using fallback %s values from table %s."
+                    logger.info(msg, name, self.__class__.__name__)
 
             # Generate an array of velocity speed values for given parameters:
             if lookup is None:
