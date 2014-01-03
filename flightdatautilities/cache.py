@@ -14,6 +14,11 @@ try:
 except ImportError:
     pass
 
+try:
+    import cPickle as pickle
+except ImportError:
+    import pickle
+
 from datetime import datetime, timedelta
 from decorator import decorator
 
@@ -60,9 +65,12 @@ def memoize(*args, **kwargs):
                 pass  # Skip if we didn't have Django :)
 
             # Clear any stale items from the cache:
-            obj.__cache = {k: v \
-                    for k, v in obj.__cache.iteritems() \
-                    if v['timeout'] >= now}
+            obj.__cache = {k: v
+                           for k, v in obj.__cache.iteritems()
+                           if v['timeout'] >= now}
+
+            # Handle any unhashable arguments by pickling:
+            key = pickle.dumps(key)
 
             item = obj.__cache.get(key)
 
