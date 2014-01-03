@@ -526,7 +526,7 @@ def get_fms_map(model=None, series=None, family=None):
 # Velocity Speed Accessors
 
 
-def get_vspeed_map(model=None, series=None, family=None, engine_series=None, engine_type=None):
+def get_vspeed_map(model=None, series=None, family=None, engine_type=None, engine_series=None):
     '''
     Accessor for fetching velocity speed tables for V2/Vref/Vapp.
 
@@ -538,6 +538,10 @@ def get_vspeed_map(model=None, series=None, family=None, engine_series=None, eng
     :type series: string
     :param family: Aircraft family e.g. B737 Classic
     :type family: string
+    :param engine_type: Engine type e.g. CFM56-3B1
+    :type engine_type: string
+    :param engine_series: Engine series e.g. CFM56-3
+    :type engine_series: string
     :raises: KeyError if no table is found
     :returns: lookup class for velocity speeds.
     :rtype: VelocitySpeed
