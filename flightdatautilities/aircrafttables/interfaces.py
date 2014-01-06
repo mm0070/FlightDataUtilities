@@ -56,13 +56,15 @@ class VelocitySpeed(object):
         If the mask parameter is not provided, the mask will be copied from the
         provided array.
 
-        :param array:
+        :param array: an array to use as a basis for this one.
         :type array: np.ma.array
-        :param mask:
+        :param mask: a mask array to use, a boolean to fully mask or unmask the
+                     resulting array or None to use the mask of the provided
+                     array..
         :type mask: np.ma.array or bool or None
-        :param value:
+        :param value: a default value to fill the array with.
         :type value: int or float
-        :returns:
+        :returns: a prepared masked array.
         :rtype: np.ma.array
         '''
         return np.ma.array(
@@ -73,16 +75,16 @@ class VelocitySpeed(object):
 
     def _determine_vspeed(self, name, **kwargs):
         '''
-        Look up a value from tables for V2.
+        Look up a value from tables for the specified velocity speed.
 
         Will use interpolation and convert units if necessary.
 
         A masked array or value will be returned if provided parameter arrays
         are outside of ranges defined within the lookup tables.
 
-        :param name:
+        :param name: the name of the lookup table to use.
         :type name: string
-        :param kwargs:
+        :param kwargs: values required to lookup the speed.
         :type kwargs: dict
         :returns: one or more velocity speed values.
         :rtype: float or np.ma.array
