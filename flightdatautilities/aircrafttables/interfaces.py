@@ -192,6 +192,22 @@ class VelocitySpeed(object):
 
         raise ValueError('Unknown velocity speed table name: %s', name)
 
+    def _determine_detents(self, name):
+        '''
+        Look up the defined detents for the specified table.
+
+        :param name: the name of the table to look up detents for.
+        :type name: string
+        :returns: a list of detents available for the table.
+        :rtype: list
+        '''
+        detents = set()
+        for table in self.tables, self.fallback:
+            if name in table:
+                detents.update(table[name].keys())
+        detents.discard('weight')
+        return sorted(detents)
+
     def v2(self, detent, weight=None):
         '''
         Look up values from tables for V2.
@@ -263,3 +279,23 @@ class VelocitySpeed(object):
         :rtype: float or np.ma.array
         '''
         return self._determine_vspeed('mmo', altitude=altitude)
+
+    @property
+    def v2_detents(self):
+        '''
+        Provides a list of available flap/conf detents for V2.
+
+        :returns: a list of flap/conf detents.
+        :rtype: list
+        '''
+        return self._determine_detents('v2')
+
+    @property
+    def vref_detents(self):
+        '''
+        Provides a list of available flap/conf detents for Vref.
+
+        :returns: a list of flap/conf detents.
+        :rtype: list
+        '''
+        return self._determine_detents('vref')
