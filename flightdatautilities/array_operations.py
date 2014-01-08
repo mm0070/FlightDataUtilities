@@ -1,0 +1,145 @@
+import numpy as np
+import scipy
+
+
+def extrap1d(interpolator):
+    '''
+    Extends scipy.interp1d which extrapolates values outside of the
+    interpolation points.
+    http://stackoverflow.com/questions/2745329
+        /how-to-make-scipy-interpolate-give-a-an-extrapolated-result-beyond
+        -the-input-ran
+    TODO: Optimise, this is very slow since the extrapolation algorithm works
+    on values individually.
+    '''
+    xs = interpolator.x
+    ys = interpolator.y
+
+    def pointwise(x):
+        if x < xs[0]:
+            return ys[0] + (x - xs[0]) * (ys[1] - ys[0]) / (xs[1] - xs[0])
+        elif x > xs[-1]:
+            return (ys[-1] + (x - xs[-1]) * (ys[-1] - ys[-2])
+                    / (xs[-1] - xs[-2]))
+        else:
+            return interpolator(x)
+
+    def ufunclike(xs):
+        return scipy.array(map(pointwise, scipy.array(xs)))
+
+    return ufunclike
+
+
+def merge_masks(masks):
+    '''
+    ORs multiple masks together. Could this be done in one step with numpy?
+
+    :param masks: Masks to OR together.
+    :type masks: iterable of np.ma.masked_array.mask
+    :returns: Single mask, the result of ORing masks.
+    :rtype: np.ma.masked_array.mask
+    '''
+    merged_mask = masks[0]
+    for mask in masks[1:]:
+        merged_mask = np.ma.mask_or(merged_mask, mask)
+    return merged_mask
+
+
+def sum_arrays(arrays):
+    '''
+    Sums multiple numpy arrays together.
+
+    :param arrays: Arrays to sum.
+    :type arrays: iterable of np.ma.masked_array
+    :returns: The result of summing arrays.
+    :rtype: np.ma.masked_array
+    '''
+    summed_array = arrays[0]
+    for array in arrays[1:]:
+        summed_array += array
+    return summed_array
+
+
+def downsample_arrays(arrays):
+    '''
+    Return arrays downsampled to the size of the smallest.
+
+    :param arrays: Arrays to downsample.
+    :type arrays: iterable of np.ma.masked_array
+    :returns: Arrays downsampled to the size of the smallest.
+    :rtype: iterable of np.ma.masked_array
+    '''
+    lengths = [len(x) for x in arrays]
+    shortest = min(lengths)
+    if shortest == max(lengths):
+        return arrays
+
+    for length in lengths:
+        if length % shortest:
+            raise ValueError(
+                "Arrays lengths '%s' should be multiples of the shortest."
+                % lengths)
+    downsampled_arrays = []
+    for array in arrays:
+        step = len(array) / shortest
+        if step > 1:
+            array = array[::step]
+        downsampled_arrays.append(array)
+    return downsampled_arrays
+
+
+def upsample_arrays(arrays):
+    '''
+    Return arrays upsampled to the size of the largest.
+
+    :param arrays: Arrays to upsample.
+    :type arrays: iterable of np.ma.masked_array
+    :returns: Arrays upsampled to the size of the largest.
+    :rtype: iterable of np.ma.masked_array
+    '''
+    lengths = [len(x) for x in arrays]
+    largest = max(lengths)
+    if largest == min(lengths):
+        return arrays
+
+    for length in lengths:
+        if largest % length:
+            raise ValueError(
+                "The largest array length should be a multiple of all others "
+                "'%s'." % lengths)
+    upsampled_arrays = []
+    for array in arrays:
+        repeat = largest / len(array)
+        if repeat > 1:
+            array = array.repeat(repeat)
+        upsampled_arrays.append(array)
+    return upsampled_arrays
+
+
+def align_arrays(slave_array, master_array):
+    '''
+    Very basic aligning using repeat to upsample and skipping over samples to
+    downsample the slave array to the master frequency
+
+    >>> align(np.arange(10), np.arange(20,30))  # equal length
+    array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+    >>> align(np.arange(40,80), np.arange(20,40))  # downsample every other
+    array([40, 42, 44, 46, 48, 50, 52, 54, 56, 58, 60, 62, 64, 66, 68, 70, 72,
+           74, 76, 78])
+    >>> align(np.arange(40,80), np.arange(30,40))  # downsample every 4th
+    array([40, 44, 48, 52, 56, 60, 64, 68, 72, 76])
+    >>> align(np.arange(10), np.arange(20,40))  # upsample
+    array([0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9])
+    '''
+    ratio = len(master_array) / float(len(slave_array))
+    if ratio == 1:
+        # nothing to do
+        return slave_array
+    if ratio > 1:
+        # repeat slave to upsample
+        # Q: Upsample using repeat good enough, or interpolate?
+        return slave_array.repeat(ratio)
+    else:
+        # take every other sample to downsample
+        return slave_array[0::1/ratio]
+
