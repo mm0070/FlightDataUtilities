@@ -1,5 +1,7 @@
+import numpy as np
 import unittest
 
+from flightdatautilities import masked_array_testutils as ma_test
 from flightdatautilities.array_operations import (
     downsample_arrays,
     upsample_arrays,
