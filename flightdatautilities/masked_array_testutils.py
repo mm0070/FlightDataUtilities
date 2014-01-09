@@ -61,8 +61,8 @@ def assert_mask_equivalent(m1, m2, err_msg=''):
     where each element is ``False``. We want to handle this situation as the
     two arrays are functionally equivalent.
     '''
-    if m1 is nomask or not m1.any():
-        assert_(m2 is nomask or not m2.any(), msg=err_msg)
-    if m2 is nomask or not m2.any():
-        assert_(m1 is nomask or not m1.any(), msg=err_msg)
+    if m1 is nomask or not np.any(m1):
+        assert_(m2 is nomask or not np.any(m2), msg=err_msg)
+    if m2 is nomask or not np.any(m2):
+        assert_(m1 is nomask or not np.any(m1), msg=err_msg)
     assert_array_equal(m1, m2, err_msg=err_msg)
