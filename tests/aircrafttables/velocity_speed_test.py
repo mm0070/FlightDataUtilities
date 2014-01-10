@@ -221,15 +221,15 @@ class TestVelocitySpeed(unittest.TestCase):
 
     def test__v2(self):
         # Test where weight argument is a single value:
-        self.assertEquals(self.vs.v2('5', 165000), 163.5)
+        self.assertEquals(self.vs.v2('5', 165000), 164)
         self.assertEquals(self.vs.v2('15', 120000), 134)
         self.assertEquals(self.vs.v2('20', 145000), 142)
         # Test where weight argument is a masked array:
         weight = np.ma.arange(120, 130, 2) * 1000
         weight[2] = np.ma.masked
-        v2_05 = np.ma.array((139.0, 140.2, 141.4, 142.6, 143.8))
-        v2_15 = np.ma.array((134.0, 135.0, 136.0, 137.0, 138.0))
-        v2_20 = np.ma.array((129.0, 130.0, 131.0, 132.0, 133.0))
+        v2_05 = np.ma.array((139, 140, 141, 143, 144))
+        v2_15 = np.ma.array((134, 135, 136, 137, 138))
+        v2_20 = np.ma.array((129, 130, 131, 132, 133))
         v2_05[2] = np.ma.masked
         v2_15[2] = np.ma.masked
         v2_20[2] = np.ma.masked
@@ -244,7 +244,7 @@ class TestVelocitySpeed(unittest.TestCase):
         # Test where weight argument is a masked array:
         weight = np.ma.arange(100, 110, 2) * 1000
         weight[2] = np.ma.masked
-        v2_15 = np.ma.array((125.0, 125.0, 125.0, 125.6, 126.8))
+        v2_15 = np.ma.array((125, 125, 125, 126, 127))
         v2_15[2] = np.ma.masked
         ma_test.assert_masked_array_equal(self.vs.v2('15', weight), v2_15)
 
@@ -260,7 +260,7 @@ class TestVelocitySpeed(unittest.TestCase):
         self.assertEquals(self.vs.v2('20', 190000), 164)
         # Test where weight argument is a masked array:
         weight = np.ma.arange(95, 200, 20) * 1000
-        v2_15 = np.ma.array((0.0, 131.0, 141.5, 151.5, 161.5, 0.0))
+        v2_15 = np.ma.array((0, 131, 142, 152, 162, 0))
         v2_15[0] = np.ma.masked
         v2_15[5] = np.ma.masked
         ma_test.assert_masked_array_equal(self.vs.v2('15', weight), v2_15)
@@ -361,22 +361,22 @@ class TestVelocitySpeed(unittest.TestCase):
         self.assertAlmostEqual(self.vs.v2('20', 54431), 129, places=3)
         # Test where weight argument is a masked array:
         weight = np.ma.array((43091, 52163, 61239, 70307, 79379, 88451))
-        v2_15 = np.ma.array((0.0, 131.0, 141.5, 151.5, 161.5, 0.0))
+        v2_15 = np.ma.array((0, 131, 142, 152, 162, 0))
         v2_15[0] = np.ma.masked
         v2_15[5] = np.ma.masked
-        ma_test.assert_masked_array_approx_equal(self.vs.v2('15', weight), v2_15, decimal=3)
+        ma_test.assert_masked_array_equal(self.vs.v2('15', weight), v2_15)
 
     def test__vref(self):
         # Test where weight argument is a single value:
         self.assertEquals(self.vs.vref('5', 120000), 128)
         self.assertEquals(self.vs.vref('15', 120000), 122)
-        self.assertEquals(self.vs.vref('20', 145000), 132.5)
+        self.assertEquals(self.vs.vref('20', 145000), 132)
         # Test where weight argument is a masked array:
         weight = np.ma.arange(120, 130, 2) * 1000
         weight[2] = np.ma.masked
-        vref_05 = np.ma.array((128.0, 129.2, 130.4, 131.6, 132.8))
-        vref_15 = np.ma.array((122.0, 123.4, 124.8, 126.2, 127.6))
-        vref_20 = np.ma.array((118.0, 119.2, 120.4, 121.6, 122.8))
+        vref_05 = np.ma.array((128, 129, 130, 132, 133))
+        vref_15 = np.ma.array((122, 123, 125, 126, 128))
+        vref_20 = np.ma.array((118, 119, 120, 122, 123))
         vref_05[2] = np.ma.masked
         vref_15[2] = np.ma.masked
         vref_20[2] = np.ma.masked
@@ -391,7 +391,7 @@ class TestVelocitySpeed(unittest.TestCase):
         # Test where weight argument is a masked array:
         weight = np.ma.arange(100, 110, 2) * 1000
         weight[2] = np.ma.masked
-        vref_15 = np.ma.array((112.0, 112.0, 112.0, 113.2, 114.6))
+        vref_15 = np.ma.array((112, 112, 112, 113, 115))
         vref_15[2] = np.ma.masked
         ma_test.assert_masked_array_equal(self.vs.vref('15', weight), vref_15)
 
@@ -407,7 +407,7 @@ class TestVelocitySpeed(unittest.TestCase):
         self.assertEquals(self.vs.vref('20', 190000), 158)
         # Test where weight argument is a masked array:
         weight = np.ma.arange(95, 200, 20) * 1000
-        vref_15 = np.ma.array((0.0, 119.0, 130.0, 140.5, 154.0, 0.0))
+        vref_15 = np.ma.array((0, 119, 130, 140, 154, 0))
         vref_15[0] = np.ma.masked
         vref_15[5] = np.ma.masked
         ma_test.assert_masked_array_equal(self.vs.vref('15', weight), vref_15)
@@ -508,10 +508,10 @@ class TestVelocitySpeed(unittest.TestCase):
         self.assertAlmostEqual(self.vs.vref('20', 54431), 118, places=3)
         # Test where weight argument is a masked array:
         weight = np.ma.array((43091, 52163, 61239, 70307, 79379, 88451))
-        vref_15 = np.ma.array((0.0, 119.0, 130.0, 140.5, 154.0, 0.0))
+        vref_15 = np.ma.array((0, 119, 130, 141, 154, 0))
         vref_15[0] = np.ma.masked
         vref_15[5] = np.ma.masked
-        ma_test.assert_masked_array_approx_equal(self.vs.vref('15', weight), vref_15, decimal=3)
+        ma_test.assert_masked_array_equal(self.vs.vref('15', weight), vref_15)
 
     def test__vmo__none(self):
         self.vs.tables['vmo'] = None
@@ -523,7 +523,7 @@ class TestVelocitySpeed(unittest.TestCase):
         self.assertIs(self.vs.vmo(40000), np.ma.masked)
         # Test where altitude argument is a masked array:
         altitude = np.ma.arange(0, 50, 10) * 1000
-        vmo = np.ma.repeat(0.0, 5)
+        vmo = np.ma.repeat(0, 5)
         vmo.mask = True
         ma_test.assert_masked_array_equal(self.vs.vmo(altitude), vmo)
 
@@ -588,7 +588,7 @@ class TestVelocitySpeed(unittest.TestCase):
         self.assertIs(self.vs.mmo(40000), np.ma.masked)
         # Test where altitude argument is a masked array:
         altitude = np.ma.arange(0, 50, 10) * 1000
-        mmo = np.ma.repeat(0.0, 5)
+        mmo = np.ma.repeat(0, 5)
         mmo.mask = True
         ma_test.assert_masked_array_equal(self.vs.mmo(altitude), mmo)
 

@@ -95,7 +95,7 @@ class VelocitySpeed(object):
             detent = kwargs['detent']
             weight = kwargs['weight']
             scalar = isinstance(weight, (type(None), int, float))
-            if weight is not None:
+            if weight is not None and weight is not np.ma.masked:
                 weight = np.ma.array(weight, copy=True, dtype=np.double, ndmin=1)
             else:
                 weight = np.ma.array(data=[0.0], dtype=np.double, mask=True)
@@ -163,6 +163,7 @@ class VelocitySpeed(object):
             else:
                 raise ValueError('Invalid v-speed table structure.')
 
+            array = array.round().astype(np.int)
             return array[0] if scalar else array
 
         if name in ('vmo', 'mmo'):
@@ -190,6 +191,8 @@ class VelocitySpeed(object):
             else:
                 raise ValueError('Invalid v-speed table structure.')
 
+            if not name == 'mmo':
+                array = array.round().astype(np.int)
             return array[0] if scalar else array
 
         raise ValueError('Unknown velocity speed table name: %s', name)
