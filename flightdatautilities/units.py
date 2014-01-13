@@ -859,7 +859,19 @@ def function(unit, output):
     :returns: the conversion function
     :rtype: function
     '''
-    return CONVERSION_FUNCTIONS[normalise(unit)][normalise(output)]
+    unit0, unit1 = normalise(unit), normalise(output)
+
+    try:
+        return CONVERSION_FUNCTIONS[unit0][unit1]
+    except KeyError:
+        pass
+
+    try:
+        return lambda v: v * CONVERSION_MULTIPLIERS[unit0][unit1]
+    except KeyError:
+        pass
+
+    return None
 
 
 def multiplier(unit, output):
