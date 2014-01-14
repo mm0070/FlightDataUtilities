@@ -1,6 +1,12 @@
 import unittest
 
-from flightdatautilities.patterns import wildcard_match
+from flightdatautilities.patterns import (
+    get_pattern,
+    group_parameter_names,
+    parameter_pattern_map,
+    wildcard_match,
+)
+
 
 class TestWilcardMatch(unittest.TestCase):
         
@@ -56,4 +62,66 @@ class TestWilcardMatch(unittest.TestCase):
         self.assertIn('ILS Frequency', res)
         self.assertNotIn('ILS (L) (Capt) Frequency', res)
         self.assertEqual(set(res), set(params[0:5]))
-        
+
+
+class TestGetPattern(unittest.TestCase):
+    
+    def test_get_pattern(self):
+        options = ['(1)', '(2)']
+        self.assertEqual(get_pattern('Airspeed', options=options),
+                         'Airspeed')
+        self.assertEqual(get_pattern('Eng (1) N1', options=options),
+                         'Eng (*) N1')
+        self.assertEqual(get_pattern('ILS Localizer (2)', options=options),
+                         'ILS Localizer (*)')
+        self.assertEqual(get_pattern('ILS Localizer (3)', options=options),
+                         'ILS Localizer (3)')
+        self.assertEqual(get_pattern('Eng (1) N1 (2)', options=options),
+                         'Eng (*) N1 (*)')
+        self.assertEqual(get_pattern('Eng (*) N1 Max', options=options),
+                         'Eng (*) N1 Max')
+
+
+class TestGroupParameterNames(unittest.TestCase):
+    
+    def test_group_parameter_names(self):
+        options = ['(L)', '(R)']
+        self.assertEqual(group_parameter_names(['Airspeed'], options=options),
+                         {'Airspeed': ['Airspeed']})
+        self.assertEqual(group_parameter_names(['Airspeed', 'Heading'],
+                                               options=options),
+                         {'Airspeed': ['Airspeed'],
+                          'Heading': ['Heading']})
+        self.assertEqual(group_parameter_names(['Airspeed',
+                                                'Altitude Radio (L)'],
+                                               options=options),
+                         {'Airspeed': ['Airspeed'],
+                          'Altitude Radio (*)': ['Altitude Radio (L)']})
+        self.assertEqual(group_parameter_names(['Altitude Radio (L)',
+                                                'Altitude Radio (R)'],
+                                               options=options),
+                         {'Altitude Radio (*)': ['Altitude Radio (L)',
+                                                 'Altitude Radio (R)']})
+
+
+class TestParameterPatternMap(unittest.TestCase):
+    
+    def test_parameter_pattern_map(self):
+        options = ['(L)', '(R)']
+        self.assertEqual(parameter_pattern_map(['Airspeed'], options=options),
+                         {'Airspeed': 'Airspeed'})
+        self.assertEqual(parameter_pattern_map(['Airspeed', 'Heading'],
+                                               options=options),
+                         {'Airspeed': 'Airspeed',
+                          'Heading': 'Heading'})
+        self.assertEqual(parameter_pattern_map(['Airspeed',
+                                                'Altitude Radio (L)'],
+                                               options=options),
+                         {'Airspeed': 'Airspeed',
+                          'Altitude Radio (L)': 'Altitude Radio (*)'})
+        self.assertEqual(parameter_pattern_map(['Altitude Radio (L)',
+                                                'Altitude Radio (R)'],
+                                               options=options),
+                         {'Altitude Radio (L)': 'Altitude Radio (*)',
+                          'Altitude Radio (R)': 'Altitude Radio (*)'})
+
