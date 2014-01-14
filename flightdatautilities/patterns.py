@@ -1,6 +1,13 @@
 import re
 
+from collections import defaultdict
 from fnmatch import translate
+
+
+OPTIONS = ('(A)', '(B)', '(C)', '(L)', '(R)', '(EFIS)', '(Capt)', '(FO)',
+           '(1)', '(2)', '(3)', '(4)', '(5)', '(6)', '(7)', '(8)', '(9)',
+           '(10)', '(11)', '(12)', '(13)', '(14)', '(15)', '(16)')
+
 
 def wildcard_match(pattern, keys, remove=' (*)'):
     '''
@@ -30,3 +37,59 @@ def wildcard_match(pattern, keys, remove=' (*)'):
             result.append(key)
             
     return sorted(result)
+
+
+def get_pattern(name, options=OPTIONS):
+    pattern = name
+    for option in options:
+        pattern = pattern.replace(option, '(*)')
+    return pattern
+
+
+def group_parameter_names(names, options=OPTIONS):
+    '''
+    :param names: List of parameter names.
+    :type names: [str]
+    :returns: Parameter pattern to list of parameter names.
+    :rtype: dict
+    '''
+    pattern_to_names = defaultdict(list)
+    for name in names:
+        pattern = get_pattern(name, options=options)
+        pattern_to_names[pattern].append(name)
+    
+    return pattern_to_names
+
+
+def parameter_pattern_map(names, options=OPTIONS):
+    '''
+    :param names: List of parameter names.
+    :type names: [str]
+    :returns: Parameter name to parameter pattern.
+    :rtype: dict
+    '''
+    name_to_pattern = {}
+    for name in names:
+        pattern = get_pattern(name, options=options)
+        name_to_pattern[name] = pattern
+    return name_to_pattern
+
+
+if __name__ == '__main__':
+    import argparse
+    
+    parser = argparse.ArgumentParser()
+    
+    parser.add_argument('pattern')
+    parser.add_argument('keys', nargs='+')
+    
+    args = parser.parse_args()
+    
+    matches = wildcard_match(args.pattern, args.keys)
+    
+    if matches:
+        print 'Matches:'
+        for match in matches:
+            print ' * %s' % match
+    else:
+        print 'No matches'
