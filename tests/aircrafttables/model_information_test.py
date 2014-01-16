@@ -48,7 +48,7 @@ class TestFlapInformation(unittest.TestCase):
         self.assertRaises(KeyError, at.get_flap_map, None, None, None)
         self.assertRaises(KeyError, at.get_flap_map, '', '', '')
         # Ensure we have what looks like a values mapping dictionary:
-        x = at.get_flap_map(None, 'B737-300', 'B737-Classic')
+        x = at.get_flap_map(None, 'B737-300', 'B737 Classic')
         self.assertIsInstance(x, dict)
         self.assertTrue(all(isinstance(k, (float, int)) for k in x.iterkeys()))
         self.assertTrue(all(isinstance(v, str) for v in x.itervalues()))
@@ -241,7 +241,7 @@ class TestStabilizerInformation(unittest.TestCase):
         self.assertRaises(KeyError, at.get_stabilizer_limits, None, None, None)
         self.assertRaises(KeyError, at.get_stabilizer_limits, '', '', '')
         # Ensure we have what looks like a values mapping dictionary:
-        x = at.get_stabilizer_limits(None, 'B737-600', 'B737-NG')
+        x = at.get_stabilizer_limits(None, 'B737-600', 'B737 NG')
         self.assertIsInstance(x, tuple)
         self.assertTrue(all(isinstance(v, (float, int)) for v in x))
         self.assertEqual(len(x), 2)

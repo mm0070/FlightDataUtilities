@@ -34,7 +34,7 @@ FLAP_SERIES_MAP = {}
 
 FLAP_FAMILY_MAP = {
     'A330':         (0, 8, 14, 22, 32),                # Smart Cockpit A330 General Limitions Rev 19
-    'B737-Classic': (0, 1, 2, 5, 10, 15, 25, 30, 40),  # Smart Cockpit B737E Flight Controls 9.10.13
+    'B737 Classic': (0, 1, 2, 5, 10, 15, 25, 30, 40),  # Smart Cockpit B737E Flight Controls 9.10.13
     'Global':       (0, 6, 16, 30),                    # FAA TCDS T00003NY Rev 16 & Smart Cockpit G5000 Limitations Vol 1
 }
 

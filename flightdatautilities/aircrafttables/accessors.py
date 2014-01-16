@@ -136,7 +136,7 @@ def get_flap_map(model=None, series=None, family=None):
     :type model: string
     :param series: Aircraft series e.g. B737-300
     :type series: string
-    :param family: Aircraft family e.g. B737-Classic
+    :param family: Aircraft family e.g. B737 Classic
     :type family: string
     :raises: KeyError if no mapping found
     :returns: mapping of detent to state values
@@ -165,7 +165,7 @@ def get_slat_map(model=None, series=None, family=None):
     :type model: string
     :param series: Aircraft series e.g. B737-300
     :type series: string
-    :param family: Aircraft family e.g. B737-Classic
+    :param family: Aircraft family e.g. B737 Classic
     :type family: string
     :raises: KeyError if no mapping found
     :returns: mapping of detent to state values
@@ -253,7 +253,7 @@ def get_lever_map(model=None, series=None, family=None):
     :type model: string
     :param series: Aircraft series e.g. B737-300
     :type series: string
-    :param family: Aircraft family e.g. B737-Classic
+    :param family: Aircraft family e.g. B737 Classic
     :type family: string
     :raises: KeyError if no mapping found
     :returns: mapping of detent to state values
@@ -347,7 +347,7 @@ def get_lever_angles(model=None, series=None, family=None, key='state'):
     :type model: string
     :param series: Aircraft series e.g. B737-300
     :type series: string
-    :param family: Aircraft family e.g. B737-Classic
+    :param family: Aircraft family e.g. B737 Classic
     :type family: string
     :param key: Key to be provided in the mapping (both, state or value)
     :type key: str
@@ -408,7 +408,7 @@ def get_stabilizer_limits(model=None, series=None, family=None):
     :type model: string
     :param series: Aircraft series e.g. B737-800
     :type series: string
-    :param family: Aircraft family e.g. B737-NG
+    :param family: Aircraft family e.g. B737 NG
     :type family: string
     :raises: KeyError if no limits found
     :returns: tuple of stabilizer angle limits
@@ -439,7 +439,7 @@ def get_vspeed_map(model=None, series=None, family=None, engine_series=None, eng
     :type model: string
     :param series: Aircraft series e.g. B737-300
     :type series: string
-    :param family: Aircraft family e.g. B737-Classic
+    :param family: Aircraft family e.g. B737 Classic
     :type family: string
     :raises: KeyError if no table is found
     :returns: lookup class for velocity speeds.
@@ -484,7 +484,7 @@ def get_max_speed_table(model=None, series=None, family=None):
     :type model: string
     :param series: Aircraft series e.g. B737-300
     :type series: string
-    :param family: Aircraft family e.g. B737-Classic
+    :param family: Aircraft family e.g. B737 Classic
     :type family: string
     :raises: KeyError if no table is found
     :returns: lookup object for maximum speeds.
