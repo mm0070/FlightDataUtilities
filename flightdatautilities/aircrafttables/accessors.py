@@ -31,6 +31,8 @@ __all__ = (
     'get_lever_detents', 'get_lever_map', 'get_lever_angles',
     'get_slat_detents', 'get_slat_map',
     'get_stabilizer_limits',
+    'get_kaf_map', 'get_vls1g_map',
+    'get_fms_map',
     'get_vspeed_map',
 )
 
