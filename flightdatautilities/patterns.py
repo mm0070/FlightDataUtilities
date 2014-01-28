@@ -73,7 +73,13 @@ def parse_options(name, options=OPTIONS):
     '''
     matched_options = re.findall('(?P<option>\(\w+\))', name)
     if options:
-        return list(set(matched_options) & set(options))
+        # The following line loses option ordering.
+        #return list(set(matched_options) & set(options))
+        supported_options = []
+        for matched_option in matched_options:
+            if matched_option in options:
+                supported_options.append(matched_option)
+        return supported_options
     else:
         return matched_options
 
@@ -235,8 +241,10 @@ def find_combinations(required_patterns, names,
     if not all(all_parameter_lists):
         return []
     
+    first_parameters = [[p[0] for p in all_parameter_lists]]
+    
     if required_pattern_count == 0:
-        return [[p[0] for p in all_parameter_lists]]
+        return first_parameters
     
     if all([p == required_patterns[0] for p in required_patterns[1:]]):
         # Expand patterns if they are the same.
@@ -251,8 +259,17 @@ def find_combinations(required_patterns, names,
                                                      required_parameter_lists):
         if not is_pattern(required_pattern):
             continue
-        options = [parse_options(n)[0] for n in required_parameters]
+        options = []
+        for parameter in required_parameters:
+            parameter_options = parse_options(parameter)
+            if parameter_options:
+                options.append(parameter_options[0])
         break
+    
+    if not options:
+        # No need for pattern matching.
+        # e.g. 'Flap Lever (*)' pattern, but only 'Flap Lever' parameter exists.
+        return first_parameters
     
     combinations = []
     for option in options:

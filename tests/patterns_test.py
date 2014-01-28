@@ -4,11 +4,32 @@ from flightdatautilities.patterns import (
     expand_combinations,
     get_pattern,
     group_parameter_names,
+    match_options,
     parameter_pattern_map,
     parse_options,
     find_combinations,
     wildcard_match,
 )
+
+
+
+class TestMatchOptions(unittest.TestCase):
+    
+    def test_match_options(self):
+        self.assertEqual(match_options([], ['Altitude Radio',
+                                            'Altitude Radio (L)',
+                                            'Pitch']),
+                         ['Altitude Radio', 'Pitch'])
+        self.assertEqual(match_options(['(L)'], ['Altitude Radio',
+                                                 'Altitude Radio (L)',
+                                                 'ILS Localizer',
+                                                 'ILS Localizer (L)']),
+                         ['Altitude Radio (L)',
+                          'ILS Localizer (L)'])
+        self.assertEqual(match_options(['(L)', '(1)'], ['Altitude Radio',
+                                                        'Altitude Radio (L)',
+                                                        'Altitude Radio (L) (1)']),
+                         ['Altitude Radio (L) (1)'])
 
 
 class TestExpandCombinations(unittest.TestCase):
@@ -227,4 +248,8 @@ class TestFindCombinations(unittest.TestCase):
             [['Altitude Radio (A)', 'Altitude Radio (B)', 'Pitch'],
              ['Altitude Radio (A)', 'Altitude Radio (C)', 'Pitch'],
              ['Altitude Radio (B)', 'Altitude Radio (C)', 'Pitch']])
-        
+        self.assertEqual(
+            find_combinations([u'Flap Lever', 'Flap Angle (*)'],
+                              [u'Flap Angle', u'Flap Channel Fault (3)',
+                               u'Flap Channel Fault (4)', u'Flap Lever']),
+            [['Flap Lever', 'Flap Angle']])
