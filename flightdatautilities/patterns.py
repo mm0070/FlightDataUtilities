@@ -126,7 +126,7 @@ def match_options(options, names):
     return matched_names
 
 
-def test_combinations(required_patterns, names,
+def find_combinations(required_patterns, names,
                       additional_patterns=[]):
     '''
     

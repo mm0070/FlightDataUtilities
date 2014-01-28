@@ -6,7 +6,7 @@ from flightdatautilities.patterns import (
     group_parameter_names,
     parameter_pattern_map,
     parse_options,
-    test_combinations,
+    find_combinations,
     wildcard_match,
 )
 
@@ -174,9 +174,9 @@ class TestParseOptions(unittest.TestCase):
             ['(1)'])
 
 
-class TestTestCombinations(unittest.TestCase):
+class TestFindCombinations(unittest.TestCase):
     
-    def test_test_combinations(self):
+    def test_find_combinations(self):
         parameters = [
             'Airspeed',
             'Heading',
@@ -193,36 +193,36 @@ class TestTestCombinations(unittest.TestCase):
             'Altitude Radio (C)',
         ]
         
-        self.assertEqual(test_combinations([u'Heading', 'Airspeed'], parameters,
+        self.assertEqual(find_combinations([u'Heading', 'Airspeed'], parameters,
                                            additional_patterns=['Flap Angle (L)']),
                          [])
         
         self.assertEqual(
-            test_combinations(['Airspeed', 'Heading'], parameters),
+            find_combinations(['Airspeed', 'Heading'], parameters),
             [['Airspeed', 'Heading']])
-        self.assertEqual(test_combinations(['Airspeed', 'Heading'], parameters,
+        self.assertEqual(find_combinations(['Airspeed', 'Heading'], parameters,
                                            additional_patterns=['Pitch']),
                          [['Airspeed', 'Heading', 'Pitch']])
-        self.assertEqual(test_combinations(['Eng (*) N1', 'Heading'], parameters,
+        self.assertEqual(find_combinations(['Eng (*) N1', 'Heading'], parameters,
                                            additional_patterns=['Pitch']),
                          [['Eng (1) N1', 'Heading', 'Pitch'],
                           ['Eng (2) N1', 'Heading', 'Pitch'],])
-        self.assertEqual(test_combinations(['Eng (*) N1', 'Eng (*) Gas Temp'],
+        self.assertEqual(find_combinations(['Eng (*) N1', 'Eng (*) Gas Temp'],
                                            parameters,
                                            additional_patterns=['Pitch']),
                          [['Eng (1) N1', 'Eng (1) Gas Temp', 'Pitch'],
                           ['Eng (2) N1', 'Eng (2) Gas Temp', 'Pitch'],])
-        self.assertEqual(test_combinations(['Airspeed', 'Heading'],
+        self.assertEqual(find_combinations(['Airspeed', 'Heading'],
                                            parameters,
                                            additional_patterns=['Eng (*) Gas Temp']),
                          [['Airspeed', 'Heading', 'Eng (1) Gas Temp']])
         self.assertEqual(
-            test_combinations(['Eng (*) N1', 'Eng (*) Gas Temp'], parameters,
+            find_combinations(['Eng (*) N1', 'Eng (*) Gas Temp'], parameters,
                               additional_patterns=['Eng (*) Fuel Flow']),
             [['Eng (1) N1', 'Eng (1) Gas Temp', 'Eng (1) Fuel Flow'],
              ['Eng (2) N1', 'Eng (2) Gas Temp', 'Eng (2) Fuel Flow'],])
         self.assertEqual(
-            test_combinations(['Altitude Radio (*)', 'Altitude Radio (*)'],
+            find_combinations(['Altitude Radio (*)', 'Altitude Radio (*)'],
                               parameters, additional_patterns=['Pitch']),
             [['Altitude Radio (A)', 'Altitude Radio (B)', 'Pitch'],
              ['Altitude Radio (A)', 'Altitude Radio (C)', 'Pitch'],
