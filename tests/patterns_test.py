@@ -1,42 +1,75 @@
 import unittest
 
 from flightdatautilities.patterns import (
+    expand_combinations,
     get_pattern,
     group_parameter_names,
     parameter_pattern_map,
+    parse_options,
+    test_combinations,
     wildcard_match,
 )
+
+
+class TestExpandCombinations(unittest.TestCase):
+    
+    def test_expand_combinations(self):
+        alt_rads = ['Altitude Radio (A)',
+                    'Altitude Radio (B)',
+                    'Altitude Radio (C)']
+        self.assertEqual(expand_combinations(2, alt_rads),
+                         [['Altitude Radio (A)', 'Altitude Radio (B)'],
+                          ['Altitude Radio (A)', 'Altitude Radio (C)'],
+                          ['Altitude Radio (B)', 'Altitude Radio (C)']])
 
 
 class TestWilcardMatch(unittest.TestCase):
         
     def test_wildcard_match(self):
-        params = ['ILS Localizer', 
-                  'ILS Localizer (R)',
-                  'ILS Localizer (L)',
-                  'ILS Localizer (L) (Capt)',
-                  'Rate of Climb', 
-                  'Altitude STD',
-                  'Brake (R) Pressure Ourboard', 
-                  'Brake (L) Pressure Inboard', 
-                  'ILS Localizer Deviation Warning',
-                  'ILS Localizer Test Tube Inhibit', 
-                  'ILS Localizer Beam Anomaly',
-                  'ILS Localizer Engaged']
+        params = [
+            'ILS Localizer', 
+            'ILS Localizer (R)',
+            'ILS Localizer (L)',
+            'ILS Localizer (L) (Capt)',
+            'ILS Localizer (L) (1)',
+            'ILS Localizer (L) (2)',
+            'ILS Localizer (R) (1)',
+            'Rate of Climb', 
+            'Altitude STD',
+            'Brake (R) Pressure Ourboard', 
+            'Brake (L) Pressure Inboard', 
+            'ILS Localizer Deviation Warning',
+            'ILS Localizer Test Tube Inhibit', 
+            'ILS Localizer Beam Anomaly',
+            'ILS Localizer Engaged',
+        ]
         # exact match
-        res = wildcard_match('ILS Localizer', params)
-        self.assertEqual(res, ['ILS Localizer'])
-        ### wildcard
-        ##res = wildcard_match('ILS Localizer', params)
-        ##self.assertEqual(res, [
-            ##'ILS Localizer', 'ILS Localizer (L)', 
-            ##'ILS Localizer (L) (Capt)', 'ILS Localizer (R)', 
-            ##'ILS Localizer Beam Anomaly',  'ILS Localizer Deviation Warning',
-            ##'ILS Localizer Engaged', 'ILS Localizer Test Tube Inhibit'])
+        self.assertEqual(wildcard_match('ILS Localizer', params),
+                         ['ILS Localizer'])
         # test single char match
-        res = wildcard_match('ILS Localizer (*)', params)
-        expected_output_star = ['ILS Localizer (L)', 'ILS Localizer (R)']
+        self.assertEqual(wildcard_match('ILS Localizer (*)', params),
+                         ['ILS Localizer',
+                          'ILS Localizer (L)',
+                          'ILS Localizer (R)'])
+        # test two wildcards
+        self.assertEqual(wildcard_match('ILS Localizer (*) (1)', params),
+                         ['ILS Localizer (L) (1)',
+                          'ILS Localizer (R) (1)'])
+        self.assertEqual(wildcard_match('ILS Localizer (*) (*)', params),
+                         ['ILS Localizer',
+                          'ILS Localizer (L)',
+                          'ILS Localizer (L) (1)',
+                          'ILS Localizer (L) (2)',
+                          'ILS Localizer (L) (Capt)',
+                          'ILS Localizer (R)',
+                          'ILS Localizer (R) (1)'])
         
+        self.assertEqual(wildcard_match('ILS Localizer (L) (*)', params),
+                         ['ILS Localizer (L)',
+                          'ILS Localizer (L) (1)',
+                          'ILS Localizer (L) (2)',
+                          'ILS Localizer (L) (Capt)'])
+    
     def test_wildcard_match_multiple_chars(self):
         params = ['Spoiler (%d)' % n for n in range(1,13)]
         res = wildcard_match('Spoiler (*)', params)
@@ -46,8 +79,7 @@ class TestWilcardMatch(unittest.TestCase):
         params.append('Spoiler')
         res = wildcard_match('Spoiler (*)', params)
         self.assertEqual(len(res), 13)
-         
-        
+    
     def test_wildcard_match_without_brackets(self):
         params = [
             'ILS Frequency',
@@ -56,7 +88,7 @@ class TestWilcardMatch(unittest.TestCase):
             'ILS (Capt) Frequency',
             'ILS (R) Frequency',
             'ILS (L) (Capt) Frequency',
-         ]
+        ]
         
         res = wildcard_match('ILS (*) Frequency', params)
         self.assertIn('ILS Frequency', res)
@@ -125,3 +157,74 @@ class TestParameterPatternMap(unittest.TestCase):
                          {'Altitude Radio (L)': 'Altitude Radio (*)',
                           'Altitude Radio (R)': 'Altitude Radio (*)'})
 
+
+class TestParseOptions(unittest.TestCase):
+    
+    def test_parse_options(self):
+        self.assertEqual(parse_options('Airspeed'), [])
+        self.assertEqual(parse_options('ILS Localizer (1)'), ['(1)'])
+        self.assertEqual(parse_options('Airspeed Selected (1) (Capt)'),
+                                       ['(1)', '(Capt)'])
+        self.assertEqual(
+            parse_options('Airspeed Selected (1) (Capt)', options=['(FO)']),
+            [])
+        self.assertEqual(
+            parse_options('Airspeed Selected (1) (FO)',
+                          options=['(1)', '(2)', '(A)', '(B)', '(Capt)']),
+            ['(1)'])
+
+
+class TestTestCombinations(unittest.TestCase):
+    
+    def test_test_combinations(self):
+        parameters = [
+            'Airspeed',
+            'Heading',
+            'Pitch',
+            'Eng (1) N1',
+            'Eng (2) N1',
+            'Eng (1) Gas Temp',
+            'Eng (2) Gas Temp',
+            'Eng (3) Gas Temp',
+            'Eng (1) Fuel Flow',
+            'Eng (2) Fuel Flow',
+            'Altitude Radio (A)',
+            'Altitude Radio (B)',
+            'Altitude Radio (C)',
+        ]
+        
+        self.assertEqual(test_combinations([u'Heading', 'Airspeed'], parameters,
+                                           additional_patterns=['Flap Angle (L)']),
+                         [])
+        
+        self.assertEqual(
+            test_combinations(['Airspeed', 'Heading'], parameters),
+            [['Airspeed', 'Heading']])
+        self.assertEqual(test_combinations(['Airspeed', 'Heading'], parameters,
+                                           additional_patterns=['Pitch']),
+                         [['Airspeed', 'Heading', 'Pitch']])
+        self.assertEqual(test_combinations(['Eng (*) N1', 'Heading'], parameters,
+                                           additional_patterns=['Pitch']),
+                         [['Eng (1) N1', 'Heading', 'Pitch'],
+                          ['Eng (2) N1', 'Heading', 'Pitch'],])
+        self.assertEqual(test_combinations(['Eng (*) N1', 'Eng (*) Gas Temp'],
+                                           parameters,
+                                           additional_patterns=['Pitch']),
+                         [['Eng (1) N1', 'Eng (1) Gas Temp', 'Pitch'],
+                          ['Eng (2) N1', 'Eng (2) Gas Temp', 'Pitch'],])
+        self.assertEqual(test_combinations(['Airspeed', 'Heading'],
+                                           parameters,
+                                           additional_patterns=['Eng (*) Gas Temp']),
+                         [['Airspeed', 'Heading', 'Eng (1) Gas Temp']])
+        self.assertEqual(
+            test_combinations(['Eng (*) N1', 'Eng (*) Gas Temp'], parameters,
+                              additional_patterns=['Eng (*) Fuel Flow']),
+            [['Eng (1) N1', 'Eng (1) Gas Temp', 'Eng (1) Fuel Flow'],
+             ['Eng (2) N1', 'Eng (2) Gas Temp', 'Eng (2) Fuel Flow'],])
+        self.assertEqual(
+            test_combinations(['Altitude Radio (*)', 'Altitude Radio (*)'],
+                              parameters, additional_patterns=['Pitch']),
+            [['Altitude Radio (A)', 'Altitude Radio (B)', 'Pitch'],
+             ['Altitude Radio (A)', 'Altitude Radio (C)', 'Pitch'],
+             ['Altitude Radio (B)', 'Altitude Radio (C)', 'Pitch']])
+        
