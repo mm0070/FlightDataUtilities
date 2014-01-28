@@ -242,8 +242,9 @@ def find_combinations(required_patterns, names,
         # Expand patterns if they are the same.
         combinations = expand_combinations(len(required_patterns),
                                            required_parameter_lists[0])
+        additional_parameters = [a[0] for a in additional_parameter_lists]
         for combination in combinations:
-            combination.extend([a[0] for a in additional_parameter_lists])
+            combination.extend(additional_parameters)
         return combinations
     
     for required_pattern, required_parameters in zip(required_patterns,
