@@ -206,6 +206,7 @@ def find_combinations(required_patterns, names,
             except IndexError:
                 return None
         else:
+            
             return parameters[0]
     
     def find_matching_parameters(options, patterns, parameter_lists):
@@ -241,7 +242,8 @@ def find_combinations(required_patterns, names,
     if not all(all_parameter_lists):
         return []
     
-    first_parameters = [[p[0] for p in all_parameter_lists]]
+    first_parameters = unique_parameter_combinations(
+        [[p[0] for p in all_parameter_lists]])
     
     if required_pattern_count == 0:
         return first_parameters
@@ -253,7 +255,7 @@ def find_combinations(required_patterns, names,
         additional_parameters = [a[0] for a in additional_parameter_lists]
         for combination in combinations:
             combination.extend(additional_parameters)
-        return combinations
+        return unique_parameter_combinations(combinations)
     
     for required_pattern, required_parameters in zip(required_patterns,
                                                      required_parameter_lists):
@@ -278,7 +280,18 @@ def find_combinations(required_patterns, names,
         if combination:
             combinations.append(combination)
     
-    return combinations
+    return unique_parameter_combinations(combinations)
+
+
+def unique_parameter_combinations(combinations):
+    unique_combinations = []
+    for combination in combinations:
+        for parameter in combination:
+            if combination.count(parameter) > 1:
+                break
+        else:
+            unique_combinations.append(combination)
+    return unique_combinations
 
 
 def expand_combinations(pattern_count, parameters):

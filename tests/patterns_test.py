@@ -2,12 +2,13 @@ import unittest
 
 from flightdatautilities.patterns import (
     expand_combinations,
+    find_combinations,
     get_pattern,
     group_parameter_names,
     match_options,
     parameter_pattern_map,
     parse_options,
-    find_combinations,
+    unique_parameter_combinations,
     wildcard_match,
 )
 
@@ -48,21 +49,21 @@ class TestWilcardMatch(unittest.TestCase):
         
     def test_wildcard_match(self):
         params = [
-            'ILS Localizer', 
-            'ILS Localizer (R)',
-            'ILS Localizer (L)',
-            'ILS Localizer (L) (Capt)',
+            'Altitude STD',
+            'Brake (L) Pressure Inboard', 
+            'Brake (R) Pressure Ourboard', 
             'ILS Localizer (L) (1)',
             'ILS Localizer (L) (2)',
+            'ILS Localizer (L) (Capt)',
+            'ILS Localizer (L)',
             'ILS Localizer (R) (1)',
-            'Rate of Climb', 
-            'Altitude STD',
-            'Brake (R) Pressure Ourboard', 
-            'Brake (L) Pressure Inboard', 
-            'ILS Localizer Deviation Warning',
-            'ILS Localizer Test Tube Inhibit', 
+            'ILS Localizer (R)',
             'ILS Localizer Beam Anomaly',
+            'ILS Localizer Deviation Warning',
             'ILS Localizer Engaged',
+            'ILS Localizer Test Tube Inhibit', 
+            'ILS Localizer', 
+            'Rate of Climb', 
         ]
         # exact match
         self.assertEqual(wildcard_match('ILS Localizer', params),
@@ -194,24 +195,34 @@ class TestParseOptions(unittest.TestCase):
                           options=['(1)', '(2)', '(A)', '(B)', '(Capt)']),
             ['(1)'])
 
+class TestUniqueParameterCombinations(unittest.TestCase):
+    
+    def test_unique_parameter_combinations(self):
+        self.assertEqual(
+            unique_parameter_combinations([['Airspeed'],
+                                           ['Airspeed', 'Pitch'],
+                                           ['Airspeed', 'Airspeed']]),
+            [['Airspeed'], 
+             ['Airspeed', 'Pitch']])
+
 
 class TestFindCombinations(unittest.TestCase):
     
     def test_find_combinations(self):
         parameters = [
             'Airspeed',
-            'Heading',
-            'Pitch',
-            'Eng (1) N1',
-            'Eng (2) N1',
-            'Eng (1) Gas Temp',
-            'Eng (2) Gas Temp',
-            'Eng (3) Gas Temp',
-            'Eng (1) Fuel Flow',
-            'Eng (2) Fuel Flow',
             'Altitude Radio (A)',
             'Altitude Radio (B)',
             'Altitude Radio (C)',
+            'Eng (1) Fuel Flow',
+            'Eng (1) Gas Temp',
+            'Eng (1) N1',
+            'Eng (2) Fuel Flow',
+            'Eng (2) Gas Temp',
+            'Eng (2) N1',
+            'Eng (3) Gas Temp',
+            'Heading',
+            'Pitch',
         ]
         
         self.assertEqual(find_combinations([u'Heading', 'Airspeed'], parameters,
@@ -253,3 +264,6 @@ class TestFindCombinations(unittest.TestCase):
                               [u'Flap Angle', u'Flap Channel Fault (3)',
                                u'Flap Channel Fault (4)', u'Flap Lever']),
             [['Flap Lever', 'Flap Angle']])
+        self.assertEqual(find_combinations([u'Elevator (L)', 'Elevator (*)'],
+                                           ['Elevator (L)', 'Elevator (R)']),
+                         [['Elevator (L)', 'Elevator (R)']])
