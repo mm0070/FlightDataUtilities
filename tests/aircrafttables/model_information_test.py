@@ -194,7 +194,6 @@ class TestLeverInformation(unittest.TestCase):
         self.assertIsInstance(x, dict)
         self.assertTrue(all(isinstance(k, (float, int)) for k in x.iterkeys()))
         self.assertTrue(all(isinstance(v, str) for v in x.itervalues()))
-        # what about just checking the results?! why so abstract?!!
 
     def test__get_lever_angles(self):
         # Ensure that we raise an exception if no valid arguments are provided:
@@ -225,12 +224,20 @@ class TestLeverInformation(unittest.TestCase):
                 self.assertTrue(all(len(k) == 2 for k in x.iterkeys()))
                 self.assertTrue(all(len(v) == 3 for v in x.itervalues()))
                 # Ensure that the angles are found in related mappings:
-                s0 = set(v[0] for v in x.itervalues())
-                s1 = set(getattr(mi, 'SLAT_%s_MAP' % t)[name])
-                self.assertEqual(s0, s1, 'Broken slat values for %s' % name)
-                f0 = set(v[1] for v in x.itervalues())
-                f1 = set(getattr(mi, 'FLAP_%s_MAP' % t)[name])
-                self.assertEqual(f0, f1, 'Broken flap values for %s' % name)
+                s0 = set(v[0] for v in x.itervalues() if v[0] is not None)
+                if s0:
+                    s1 = set(getattr(mi, 'SLAT_%s_MAP' % t)[name])
+                    self.assertEqual(s0, s1, 'Broken slat values for %s' % name)
+                f0 = set(v[1] for v in x.itervalues() if v[1] is not None)
+                if f0:
+                    f1 = set(getattr(mi, 'FLAP_%s_MAP' % t)[name])
+                    self.assertEqual(f0, f1, 'Broken flap values for %s' % name)
+                a0 = set(v[2] for v in x.itervalues() if v[2] is not None)
+                if a0:
+                    a1 = set(getattr(mi, 'AILERON_%s_MAP' % t)[name])
+                    self.assertEqual(a0, a1, 'Broken aileron values for %s' % name)
+                if not any((s0, f0, a0)):
+                    self.fail('Broken lever map for %s' % name)
 
 
 class TestStabilizerInformation(unittest.TestCase):
