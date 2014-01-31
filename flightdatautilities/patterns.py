@@ -220,9 +220,9 @@ def find_combinations(required_patterns, names,
         return matches
     
     # Remove None values.
-    required_patterns = [r for r in required_patterns if r is not None]
+    required_patterns = [r for r in required_patterns if r]
     
-    additional_patterns = [a for a in additional_patterns if a is not None]
+    additional_patterns = [a for a in additional_patterns if a]
     
     required_parameter_lists = [wildcard_match(r, names)
                                 for r in required_patterns]
