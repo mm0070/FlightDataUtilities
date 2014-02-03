@@ -4,8 +4,8 @@ import re
 from collections import defaultdict
 
 
-OPTIONS = ('(A)', '(B)', '(C)', '(N)', '(L)', '(R)', '(Foreign)', '(Local)',
-           '(EFIS)', '(Capt)', '(FO)',
+OPTIONS = ('(A)', '(B)', '(C)', '(N)', '(L)', '(R)',
+           '(Foreign)', '(Local)', '(EFIS)', '(Capt)', '(FO)', '(Aux)',
            '(1)', '(2)', '(3)', '(4)', '(5)', '(6)', '(7)', '(8)', '(9)',
            '(10)', '(11)', '(12)', '(13)', '(14)', '(15)', '(16)')
 
