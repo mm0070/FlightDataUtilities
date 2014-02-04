@@ -119,7 +119,7 @@ class VelocitySpeed(object):
                     lookup = self.tables[name][detent]
                 except KeyError:
                     try_fallback = True
-                    msg = "Trying fallback %s values in table %s for detent %s."
+                    msg = "Trying fallback %s values in table %s for detent %r."
                     logger.warning(msg, name, self.__class__.__name__, detent)
                 else:
                     msg = "Using standard %s values from table %s."
@@ -129,7 +129,7 @@ class VelocitySpeed(object):
                     lookup = self.fallback[name][detent]
                 except KeyError:
                     lookup = None
-                    msg = "Missing %s values in table %s for detent %s."
+                    msg = "Missing %s values in table %s for detent %r."
                     logger.error(msg, name, self.__class__.__name__, detent)
                 else:
                     msg = "Using fallback %s values from table %s."
