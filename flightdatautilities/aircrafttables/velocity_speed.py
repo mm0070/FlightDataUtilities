@@ -10,8 +10,8 @@ the lookup tables as we cannot always determine suitable values for some of the
 parameters (temperature, altitude, runway slope, tailwind, etc.) nor presume to
 guess what value was chosen for a particular flight.
 
-It is necessary to ensure that flap/conf values reflect those held for the
-aircraft family or series in the model information module.
+It is necessary to ensure that flap lever values reflect those held for the
+aircraft family, series or model in the model information module.
 
 When deciding on the table to select, we use the following order of precedence:
 
@@ -51,15 +51,15 @@ from flightdatautilities.aircrafttables.interfaces import VelocitySpeed
 #
 # The standard tables may contain a number of entries:
 #
-#   - v2:   a dictionary of tuples of weights and speeds by flap detent.
-#   - vref: a dictionary of tuples of weights and speeds by flap detent.
+#   - v2:   a dictionary of tuples of weights and speeds by flap lever detent.
+#   - vref: a dictionary of tuples of weights and speeds by flap lever detent.
 #   - vmo:  a table for maximum operating speed.
 #   - mmo:  a table for maximum operating mach.
 #
 # The fallback tables may contain a number of entries:
 #
-#   - v2:   a dictionary of fixed speeds by flap detent.
-#   - vref: a dictionary of fixed speeds by flap detent.
+#   - v2:   a dictionary of fixed speeds by flap lever detent.
+#   - vref: a dictionary of fixed speeds by flap lever detent.
 #
 # The entry for v2/vref standard tables should match the format:
 #

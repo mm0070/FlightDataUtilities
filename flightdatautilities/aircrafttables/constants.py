@@ -33,7 +33,7 @@ AVAILABLE_CONF_STATES = {
 AVAILABLE_CONF_STATES_REV = {v: k for k, v in AVAILABLE_CONF_STATES.items()}
 
 
-# Mapping of value to lever positions (for use by Airbus/Falcon):
+# Mapping of value to lever positions (for use by Airbus):
 LEVER_STATES = {
     0: 'Lever 0',
     1: 'Lever 1',
@@ -54,11 +54,6 @@ CONF_TO_LEVER = {
     '2*':   LEVER_STATES[3],  # Lever position is 3 when aircraft selects 2*
     '3':    LEVER_STATES[3],
     'Full': LEVER_STATES[4],
-##### Falcon:
-####'SF0':  LEVER_STATES[0],
-####'SF1':  LEVER_STATES[1],
-####'SF2':  LEVER_STATES[2],
-####'SF3':  LEVER_STATES[3],
 }
 
 
