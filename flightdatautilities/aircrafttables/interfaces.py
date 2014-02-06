@@ -46,8 +46,8 @@ class VelocitySpeed(object):
     minimum_speed = None
     weight_scale = 1     # Can be used to scale values, e.g. 1000 lb.
     weight_unit = ut.KG  # Can be one of 'lb', 'kg', 't' or None.
-    tables = {}          # Can contain the following keys: v2, vref, vmo, mmo.
-    fallback = {}        # Can contain the following keys: v2, vref.
+    tables = {}          # Can contain the following keys: v2, vref, vapp, vmo, mmo.
+    fallback = {}        # Can contain the following keys: v2, vref, vapp.
 
     def _build_array(self, array, mask=None, value=0.0):
         '''
@@ -91,7 +91,7 @@ class VelocitySpeed(object):
         :raises: KeyError -- when table or flap/conf detents is not found.
         :raises: ValueError -- when weight units cannot be converted.
         '''
-        if name in ('v2', 'vref'):
+        if name in ('v2', 'vref', 'vapp'):
             detent = kwargs['detent']
             weight = kwargs['weight']
             scalar = isinstance(weight, (type(None), int, float))
@@ -253,6 +253,26 @@ class VelocitySpeed(object):
         '''
         return self._determine_vspeed('vref', detent=detent, weight=weight)
 
+    def vapp(self, detent, weight=None):
+        '''
+        Look up values from tables for Vapp.
+
+        Will use interpolation and convert units if necessary.
+
+        A masked array or value will be returned if provided parameter arrays
+        are outside of ranges defined within the lookup tables.
+
+        :param detent: flap or configuration detent to use in look-up.
+        :type detent: string
+        :param weight: weight of the aircraft.
+        :type weight: float or np.ma.array
+        :returns: one or more values of Vapp.
+        :rtype: float or np.ma.array
+        :raises: KeyError -- when table or flap/conf detents is not found.
+        :raises: ValueError -- when weight units cannot be converted.
+        '''
+        return self._determine_vspeed('vapp', detent=detent, weight=weight)
+
     def vmo(self, altitude):
         '''
         Look up values from tables for VMO.
@@ -304,3 +324,13 @@ class VelocitySpeed(object):
         :rtype: list
         '''
         return self._determine_detents('vref')
+
+    @property
+    def vapp_detents(self):
+        '''
+        Provides a list of available flap/conf detents for Vapp.
+
+        :returns: a list of flap/conf detents.
+        :rtype: list
+        '''
+        return self._determine_detents('vapp')

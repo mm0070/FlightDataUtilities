@@ -53,6 +53,7 @@ from flightdatautilities.aircrafttables.interfaces import VelocitySpeed
 #
 #   - v2:   a dictionary of tuples of weights and speeds by flap lever detent.
 #   - vref: a dictionary of tuples of weights and speeds by flap lever detent.
+#   - vapp: a dictionary of tuples of weights and speeds by flap lever detent.
 #   - vmo:  a table for maximum operating speed.
 #   - mmo:  a table for maximum operating mach.
 #
@@ -60,8 +61,9 @@ from flightdatautilities.aircrafttables.interfaces import VelocitySpeed
 #
 #   - v2:   a dictionary of fixed speeds by flap lever detent.
 #   - vref: a dictionary of fixed speeds by flap lever detent.
+#   - vapp: a dictionary of fixed speeds by flap lever detent.
 #
-# The entry for v2/vref standard tables should match the format:
+# The entry for v2/vref/vapp standard tables should match the format:
 #
 #   {
 #       'weight': (100, 200, 300, 400, 500),
@@ -69,7 +71,7 @@ from flightdatautilities.aircrafttables.interfaces import VelocitySpeed
 #           '30': (105, 110, 115, 120, 125),
 #   }
 #
-# The entry for v2/vref fallback tables should match the format:
+# The entry for v2/vref/vapp fallback tables should match the format:
 #
 #   {
 #       '25': 120,

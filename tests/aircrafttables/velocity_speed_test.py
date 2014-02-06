@@ -98,17 +98,17 @@ def _velocity_speed_tables_integrity_test_generator():
 
         # Ensure that we have some form of table to lookup in:
         self.assertTrue(len(cls.tables) or len(cls.fallback), 'No velocity speed tables defined.')
-        self.assertLessEqual(set(cls.tables.keys()), set(('v2', 'vref', 'vmo', 'mmo')), 'Unknown velocity speed type in tables.')
-        self.assertLessEqual(set(cls.fallback.keys()), set(('v2', 'vref')), 'Unknown velocity speed type in fallback tables.')
+        self.assertLessEqual(set(cls.tables.keys()), set(('v2', 'vref', 'vapp', 'vmo', 'mmo')), 'Unknown velocity speed type in tables.')
+        self.assertLessEqual(set(cls.fallback.keys()), set(('v2', 'vref', 'vapp')), 'Unknown velocity speed type in fallback tables.')
 
         # If we have standard tables, we must have a weight unit:
-        if len(cls.tables.keys()) and set(cls.tables.keys()) & set(('v2', 'vref')):
+        if len(cls.tables.keys()) and set(cls.tables.keys()) & set(('v2', 'vref', 'vapp')):
             self.assertIsNot(cls.weight_unit, None, 'Must have a weight unit for standard tables.')
 
         # Check the integrity of values in the standard tables:
         for name, table in cls.tables.iteritems():
 
-            if name in ('v2', 'vref'):
+            if name in ('v2', 'vref', 'vapp'):
                 self.assertTrue('weight' in table, 'Weight not in %s table.' % name)
                 weights = list(table['weight'])
                 self.assertEqual(weights, sorted(weights), 'Weights in %s table not ordered.' % name)
@@ -167,7 +167,7 @@ def _velocity_speed_tables_integrity_test_generator():
         # Check the integrity of values in the fallback tables:
         for name, table in cls.fallback.iteritems():
 
-            if name in ('v2', 'vref'):
+            if name in ('v2', 'vref', 'vapp'):
                 self.assertFalse('weight' in table, 'Weight must not be in %s fallback table.' % name)
                 self.assertGreater(len(table), 0, 'No flap/conf rows in %s fallback table.' % name)
                 t = all(isinstance(k, basestring) for k in table.iterkeys())
@@ -208,6 +208,12 @@ class TestVelocitySpeed(unittest.TestCase):
                     '15': (109, 116, 122, 129, 131, 135, 146, 151, 157, 162),
                     '20': (105, 111, 118, 124, 130, 135, 141, 147, 152, 158),
             },
+            'vapp': {
+                'weight': (100, 110, 120, 130, 140, 150, 160, 170, 180, 190),
+                     '5': (114, 121, 128, 134, 141, 147, 153, 158, 164, 169),
+                    '15': (109, 116, 122, 129, 131, 135, 146, 151, 157, 162),
+                    '20': (105, 111, 118, 124, 130, 135, 141, 147, 152, 158),
+            },
             'vmo': {
                 'altitude': (  0, 12000, 29000, 41000),
                    'speed': (335,   335,   310,   310),
@@ -217,6 +223,7 @@ class TestVelocitySpeed(unittest.TestCase):
         self.vs.fallback = {
             'v2': {'5': 122, '15': 117, '20': 113},
             'vref': {'5': 109, '15': 104, '20': 100},
+            'vapp': {'5': 109, '15': 104, '20': 100},
         }
 
     def test__v2(self):
@@ -512,6 +519,153 @@ class TestVelocitySpeed(unittest.TestCase):
         vref_15[0] = np.ma.masked
         vref_15[5] = np.ma.masked
         ma_test.assert_masked_array_equal(self.vs.vref('15', weight), vref_15)
+
+    def test__vapp(self):
+        # Test where weight argument is a single value:
+        self.assertEquals(self.vs.vapp('5', 120000), 128)
+        self.assertEquals(self.vs.vapp('15', 120000), 122)
+        self.assertEquals(self.vs.vapp('20', 145000), 132)
+        # Test where weight argument is a masked array:
+        weight = np.ma.arange(120, 130, 2) * 1000
+        weight[2] = np.ma.masked
+        vapp_05 = np.ma.array((128, 129, 130, 132, 133))
+        vapp_15 = np.ma.array((122, 123, 125, 126, 128))
+        vapp_20 = np.ma.array((118, 119, 120, 122, 123))
+        vapp_05[2] = np.ma.masked
+        vapp_15[2] = np.ma.masked
+        vapp_20[2] = np.ma.masked
+        ma_test.assert_masked_array_equal(self.vs.vapp('5', weight), vapp_05)
+        ma_test.assert_masked_array_equal(self.vs.vapp('15', weight), vapp_15)
+        ma_test.assert_masked_array_equal(self.vs.vapp('20', weight), vapp_20)
+
+    def test__vapp__minimum_speed(self):
+        self.vs.minimum_speed = 112
+        # Test where weight argument is a single value:
+        self.assertEquals(self.vs.vapp('15', 100500), 112)
+        # Test where weight argument is a masked array:
+        weight = np.ma.arange(100, 110, 2) * 1000
+        weight[2] = np.ma.masked
+        vapp_15 = np.ma.array((112, 112, 112, 113, 115))
+        vapp_15[2] = np.ma.masked
+        ma_test.assert_masked_array_equal(self.vs.vapp('15', weight), vapp_15)
+
+    def test__vapp__out_of_range(self):
+        # Test where weight argument is a single value:
+        self.assertIs(self.vs.vapp('20', 95000), np.ma.masked)
+        self.assertIs(self.vs.vapp('20', 99999), np.ma.masked)
+        self.assertIs(self.vs.vapp('20', 190001), np.ma.masked)
+        self.assertIs(self.vs.vapp('20', 195000), np.ma.masked)
+        self.assertIsNot(self.vs.vapp('20', 100000), np.ma.masked)
+        self.assertIsNot(self.vs.vapp('20', 190000), np.ma.masked)
+        self.assertEquals(self.vs.vapp('20', 100000), 105)
+        self.assertEquals(self.vs.vapp('20', 190000), 158)
+        # Test where weight argument is a masked array:
+        weight = np.ma.arange(95, 200, 20) * 1000
+        vapp_15 = np.ma.array((0, 119, 130, 140, 154, 0))
+        vapp_15[0] = np.ma.masked
+        vapp_15[5] = np.ma.masked
+        ma_test.assert_masked_array_equal(self.vs.vapp('15', weight), vapp_15)
+
+    def test__vapp__fallback__weight_not_recorded(self):
+        self.assertTrue('20' in self.vs.tables['vapp'])
+        self.assertTrue('20' in self.vs.fallback['vapp'])
+        # Test where weight argument is a single value:
+        self.assertEqual(self.vs.vapp('20'), 100)
+        self.assertIsNot(self.vs.vapp('20'), np.ma.masked)
+        # Test where weight argument is a masked array:
+        # Note: Pass in masked zeroed array of desired shape to get array.
+        weight = np.ma.repeat(0, 6)
+        weight.mask = True
+        vapp_20 = np.ma.repeat(100, 6)
+        vapp_20.mask = False
+        ma_test.assert_masked_array_equal(self.vs.vapp('20', weight), vapp_20)
+
+    def test__vapp__fallback__weight_fully_masked(self):
+        self.assertTrue('20' in self.vs.tables['vapp'])
+        self.assertTrue('20' in self.vs.fallback['vapp'])
+        # Test where weight argument is a single value:
+        self.assertEqual(self.vs.vapp('20', np.ma.masked), 100)
+        self.assertIsNot(self.vs.vapp('20', np.ma.masked), np.ma.masked)
+        # Test where weight argument is a masked array:
+        # Note: Array with fallback using weight array shape if fully masked.
+        weight = np.ma.repeat(120, 6) * 1000
+        weight.mask = True
+        vapp_20 = np.ma.repeat(100, 6)
+        vapp_20.mask = False
+        ma_test.assert_masked_array_equal(self.vs.vapp('20', weight), vapp_20)
+
+    def test__vapp__fallback__detent_in_fallback_only(self):
+        del self.vs.tables['vapp']['20']
+        self.assertFalse('20' in self.vs.tables['vapp'])
+        self.assertTrue('20' in self.vs.fallback['vapp'])
+        # Test where weight argument is a single value:
+        self.assertEqual(self.vs.vapp('20'), 100)
+        self.assertIsNot(self.vs.vapp('20'), np.ma.masked)
+        self.assertEqual(self.vs.vapp('20', 100000), 100)
+        self.assertIsNot(self.vs.vapp('20', 100000), np.ma.masked)
+        self.assertEqual(self.vs.vapp('20', 120000), 100)
+        self.assertIsNot(self.vs.vapp('20', 120000), np.ma.masked)
+        # Test where weight argument is a masked array:
+        weight = np.ma.arange(100, 200, 10) * 1000
+        weight[5] = np.ma.masked
+        vapp_20 = np.ma.repeat(100, weight.size)
+        vapp_20.mask = False
+        ma_test.assert_masked_array_equal(self.vs.vapp('20', weight), vapp_20)
+
+    def test__vapp__fallback__detent_not_available(self):
+        del self.vs.tables['vapp']['20']
+        del self.vs.fallback['vapp']['20']
+        self.assertFalse('20' in self.vs.tables['vapp'])
+        self.assertFalse('20' in self.vs.fallback['vapp'])
+        # Test where weight argument is a single value:
+        self.assertIs(self.vs.vapp('20'), np.ma.masked)
+        self.assertIs(self.vs.vapp('20', 100000), np.ma.masked)
+        self.assertIs(self.vs.vapp('20', 120000), np.ma.masked)
+        # Test where weight argument is a masked array:
+        weight = np.ma.arange(100, 200, 10) * 1000
+        weight[5] = np.ma.masked
+        vapp_20 = np.ma.repeat(0, weight.size)
+        vapp_20.mask = True
+        ma_test.assert_masked_array_equal(self.vs.vapp('20', weight), vapp_20)
+
+    def test__vapp__fallback__no_weight_based_table(self):
+        del self.vs.tables['vapp']
+        self.assertFalse('vapp' in self.vs.tables)
+        self.assertTrue('20' in self.vs.fallback['vapp'])
+        # Test where weight argument is a single value:
+        self.assertEqual(self.vs.vapp('20'), 100)
+        self.assertIsNot(self.vs.vapp('20'), np.ma.masked)
+        self.assertEqual(self.vs.vapp('20', 100000), 100)
+        self.assertIsNot(self.vs.vapp('20', 100000), np.ma.masked)
+        self.assertEqual(self.vs.vapp('20', 120000), 100)
+        self.assertIsNot(self.vs.vapp('20', 120000), np.ma.masked)
+        # Test where weight argument is a masked array:
+        weight = np.ma.arange(100, 200, 10) * 1000
+        weight[5] = np.ma.masked
+        vapp_20 = np.ma.repeat(100, weight.size)
+        vapp_20.mask = False
+        ma_test.assert_masked_array_equal(self.vs.vapp('20', weight), vapp_20)
+
+    def test__vapp__weight_unit__invalid(self):
+        invalid = set(ut.available()) - set((None, ut.KG, ut.LB, ut.TONNE))
+        for unit in invalid:
+            self.vs.weight_unit = unit
+            self.assertRaises(KeyError, self.vs.vapp, '15', 120000)
+
+    def test__vapp__weight_scale__1000_lb(self):
+        self.vs.weight_scale = 1000
+        self.vs.weight_unit = ut.LB
+        # Test where weight argument is a single value:
+        self.assertIs(self.vs.vapp('20', 43091), np.ma.masked)
+        self.assertIs(self.vs.vapp('20', 88451), np.ma.masked)
+        self.assertIsNot(self.vs.vapp('20', 54431), np.ma.masked)
+        self.assertAlmostEqual(self.vs.vapp('20', 54431), 118, places=3)
+        # Test where weight argument is a masked array:
+        weight = np.ma.array((43091, 52163, 61239, 70307, 79379, 88451))
+        vapp_15 = np.ma.array((0, 119, 130, 141, 154, 0))
+        vapp_15[0] = np.ma.masked
+        vapp_15[5] = np.ma.masked
+        ma_test.assert_masked_array_equal(self.vs.vapp('15', weight), vapp_15)
 
     def test__vmo__none(self):
         self.vs.tables['vmo'] = None
