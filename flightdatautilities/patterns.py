@@ -285,6 +285,9 @@ def find_combinations(required_patterns, names,
 
 
 def unique_parameter_combinations(combinations):
+    '''
+    Find combinations where all parameter names are unique.
+    '''
     unique_combinations = []
     for combination in combinations:
         for parameter in combination:
@@ -297,6 +300,15 @@ def unique_parameter_combinations(combinations):
 
 def expand_combinations(pattern_count, parameters):
     '''
+    Expand parameters into unique combinations.
+    
+    expand_combinations(2, ['Altitude Radio (A)',
+                            'Altitude Radio (B)',
+                            'Altitude Radio (C)'])
+    Result:
+    [['Altitude Radio (A)', 'Altitude Radio (B)'],
+     ['Altitude Radio (A)', 'Altitude Radio (C)'],
+     ['Altitude Radio (B)', 'Altitude Radio (C)']]
     '''
     sorted_combinations = []
     for combination in itertools.product(*[parameters] * pattern_count):
