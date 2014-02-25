@@ -21,7 +21,7 @@ import shutil
 import subprocess
 import unittest
 import zipfile
-    
+
 
 def copy_file(orig_path, dest_dir=None, postfix='_copy'):
     '''
@@ -51,6 +51,12 @@ def copy_file(orig_path, dest_dir=None, postfix='_copy'):
 
 
 def split_path(path):
+    '''
+    Split a path string into a list of path elements.
+    
+    :type path: str
+    :rtype: [str]
+    '''
     head,tail = os.path.split(path)
     path_list = []
     while tail:
@@ -60,36 +66,66 @@ def split_path(path):
 
 
 def join_path(path_list):
+    '''
+    Join a list of path names together.
+    
+    :type path_list: [str]
+    :rtype: str
+    '''
     path = ''
     for element in path_list:
-        path = os.path.join(path,element)
+        path = os.path.join(path, element)
     return path
 
 
 def dir_path(path):
-    """List all files recursivly in path
+    """
+    List all files recursively in path.
     :param path: Path to folder.
     :type: str
     :return: List of all files - full paths.
-    :rtype: list(str)"""
+    :rtype: list(str)
+    """
     file_list = []
     for (path, dirs, files) in os.walk(os.path.abspath(path)):
         for _file in files:
-            file_path = os.path.join(path,_file)
+            file_path = os.path.join(path, _file)
             file_list.append(file_path)
     return file_list
 
 
-def is_in_subdir(path,_file):
-    if len(path)>=len(_file):
+def subdir_paths(path):
+    '''
+    List all subdirectory paths.
+    '''
+    dir_paths = []
+    for (path, dirs, files) in os.walk(os.path.abspath(path)):
+        dir_paths.extend(os.path.join(path, d) for d in dirs)
+    return dir_paths
+
+
+def is_in_subdir(path, _file):
+    '''
+    :type path: str
+    :rtype bool:
+    '''
+    if len(path) >= len(_file):
         return False
-    for i in range(0,len(path)):
+    
+    for i in range(0, len(path)):
         if path[i] != _file[i]:
             return False
+    
     return True
 
 
 def normalise_path(path):
+    '''
+    Normalise Windows paths into Unix paths.
+    
+    :type path: str
+    :rtype: [str]
+    '''
     normalised_path = path.replace("\\","/")
     if not normalised_path.endswith("/"):
         normalised_path += '/'
@@ -97,9 +133,15 @@ def normalise_path(path):
 
 
 def is_paths_equal(path1,path2):
-    """Mainly for windows where path can be represented
+    """
+    Mainly for windows where path can be represented
     in two forms C:/abc/def or C:\\abc\\def. In such case
-    comparing string will give incorrect result."""
+    comparing string will give incorrect result.
+    
+    :type path1: str
+    :type path2: str
+    :rtype: bool
+    """
     system = platform.system()
     if system == 'Linux':
         return path1 == path2
@@ -107,14 +149,6 @@ def is_paths_equal(path1,path2):
         return normalise_path(path1) == normalise_path(path2)
     else:
         raise NotImplementedError
-
-
-class IsPathEqualTest(unittest.TestCase):
-    def test_simple(self):
-        self.assertTrue(is_paths_equal("C:/abc/def","C:\\abc\\def"))
-        self.assertTrue(is_paths_equal("C:/abc/def/","C:\\abc\\def"))
-        self.assertTrue(is_paths_equal("C:/abc/def/","C:\\abc\\def\\"))
-        self.assertTrue(is_paths_equal("C:/abc/def","C:\\abc\\def\\"))
 
 
 def pretty_size(size):
@@ -132,7 +166,8 @@ def pretty_size(size):
 
 
 def sha_hash_file(file_path_in):
-    """ Returns the SHA256 file hash from the file_path_in.
+    """
+    Returns the SHA256 file hash from the file_path_in.
     Works in 1MB chunks to iteratively create the hash.
     
     Hash is the hexvalues of the digest which is 64 chars long, e.g.

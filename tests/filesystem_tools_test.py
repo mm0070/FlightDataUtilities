@@ -1,9 +1,15 @@
 import unittest
-import os
-import shutil
+
+
 import bz2
-import flightdatautilities.filesystem_tools as fst
 import mock
+import os
+import platform
+import shutil
+
+import flightdatautilities.filesystem_tools as fst
+
+
 
 class TestPrettySize(unittest.TestCase):
     def test_pretty_size(self):
@@ -65,6 +71,13 @@ class TestFilesystemTools(unittest.TestCase):
     #def test_tarbz2_extension(self):
         #fn = fst.tarbz2(self.non_bz2_filename, self.flist)
         #self.assertEqual(fn, self.non_bz2_filename + ".tar.bz2")
+    
+    def test_is_path_equal(self):
+        if platform.system() == 'Windows':
+            self.assertTrue(fst.is_paths_equal("C:/abc/def", "C:\\abc\\def"))
+            self.assertTrue(fst.is_paths_equal("C:/abc/def/", "C:\\abc\\def"))
+            self.assertTrue(fst.is_paths_equal("C:/abc/def/", "C:\\abc\\def\\"))
+            self.assertTrue(fst.is_paths_equal("C:/abc/def", "C:\\abc\\def\\"))
 
     def test_find_patterns_in_file(self):
         file_with_pattern = os.path.join(os.path.dirname(__file__), 'test_data', 'pattern_exists.txt')
