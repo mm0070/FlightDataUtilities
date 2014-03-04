@@ -31,6 +31,14 @@ def check_sync(file_obj, wps, word_index, pattern_name):
 
     Performs analysis of sync words in the file to check if there are no
     sync problems.
+    
+    :param file_obj: File object containing byte-aligned data.
+    :param wps: Expected words per second
+    :type wps: int
+    :param word_index: First index of a sync word within the data.
+    :type word_index: int
+    :param pattern_name: Sync word pattern name, either 'Standard or Reverse'.
+    :type pattern_name: str
     '''
     array = np.fromfile(file_obj, dtype=np.short)
 
@@ -76,6 +84,20 @@ def check_sync(file_obj, wps, word_index, pattern_name):
 
 
 def inspect(file_obj_or_str, words_to_read):
+    '''
+    Inspect a byte-aligned data file to find out:
+    
+     * Words per second
+     * First index of a sync word within the file.
+     * Whether the sync pattern is 'Standard' or 'Reversed'
+     
+    :param file_obj_or_str: Data file path or object.
+    :type file_obj_or_str: file or str
+    :param words_to_read: Number of words to read from the file while attempting to find sync.
+    :type words_to_read: int
+    :returns: Returns a tuple containing the words per second, first sync word index and the sync pattern. All three will be None if byte-aligned data cannot be found.
+    :rtype: (int or None, int or None, str or None)
+    '''
     if isinstance(file_obj_or_str, file):
         words = np.fromfile(file_obj_or_str, dtype=np.short,
                             count=words_to_read)
