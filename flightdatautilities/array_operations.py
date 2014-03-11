@@ -36,13 +36,28 @@ def merge_masks(masks):
 
     :param masks: Masks to OR together.
     :type masks: iterable of np.ma.masked_array.mask
+    :raises IndexError: If masks is empty.
     :returns: Single mask, the result of ORing masks.
     :rtype: np.ma.masked_array.mask
     '''
-    merged_mask = masks[0]
+    merged_mask = np.ma.make_mask(masks[0])
     for mask in masks[1:]:
         merged_mask = np.ma.mask_or(merged_mask, mask)
     return merged_mask
+
+
+def mask_ratio(mask):
+    '''
+    Ratio of masked data (1 == all masked).
+    '''
+    return mask.sum() / float(len(mask))
+
+
+def mask_percentage(mask):
+    '''
+    Percentage of masked data.
+    '''
+    return (1 - mask_ratio(mask)) * 100
 
 
 def sum_arrays(arrays):
@@ -51,6 +66,7 @@ def sum_arrays(arrays):
 
     :param arrays: Arrays to sum.
     :type arrays: iterable of np.ma.masked_array
+    :raises IndexError: If arrays is empty.
     :returns: The result of summing arrays.
     :rtype: np.ma.masked_array
     '''
