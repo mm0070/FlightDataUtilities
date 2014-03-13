@@ -50,12 +50,17 @@ def mask_ratio(mask):
     '''
     Ratio of masked data (1 == all masked).
     '''
+    # Handle scalars.
+    if np.all(mask):
+        return 1
+    elif not np.any(mask):
+        return 0
     return mask.sum() / float(len(mask))
 
 
-def mask_percentage(mask):
+def percent_unmasked(mask):
     '''
-    Percentage of masked data.
+    Percentage of unmasked data.
     '''
     return (1 - mask_ratio(mask)) * 100
 
@@ -110,10 +115,18 @@ def upsample_arrays(arrays):
 
     :param arrays: Arrays to upsample.
     :type arrays: iterable of np.ma.masked_array
+    :raises ValueError: If array lengths are not multiples.
     :returns: Arrays upsampled to the size of the largest.
     :rtype: iterable of np.ma.masked_array
     '''
-    lengths = [len(x) for x in arrays]
+    lengths = []
+    for array in arrays:
+        try:
+            length = len(array)
+        except TypeError:
+            # Scalar
+            length = 1
+        lengths.append(length)
     largest = max(lengths)
     if largest == min(lengths):
         return arrays
@@ -123,9 +136,10 @@ def upsample_arrays(arrays):
             raise ValueError(
                 "The largest array length should be a multiple of all others "
                 "'%s'." % lengths)
+    
     upsampled_arrays = []
-    for array in arrays:
-        repeat = largest / len(array)
+    for array, length in zip(arrays, lengths):
+        repeat = largest / length
         if repeat > 1:
             array = array.repeat(repeat)
         upsampled_arrays.append(array)

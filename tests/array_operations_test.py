@@ -4,9 +4,9 @@ import unittest
 from flightdatautilities import masked_array_testutils as ma_test
 from flightdatautilities.array_operations import (
     downsample_arrays,
-    mask_percentage,
     mask_ratio,
     merge_masks,
+    percent_unmasked,
     sum_arrays,
     upsample_arrays,
 )
@@ -14,6 +14,10 @@ from flightdatautilities.array_operations import (
 
 class TestMaskRatio(unittest.TestCase):
     def test_mask_ratio(self):
+        self.assertEqual(mask_ratio(True), 1)
+        self.assertEqual(mask_ratio(np.bool_(True)), 1)
+        self.assertEqual(mask_ratio(False), 0)
+        self.assertEqual(mask_ratio(np.bool_(False)), 0)
         array = np.ma.array(range(10))
         self.assertEqual(mask_ratio(np.ma.getmaskarray(array)), 0)
         array[0] = np.ma.masked
@@ -97,6 +101,13 @@ class TestDownsampleArrays(unittest.TestCase):
 
 class TestUpsampleArrays(unittest.TestCase):
     def test_upsample_arrays(self):
+        array1 = np.bool_(True)
+        array2 = np.arange(5)
+        upsampled_array1, upsampled_array2 = upsample_arrays([array1,
+                                                              array2])
+        ma_test.assert_array_equal(upsampled_array1, np.array([array1] * 5))
+        ma_test.assert_array_equal(upsampled_array2, array2)
+        
         array1 = np.ma.arange(10)
         array2 = np.ma.arange(5)
         upsampled_array1, upsampled_array2 = upsample_arrays([array1,
@@ -114,11 +125,11 @@ class TestUpsampleArrays(unittest.TestCase):
         ma_test.assert_array_equal(upsampled_array2, result_array2)
 
 
-class TestMaskPercentage(unittest.TestCase):
+class TestPercentUnmasked(unittest.TestCase):
     def test_mask_percentage(self):
         array = np.ma.array(range(10))
-        self.assertEqual(mask_percentage(np.ma.getmaskarray(array)), 100)
+        self.assertEqual(percent_unmasked(np.ma.getmaskarray(array)), 100)
         array[0] = np.ma.masked
-        self.assertEqual(mask_percentage(np.ma.getmaskarray(array)), 90)
+        self.assertEqual(percent_unmasked(np.ma.getmaskarray(array)), 90)
         invalid_array = np.ma.array(range(100), mask=[True]*100)
-        self.assertEqual(mask_percentage(np.ma.getmaskarray(invalid_array)), 0)
+        self.assertEqual(percent_unmasked(np.ma.getmaskarray(invalid_array)), 0)
