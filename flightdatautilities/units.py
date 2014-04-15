@@ -131,6 +131,7 @@ DOTS = 'dots'
 TRIM = 'trim'
 CYCLES = 'cycles'
 PERCENT = '%'
+NM_KG = 'NM/kg'
 
 
 CONVERSION_MULTIPLIERS = {
