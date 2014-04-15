@@ -716,7 +716,7 @@ UNIT_CATEGORIES = {
     'Time': (HOUR, MINUTE, SECOND, DAY, WEEK, MONTH, YEAR),
     'Torque': (FT_LB, IN_OZ),
     'Volume': (PINT, QUART, GALLON, LITER),
-    'Other': (DDM, GS_DDM, LOC_DDM, DOTS, TRIM, CYCLES, PERCENT),
+    'Other': (DDM, GS_DDM, LOC_DDM, DOTS, TRIM, CYCLES, PERCENT, NM_KG),
 }
 
 
@@ -807,6 +807,7 @@ UNIT_DESCRIPTIONS = {
     TRIM: 'trim',
     CYCLES: 'cycles',
     PERCENT: 'percent',
+    NM_KG: 'Nautical Miles per kilogram',
 }
 
 
