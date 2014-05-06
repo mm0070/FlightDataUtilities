@@ -2,3 +2,4 @@ numpy
 scipy
 decorator
 bz2file
+blosc

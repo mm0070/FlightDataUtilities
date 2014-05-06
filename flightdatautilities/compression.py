@@ -9,6 +9,7 @@ space.
 import os
 import tempfile
 
+import blosc
 import bz2
 import gzip
 
@@ -16,13 +17,53 @@ import shutil
 import logging
 
 
+logger = logging.getLogger(name=__name__)
+
+
+class BloscFile(object):
+    # Size of bits to be compressed.
+    TYPE_SIZE = 8
+    
+    def __init__(self, file_path, mode='r', compression='blosclz',
+                 compresslevel=9):
+        '''
+        Compression is only required for writing files.
+        
+        Q: Force maximum compresslevel?
+        '''
+        self.file_path = file_path
+        self.compression = compression
+        self.compresslevel = compresslevel
+        self.file = open(self.file_path, mode)
+    
+    def __enter__(self):
+        return self
+    
+    def __exit__(self, a_type, value, traceback):
+        self.close()
+    
+    def read(self):
+        '''
+        Does not support byte count to read.
+        '''
+        bytes = self.file.read()
+        return blosc.decompress(bytes)
+    
+    def write(self, bytes):
+        compressed_bytes = blosc.compress(bytes, 8, clevel=self.compresslevel,
+                                          cname=self.compression)
+        self.file.write(compressed_bytes)
+    
+    def close(self):
+        self.file.close()
+
+
 COMPRESSION_LEVEL = 6
 COMPRESSION_FORMATS = {
     'gz': gzip.GzipFile,
     'bz2': bz2.BZ2File,
+    'blosc': BloscFile,
 }
-
-logger = logging.getLogger(name=__name__)
 
 
 class CompressedFile(object):
