@@ -300,5 +300,38 @@ class CachedCompressedFile(CompressedFile):
         pass
 
 
+if __name__ == '__main__':
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('input_file_path')
+    parser.add_argument('-o', '--output-file-path')
+    subparser = parser.add_subparsers(dest='command')
+    compress_parser = subparser.add_parser('compress')
+    compress_parser.add_argument('compressor')
+    decompress_parser = subparser.add_parser('decompress')
+    
+    args = parser.parse_args()
+    
+    output_path = args.output_file_path
+    
+    if args.command == 'compress':
+        compressor = COMPRESSION_FORMATS[args.compressor]
+        if not output_path:
+            output_path = args.input_file_path + '.%s' % args.compressor
+        with compressor(output_path, 'w') as output_file, open(args.input_file_path) as input_file:
+            output_file.write(input_file.read())
+    elif args.command == 'decompress':
+        for extension, decompressor in COMPRESSION_FORMATS.items():
+            if args.input_file_path.endswith(extension):
+                if not output_path:
+                    output_path = args.input_file_path[:-(len(extension) + 1)]
+                break
+        else:
+            parser.error('Unknown file extension')
+        with open(output_path, 'w') as output_file:
+            output_file.write(decompressor(args.input_file_path).read())
+    
+
+
 ###############################################################################
 # vim:et:ft=python:nowrap:sts=4:sw=4:ts=4
