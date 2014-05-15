@@ -24,7 +24,7 @@ class BloscFile(object):
     # Size of bits to be compressed.
     TYPE_SIZE = 8
     
-    def __init__(self, file_path, mode='r', compression='blosclz',
+    def __init__(self, file_path, mode='rb', compression='blosclz',
                  compresslevel=9):
         '''
         Compression is only required for writing files.
@@ -150,7 +150,7 @@ class CompressedFile(object):
         '''
         # Uncompress to temp file
         with file(self.uncompressed_path, 'w+b') as uncompressed_file:
-            with self.compressor(self.compressed_path, 'r') as compressed_file:
+            with self.compressor(self.compressed_path, 'rb') as compressed_file:
                 uncompressed_file.write(compressed_file.read())
 
         logger.debug('Uncompressed file stored in temporary location `%s`',
