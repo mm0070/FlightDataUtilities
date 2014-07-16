@@ -49,6 +49,11 @@ MILLIVOLT = 'mV'
 MILLIAMP = 'mA'
 MICROAMP = 'uA'  # [1]
 
+# Energy
+JOULE = 'J'
+KJ = 'kJ'
+MJ = 'MJ'
+
 # Flow (Volume):
 LB_H = 'lb/h'
 KG_H = 'kg/h'
@@ -705,6 +710,7 @@ UNIT_CATEGORIES = {
     'Acceleration': (G, RMS_G),
     'Angles': (DEGREE, RADIAN, DEGREE_S),
     'Electricity': (AMP, VOLT, KVA, OHM, MILLIVOLT, MICROAMP, MILLIAMP),
+    'Energy': (JOULE, KJ, MJ),
     'Flow (Volume)': (LB_H, KG_H, TONNE_H),
     'Force': (LBF, KGF, DECANEWTON, NEWTON),
     'Frequency': (HZ, KHZ, MHZ, GHZ),
@@ -736,6 +742,10 @@ UNIT_DESCRIPTIONS = {
     MILLIVOLT: 'millivolts',
     MILLIAMP: 'milliamperes',
     MICROAMP: 'microamperes',
+    # Energy
+    JOULE: 'Joule',
+    KJ: 'kilojoule',
+    MJ: 'megajoule',
     # Flow (Volume):
     LB_H: 'pounds per hour',
     KG_H: 'pounds per kilogram',
