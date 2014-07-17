@@ -131,22 +131,6 @@ def dmerge(x, y, overwrite=()):
     return x
 
 
-def flatten_list_of_dicts(ld, merge_key):
-    '''
-    Useful for django creating a single dictionary from queryset.values()
-    list of dicts.
-
-    If merge key is not unique, it will be overidden. Merge key will remain
-    within original dict. Raises KeyError if merge_key not present in all dicts
-
-    :param ld: List of dictionaries to merge
-    :type ld: list of dict
-    :param merge_key: Key which must be present in all dicts
-    :type merge_key: object
-    '''
-    return {d[merge_key]: d for d in ld}
-
-
 # XXX: Deprecated: Badly engineered - just use dfilter() above!
 def dict_filter(d, keep=None, remove=None):
     '''

@@ -15,12 +15,7 @@ import unittest
 from copy import deepcopy
 from itertools import product
 
-from flightdatautilities.dict_helpers import (
-    dcompact,
-    dfilter,
-    dmerge,
-    flatten_list_of_dicts,
-)
+from flightdatautilities.dict_helpers import dcompact, dfilter, dmerge
 
 
 ##############################################################################
@@ -164,15 +159,3 @@ class TestDictionaryMerge(unittest.TestCase):
         self.assertEqual(dmerge(a, b, overwrite=['b']), {'a': {'b': {}, 'c': 2, 'd': 5}})
         a, b = {'a': {'b': {'x': 3, 'y': 4}, 'c': 2}}, {'a': {'b': {'z': 9}, 'd': 5}}
         self.assertEqual(dmerge(a, b, overwrite=['b']), {'a': {'b': {'z': 9}, 'c': 2, 'd': 5}})
-
-
-class FlattenListOfDicts(unittest.TestCase):
-
-    def test_flatten_list_of_dicts(self):
-        one = [{'a':123, 'b':234}, {'a':124, 'b':321}]
-        expected = {123: {'a': 123, 'b': 234}, 124: {'a': 124, 'b': 321}}
-        self.assertEqual(flatten_list_of_dicts(one, 'a'), expected)
-
-        # 'a' does not exist in second item in list
-        two = [{'a':123, 'c':10000}, {'d':124, 'e':40000}]
-        self.assertRaises(KeyError, flatten_list_of_dicts, two, 'a')
