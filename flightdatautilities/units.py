@@ -56,8 +56,10 @@ MJ = 'MJ'
 
 # Flow (Volume):
 LB_H = 'lb/h'
+LB_M = 'lb/min'
 KG_H = 'kg/h'
 TONNE_H = 't/h'
+QUART_H = 'qt/h'
 
 # Force:
 LBF = 'lbf'
@@ -78,11 +80,13 @@ KM = 'km'
 MILE = 'mi'
 NM = 'NM'  # Nautical Miles
 INCH = 'in'
+MILLIMETER = 'mm'
 
 # Mass:
 LB = 'lb'
 KG = 'kg'
 TONNE = 't'
+SLUG = 'slug'
 
 # Pressure:
 INHG = 'inHg'
@@ -121,6 +125,7 @@ YEAR = 'yr'
 # Torque:
 FT_LB = 'ft.lb'  # [1]
 IN_OZ = 'in.oz'  # [1]
+IN_LB = 'in.lb'  # [1]
 
 # Volume:
 PINT = 'pt'  # [3]
@@ -137,6 +142,8 @@ TRIM = 'trim'
 CYCLES = 'cycles'
 PERCENT = '%'
 NM_KG = 'NM/kg'
+LB_GALLON = 'lb/gal'
+PSI_MINUTE = 'psi/min'
 
 
 CONVERSION_MULTIPLIERS = {
@@ -234,6 +241,7 @@ CONVERSION_MULTIPLIERS = {
     KG: {
         LB: 2.204622622,
         TONNE: 0.001,
+        SLUG: 0.0685217659,
     },
     TONNE: {
         LB: 2204.622621849,
@@ -366,6 +374,7 @@ STANDARD_CONVERSIONS = {
     # Mass:
     LB: KG,
     TONNE: KG,
+    SLUG: KG,
     # Pressure:
     INHG: MILLIBAR,
     HECTOPASCAL: MILLIBAR,
@@ -429,6 +438,8 @@ UNIT_CORRECTIONS = {
     'LBS/H': LB_H,
     'LBS/HR': LB_H,
     'PPH': LB_H,
+    'ppm': LB_M,
+    'PPM': LB_M,
     'kg/hr': KG_H,
     'kgs/h': KG_H,
     'kgs/hr': KG_H,
@@ -494,15 +505,20 @@ UNIT_CORRECTIONS = {
     'inch': INCH,
     'inches': INCH,
     'IN': INCH,
+    'MM': MILLIMETER,
+    'Mm': MILLIMETER,
     # Mass:
     'KGS': KG,
     'Kgs': KG,
     'kgs': KG,
+    'Kg': KG,
+    'KG': KG,
     'LBS': LB,
     'Lbs': LB,
     'lbs': LB,
     'tonne': TONNE,
     'tonnes': TONNE,
+    'slugs': SLUG,
     # Pressure:
     'IN-HG': INHG,
     'in-Hg': INHG,
@@ -632,6 +648,9 @@ UNIT_CORRECTIONS = {
     'in-oz': IN_OZ,
     'In-Oz': IN_OZ,
     'IN-OZ': IN_OZ,
+    'in-lbs': IN_LB,
+    'in-lb': IN_LB,
+    'in.lbs': IN_LB,
     # Volume:
     'PT': PINT,
     'PTS': PINT,
@@ -711,18 +730,18 @@ UNIT_CATEGORIES = {
     'Angles': (DEGREE, RADIAN, DEGREE_S),
     'Electricity': (AMP, VOLT, KVA, OHM, MILLIVOLT, MICROAMP, MILLIAMP),
     'Energy': (JOULE, KJ, MJ),
-    'Flow (Volume)': (LB_H, KG_H, TONNE_H),
+    'Flow (Volume)': (LB_H, LB_M, KG_H, TONNE_H, QUART_H),
     'Force': (LBF, KGF, DECANEWTON, NEWTON),
     'Frequency': (HZ, KHZ, MHZ, GHZ),
-    'Length': (FT, METER, KM, MILE, NM, INCH),
-    'Mass': (LB, KG, TONNE),
+    'Length': (FT, METER, KM, MILE, NM, INCH, MILLIMETER),
+    'Mass': (LB, KG, TONNE, SLUG),
     'Pressure': (INHG, PASCAL, HECTOPASCAL, MILLIBAR, PSI, PSIA, PSID, PSIG),
     'Speed': (KT, MPH, FPM, FPS, IPS, METER_S, MACH, RPM),
     'Temperature': (CELSIUS, FAHRENHEIT, KELVIN),
     'Time': (HOUR, MINUTE, SECOND, DAY, WEEK, MONTH, YEAR),
-    'Torque': (FT_LB, IN_OZ),
+    'Torque': (FT_LB, IN_OZ, IN_LB),
     'Volume': (PINT, QUART, GALLON, LITER),
-    'Other': (DDM, GS_DDM, LOC_DDM, DOTS, TRIM, CYCLES, PERCENT, NM_KG),
+    'Other': (DDM, GS_DDM, LOC_DDM, DOTS, TRIM, CYCLES, PERCENT, NM_KG, LB_GALLON, PSI_MINUTE),
 }
 
 
@@ -743,18 +762,20 @@ UNIT_DESCRIPTIONS = {
     MILLIAMP: 'milliamperes',
     MICROAMP: 'microamperes',
     # Energy
-    JOULE: 'Joule',
+    JOULE: 'joule',
     KJ: 'kilojoule',
     MJ: 'megajoule',
     # Flow (Volume):
     LB_H: 'pounds per hour',
+    LB_M: 'pounds per minute',
     KG_H: 'pounds per kilogram',
     TONNE_H: 'tonnes per hour',
+    QUART_H: 'quarts per hour',
     # Force:
     LBF: 'pound-force',
     KGF: 'kilogram-force',
     DECANEWTON: 'decanewton',
-    NEWTON: 'Newton',
+    NEWTON: 'newton',
     # Frequency:
     HZ: 'hertz',
     KHZ: 'kilohertz',
@@ -767,10 +788,12 @@ UNIT_DESCRIPTIONS = {
     MILE: 'miles',
     NM: 'nautical miles',
     INCH: 'inches',
+    MILLIMETER: 'millimeters',
     # Mass:
     LB: 'pounds',
     KG: 'kilograms',
     TONNE: 'tonnes',
+    SLUG: 'slugs',
     # Pressure:
     INHG: 'inches of mercury',
     PASCAL: 'pascals',
@@ -804,6 +827,7 @@ UNIT_DESCRIPTIONS = {
     # Torque:
     FT_LB: 'foot-pounds',
     IN_OZ: 'inch-ounces',
+    IN_LB: 'inch-pounds',
     # Volume:
     PINT: 'pints',
     QUART: 'quarts',
@@ -818,6 +842,8 @@ UNIT_DESCRIPTIONS = {
     CYCLES: 'cycles',
     PERCENT: 'percent',
     NM_KG: 'Nautical Miles per kilogram',
+    LB_GALLON: 'pounds per gallon',
+    PSI_MINUTE: 'pounds per square inch per minute',
 }
 
 
