@@ -122,17 +122,16 @@ STATE_CORRECTIONS = {
 
 TRUE_STATES = [
     'Engaged',
-    'on',
+    'On',
     'CMD Mode',
     'CWS Mode',
-    '1',
     'Open',  # ?
     'FMA Displayed',
     'Event',  # ?
     'Asymmetrical',
     'Ground',  # ? Landing Squat Switch (L/N/R), Gear (L) On Ground
     'Down',  # ? Gear (L/R/N) Down
-    'GOOD',
+    'Good',
     'Warning',
     'Keyed',
     'Track Phase',
@@ -151,10 +150,9 @@ TRUE_STATES = [
 
 FALSE_STATES = [
     'Not Engaged',
-    'off',
+    'Off',
     'Not in CMD Mode',
     'Not in CWS Mode',
-    '0',
     'Closed',  # ?
     'FMA Not Displayed',
     'Air',  # ? Landing Squat Switch (L/N/R)
@@ -167,7 +165,7 @@ FALSE_STATES = [
     'No Aft CG',
     'Normal',
     'No Warning',
-    'no Fault',
+    'No Fault',
     'Invalid',
 ]
 
