@@ -205,6 +205,10 @@ STATE_CORRECTIONS = {
     'true': 'True',
     'valid': 'Valid',
     'not valid': 'Invalid',
+    'down': 'Down',
+    'up': 'Up',
+    'UP': 'Up',
+    'DOWN': 'Down',
 }
 
 # Examples where states conflict:
