@@ -314,24 +314,34 @@ CONVERSION_MULTIPLIERS = {
     },
     # Pressure:
     INHG: {
-        HECTOPASCAL: 33.86389,
         MILLIBAR: 33.86389,
+        PASCAL: 3386.389,
+        HECTOPASCAL: 33.86389,
         PSI: 0.491154221,
-    },
-    HECTOPASCAL: {
-        INHG: 0.02952998,
-        MILLIBAR: 1.0,
-        PSI: 0.014503774,
     },
     MILLIBAR: {
         INHG: 0.02952998,
-        HECTOPASCAL: 1.0,
+        PASCAL: 100,
+        HECTOPASCAL: 1,
+        PSI: 0.014503774,
+    },
+    PASCAL: {
+        INHG: 0.0002952998,
+        MILLIBAR: 0.01,
+        HECTOPASCAL: 0.01,
+        PSI: 0.00014503774,
+    },
+    HECTOPASCAL: {
+        INHG: 0.02952998,
+        MILLIBAR: 1,
+        PASCAL: 100,
         PSI: 0.014503774,
     },
     PSI: {
         INHG: 2.036020375,
-        HECTOPASCAL: 68.94757,
         MILLIBAR: 68.94757,
+        PASCAL: 6894.757,
+        HECTOPASCAL: 68.94757,
     },
     # Speed:
     KT: {

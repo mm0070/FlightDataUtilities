@@ -165,11 +165,25 @@ class TestUnitsModule(unittest.TestCase):
             (1, TONNE, SLUG): 68.5217659,
             # Pressure:
             (1, INHG, MILLIBAR): 33.86,
+            (1, INHG, PASCAL): 3386.389,
+            (1, INHG, HECTOPASCAL): 33.86389,
             (1, INHG, PSI): 0.4910,             # Google: 0.49109778
             (1, MILLIBAR, INHG): 0.029533,      # Google: 0.0295333727
+            (1, MILLIBAR, PASCAL): 100,
+            (1, MILLIBAR, HECTOPASCAL): 1,
             (1, MILLIBAR, PSI): 0.0145037738,
+            (1, PASCAL, INHG): 0.0002952998,
+            (1, PASCAL, MILLIBAR): 0.01,
+            (1, PASCAL, HECTOPASCAL): 0.01,
+            (1, PASCAL, PSI): 0.00014503774,
+            (1, HECTOPASCAL, INHG): 0.02952998,
+            (1, HECTOPASCAL, MILLIBAR): 1,
+            (1, HECTOPASCAL, PASCAL): 100,
+            (1, HECTOPASCAL, PSI): 0.014503774,
             (1, PSI, INHG): 2.0362,             # Google: 2.03625437
             (1, PSI, MILLIBAR): 68.94757,       # Google: 68.9475729
+            (1, PSI, PASCAL): 6894.757,
+            (1, PSI, HECTOPASCAL): 68.94757,
             # Speed:
             (1, KT, MPH): 1.15078,
             (1, KT, FPM): 101.2686,
