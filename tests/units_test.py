@@ -135,11 +135,17 @@ class TestUnitsModule(unittest.TestCase):
             (1, NM, MILE): 1.15078,
             # Mass:
             (1, LB, KG): 0.453592,
+            (1, LB, SLUG): 0.0310809502,
             (1, LB, TONNE): 0.000453592,
             (1, KG, LB): 2.20462,
+            (1, KG, SLUG): 0.0685217659,
             (1, KG, TONNE): 0.001,
+            (1, SLUG, LB): 32.1740486,
+            (1, SLUG, KG): 14.5939029,
+            (1, SLUG, TONNE): 0.0145939029,
             (1, TONNE, LB): 2204.62,
             (1, TONNE, KG): 1000,
+            (1, TONNE, SLUG): 68.5217659,
             # Pressure:
             (1, INHG, MILLIBAR): 33.86,
             (1, INHG, PSI): 0.4910,             # Google: 0.49109778

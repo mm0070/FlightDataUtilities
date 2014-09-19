@@ -269,16 +269,23 @@ CONVERSION_MULTIPLIERS = {
     # Mass:
     LB: {
         KG: 0.45359237,
+        SLUG: 0.0310809502,
         TONNE: 0.00045359237,
     },
     KG: {
         LB: 2.204622622,
-        TONNE: 0.001,
         SLUG: 0.0685217659,
+        TONNE: 0.001,
+    },
+    SLUG: {
+        LB: 32.1740486,
+        KG: 14.5939029,
+        TONNE: 0.0145939029,
     },
     TONNE: {
         LB: 2204.622621849,
         KG: 1000.0,
+        SLUG: 68.5217659,
     },
     # Pressure:
     INHG: {
@@ -429,8 +436,8 @@ STANDARD_CONVERSIONS = {
     MILE: NM,
     # Mass:
     LB: KG,
-    TONNE: KG,
     SLUG: KG,
+    TONNE: KG,
     # Pressure:
     INHG: MILLIBAR,
     HECTOPASCAL: MILLIBAR,
@@ -574,9 +581,10 @@ UNIT_CORRECTIONS = {
     'LBS': LB,
     'Lbs': LB,
     'lbs': LB,
+    'Slugs': SLUG,
+    'slugs': SLUG,
     'tonne': TONNE,
     'tonnes': TONNE,
-    'slugs': SLUG,
     # Pressure:
     'IN-HG': INHG,
     'in-Hg': INHG,
@@ -793,7 +801,7 @@ UNIT_CATEGORIES = {
     'Force': (LBF, KGF, DECANEWTON, NEWTON),
     'Frequency': (HZ, KHZ, MHZ, GHZ),
     'Length': (FT, METER, KM, MILE, NM, INCH, MILLIMETER),
-    'Mass': (LB, KG, TONNE, SLUG),
+    'Mass': (LB, KG, SLUG, TONNE),
     'Pressure': (INHG, PASCAL, HECTOPASCAL, MILLIBAR, PSI, PSIA, PSID, PSIG),
     'Speed': (KT, MPH, FPM, FPS, IPS, METER_S, MACH, RPM),
     'Temperature': (CELSIUS, FAHRENHEIT, KELVIN),
@@ -854,8 +862,8 @@ UNIT_DESCRIPTIONS = {
     # Mass:
     LB: 'pounds',
     KG: 'kilograms',
-    TONNE: 'tonnes',
     SLUG: 'slugs',
+    TONNE: 'tonnes',
     # Pressure:
     INHG: 'inches of mercury',
     PASCAL: 'pascals',
