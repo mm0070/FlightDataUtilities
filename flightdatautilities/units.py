@@ -53,12 +53,16 @@ JOULE = 'J'
 KJ = 'kJ'
 MJ = 'MJ'
 
-# Flow (Volume):
+# Flow (Mass):
 LB_H = 'lb/h'
-LB_M = 'lb/min'
+LB_MIN = 'lb/min'
 KG_H = 'kg/h'
 TONNE_H = 't/h'
-QUART_H = 'qt/h'
+
+# Flow (Volume):
+PINT_H = 'pt/h'  # [3]
+QUART_H = 'qt/h'  # [3]
+GALLON_H = 'gal/h'  # [3]
 
 # Force:
 LBF = 'lbf'
@@ -146,18 +150,39 @@ PSI_MINUTE = 'psi/min'
 
 
 CONVERSION_MULTIPLIERS = {
-    # Flow (Volume):
+    # Flow (Mass):
     LB_H: {
+        LB_MIN: 0.0166666667,
         KG_H: 0.45359237,
         TONNE_H: 0.00045359237,
     },
+    LB_MIN: {
+        LB_H: 60,
+        KG_H: 27.2155422,
+        TONNE_H: 0.0272155422,
+    },
     KG_H: {
         LB_H: 2.204622622,
+        LB_MIN: 0.0367437104,
         TONNE_H: 0.001,
     },
     TONNE_H: {
         LB_H: 2204.622621849,
+        LB_MIN: 36.7437104,
         KG_H: 1000.0,
+    },
+    # Flow (Volume):
+    PINT_H: {
+        QUART_H: 0.5,
+        GALLON_H: 0.125,
+    },
+    QUART_H: {
+        PINT_H: 2,
+        GALLON_H: 0.25
+    },
+    GALLON_H: {
+        PINT_H: 8,
+        QUART_H: 4,
     },
     # Force:
     LBF: {
@@ -362,9 +387,11 @@ STANDARD_CONVERSIONS = {
     # Electricity:
     MICROAMP: DOTS,
     MILLIVOLT: DOTS,
-    # Flow (Volume):
+    # Flow (Mass):
     LB_H: KG_H,
     TONNE_H: KG_H,
+    # Flow (Volume):
+    PINT_H: QUART_H,
     # Force:
     LBF: DECANEWTON,
     KGF: DECANEWTON,
@@ -428,7 +455,7 @@ UNIT_CORRECTIONS = {
     'microamps': MICROAMP,
     'ma': MILLIAMP,
     'milliamps': MILLIAMP,
-    # Flow (Volume):
+    # Flow (Mass):
     'lb/hr': LB_H,
     'lbs/h': LB_H,
     'lbs/hr': LB_H,
@@ -437,8 +464,10 @@ UNIT_CORRECTIONS = {
     'LBS/H': LB_H,
     'LBS/HR': LB_H,
     'PPH': LB_H,
-    'ppm': LB_M,
-    'PPM': LB_M,
+    'lbs/min': LB_MIN,
+    'LBS/MIN': LB_MIN,
+    'ppm': LB_MIN,
+    'PPM': LB_MIN,
     'kg/hr': KG_H,
     'kgs/h': KG_H,
     'kgs/hr': KG_H,
@@ -729,7 +758,8 @@ UNIT_CATEGORIES = {
     'Angles': (DEGREE, RADIAN, DEGREE_S),
     'Electricity': (AMP, VOLT, KVA, OHM, MILLIVOLT, MICROAMP, MILLIAMP),
     'Energy': (JOULE, KJ, MJ),
-    'Flow (Volume)': (LB_H, LB_M, KG_H, TONNE_H, QUART_H),
+    'Flow (Mass)': (LB_H, LB_MIN, KG_H, TONNE_H),
+    'Flow (Volume)': (PINT_H, QUART_H, GALLON_H),
     'Force': (LBF, KGF, DECANEWTON, NEWTON),
     'Frequency': (HZ, KHZ, MHZ, GHZ),
     'Length': (FT, METER, KM, MILE, NM, INCH, MILLIMETER),
@@ -763,12 +793,15 @@ UNIT_DESCRIPTIONS = {
     JOULE: 'joule',
     KJ: 'kilojoule',
     MJ: 'megajoule',
-    # Flow (Volume):
+    # Flow (Mass):
     LB_H: 'pounds per hour',
-    LB_M: 'pounds per minute',
+    LB_MIN: 'pounds per minute',
     KG_H: 'pounds per kilogram',
     TONNE_H: 'tonnes per hour',
+    # Flow (Volume):
+    PINT_H: 'pints per hour',
     QUART_H: 'quarts per hour',
+    GALLON_H: 'gallons per hour',
     # Force:
     LBF: 'pound-force',
     KGF: 'kilogram-force',

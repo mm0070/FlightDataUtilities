@@ -66,13 +66,26 @@ class TestUnitsModule(unittest.TestCase):
             # Angles:
             (1, DEGREE, RADIAN): 0.0174532925,
             (1, RADIAN, DEGREE): 57.2957795,
-            # Flow (Volume):
+            # Flow (Mass):
             (1, LB_H, KG_H): 0.453592,
+            (1, LB_H, LB_MIN): 0.0166666667,
             (1, LB_H, TONNE_H): 0.000453592,
+            (1, LB_MIN, LB_H): 60,
+            (1, LB_MIN, KG_H): 27.2155422,
+            (1, LB_MIN, TONNE_H): 0.0272155422,
             (1, KG_H, LB_H): 2.20462,
+            (1, KG_H, LB_MIN): 0.0367437104,
             (1, KG_H, TONNE_H): 0.001,
             (1, TONNE_H, LB_H): 2204.62,
+            (1, TONNE_H, LB_MIN): 36.7437104,
             (1, TONNE_H, KG_H): 1000,
+            # Flow (Volume):
+            (1, PINT_H, QUART_H): 0.5,
+            (1, PINT_H, GALLON_H): 0.125,
+            (1, QUART_H, PINT_H): 2,
+            (1, QUART_H, GALLON_H): 0.25,
+            (1, GALLON_H, PINT_H): 8,
+            (1, GALLON_H, QUART_H): 4,
             # Force:
             (1, LBF, KGF): 0.45359237,
             (1, LBF, DECANEWTON): 0.444822162,
