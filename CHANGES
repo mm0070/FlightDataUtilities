@@ -1,0 +1,4 @@
+2014/08/05
+==========
+
+ - Added blosc compression type which is more than 10 times faster than traditional compression algorithms.

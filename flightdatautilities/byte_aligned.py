@@ -88,8 +88,10 @@ def inspect(file_obj_or_str, words_to_read):
     Inspect a byte-aligned data file to find out:
     
      * Words per second
-     * First index of a sync word within the file.
+     * First word index of a sync word within the file.
      * Whether the sync pattern is 'Standard' or 'Reversed'
+     
+     Warning: This will not find frames which start on an odd index from the start of the data.
      
     :param file_obj_or_str: Data file path or object.
     :type file_obj_or_str: file or str
