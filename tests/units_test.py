@@ -66,6 +66,9 @@ class TestUnitsModule(unittest.TestCase):
             # Angles:
             (1, DEGREE, RADIAN): 0.0174532925,
             (1, RADIAN, DEGREE): 57.2957795,
+            # Density:
+            (1, KG_LITER, LB_GALLON): 8.3454063545262,
+            (1, LB_GALLON, KG_LITER): 0.1198264,
             # Energy:
             (1, JOULE, KJ): 0.001,
             (1, JOULE, MJ): 0.000001,

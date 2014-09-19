@@ -39,6 +39,10 @@ DEGREE = 'deg'  # [1]
 RADIAN = 'rad'
 DEGREE_S = 'deg/s'  # [1]
 
+# Density:
+KG_LITER = 'kg/l'
+LB_GALLON = 'lb/gal'
+
 # Electricity:
 AMP = 'A'
 VOLT = 'V'
@@ -146,11 +150,17 @@ TRIM = 'trim'
 CYCLES = 'cycles'
 PERCENT = '%'
 NM_KG = 'NM/kg'
-LB_GALLON = 'lb/gal'
 PSI_MINUTE = 'psi/min'
 
 
 CONVERSION_MULTIPLIERS = {
+    # Density:
+    KG_LITER: {
+        LB_GALLON: 8.3454063545262,
+    },
+    LB_GALLON: {
+        KG_LITER: 0.1198264,
+    },
     # Energy:
     JOULE: {
         KJ: 0.001,
@@ -507,6 +517,18 @@ UNIT_CORRECTIONS = {
     'degree/sec': DEGREE_S,
     'degrees/s': DEGREE_S,
     'degrees/sec': DEGREE_S,
+    # Density:
+    'kilogram/liter': KG_LITER,
+    'kilogram/litre': KG_LITER,
+    'kgs/liter': KG_LITER,
+    'kgs/litre': KG_LITER,
+    'kgs/l': KG_LITER,
+    'kg/liter': KG_LITER,
+    'kg/litre': KG_LITER,
+    'pound/gallon': LB_GALLON,
+    'lbs/gallon': LB_GALLON,
+    'lbs/gal': LB_GALLON,
+    'lb/gallon': LB_GALLON,
     # Electricity:
     'amp': AMP,
     'amps': AMP,
@@ -833,6 +855,7 @@ UNIT_CORRECTIONS = {
 UNIT_CATEGORIES = {
     'Acceleration': (G,),
     'Angles': (DEGREE, RADIAN, DEGREE_S),
+    'Density': (KG_LITER, LB_GALLON),
     'Electricity': (AMP, VOLT, KVA, OHM, MILLIVOLT, MICROAMP, MILLIAMP),
     'Energy': (JOULE, KJ, MJ),
     'Flow (Mass)': (LB_H, LB_MIN, KG_H, TONNE_H),
@@ -847,7 +870,7 @@ UNIT_CATEGORIES = {
     'Time': (HOUR, MINUTE, SECOND, DAY, WEEK, MONTH, YEAR),
     'Torque': (FT_LB, IN_LB, IN_OZ),
     'Volume': (PINT, QUART, GALLON, LITER),
-    'Other': (DDM, GS_DDM, LOC_DDM, DOTS, TRIM, CYCLES, PERCENT, NM_KG, LB_GALLON, PSI_MINUTE),
+    'Other': (DDM, GS_DDM, LOC_DDM, DOTS, TRIM, CYCLES, PERCENT, NM_KG, PSI_MINUTE),
 }
 
 
@@ -858,6 +881,9 @@ UNIT_DESCRIPTIONS = {
     DEGREE: 'degrees',
     RADIAN: 'radians',
     DEGREE_S: 'degrees per second',
+    # Density:
+    KG_LITER: 'kilograms per liter',
+    LB_GALLON: 'pounds per gallon',
     # Electricity:
     AMP: 'amperes',
     VOLT: 'volts',
@@ -951,7 +977,6 @@ UNIT_DESCRIPTIONS = {
     CYCLES: 'cycles',
     PERCENT: 'percent',
     NM_KG: 'Nautical Miles per kilogram',
-    LB_GALLON: 'pounds per gallon',
     PSI_MINUTE: 'pounds per square inch per minute',
 }
 
