@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# vim:et:ft=python:nowrap:sts=4:sw=4:ts=4
 ##############################################################################
 
 '''
@@ -105,6 +106,7 @@ PSI = 'psi'
 PSIA = 'psia'
 PSID = 'psid'
 PSIG = 'psig'
+PSI_MINUTE = 'psi/min'
 
 # Speed:
 KT = 'kt'
@@ -150,7 +152,6 @@ TRIM = 'trim'
 CYCLES = 'cycles'
 PERCENT = '%'
 NM_KG = 'NM/kg'
-PSI_MINUTE = 'psi/min'
 
 
 CONVERSION_MULTIPLIERS = {
@@ -864,13 +865,13 @@ UNIT_CATEGORIES = {
     'Frequency': (HZ, KHZ, MHZ, GHZ),
     'Length': (FT, METER, KM, MILE, NM, INCH, MILLIMETER),
     'Mass': (LB, KG, SLUG, TONNE),
-    'Pressure': (INHG, PASCAL, HECTOPASCAL, MILLIBAR, PSI, PSIA, PSID, PSIG),
+    'Pressure': (INHG, PASCAL, HECTOPASCAL, MILLIBAR, PSI, PSIA, PSID, PSIG, PSI_MINUTE),
     'Speed': (KT, MPH, FPM, FPS, IPS, METER_S, MACH, RPM),
     'Temperature': (CELSIUS, FAHRENHEIT, KELVIN),
     'Time': (HOUR, MINUTE, SECOND, DAY, WEEK, MONTH, YEAR),
     'Torque': (FT_LB, IN_LB, IN_OZ),
     'Volume': (PINT, QUART, GALLON, LITER),
-    'Other': (DDM, GS_DDM, LOC_DDM, DOTS, TRIM, CYCLES, PERCENT, NM_KG, PSI_MINUTE),
+    'Other': (DDM, GS_DDM, LOC_DDM, DOTS, TRIM, CYCLES, PERCENT, NM_KG),
 }
 
 
@@ -938,6 +939,7 @@ UNIT_DESCRIPTIONS = {
     PSIA: 'pounds per square inch (absolute)',
     PSID: 'pounds per square inch (differential)',
     PSIG: 'pounds per square inch (gauge)',
+    PSI_MINUTE: 'pounds per square inch per minute',
     # Speed:
     KT: 'knots',
     MPH: 'miles per hour',
@@ -977,7 +979,6 @@ UNIT_DESCRIPTIONS = {
     CYCLES: 'cycles',
     PERCENT: 'percent',
     NM_KG: 'Nautical Miles per kilogram',
-    PSI_MINUTE: 'pounds per square inch per minute',
 }
 
 
@@ -1086,7 +1087,3 @@ def convert(value, unit, output):
         raise ValueError('Unknown unit: %s' % unit)
     except KeyError:
         raise ValueError('Unknown output unit: %s' % output)
-
-
-##############################################################################
-# vim:et:ft=python:nowrap:sts=4:sw=4:ts=4

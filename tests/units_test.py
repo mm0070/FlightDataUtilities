@@ -45,10 +45,10 @@ class TestUnitsModule(unittest.TestCase):
                 self.assertIn(k, values)
                 self.assertLessEqual(set(v.keys()), values)
 
-    @unittest.skip('Test not implemented.')
     def test__normalise(self):
 
-        pass
+        for wrong, correct in UNIT_CORRECTIONS.iteritems():
+            self.assertEqual(normalise(wrong), correct)
 
     @unittest.skip('Test not implemented.')
     def test__function(self):
