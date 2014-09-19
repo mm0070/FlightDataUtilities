@@ -326,14 +326,22 @@ CONVERSION_MULTIPLIERS = {
     PINT: {
         QUART: 0.5,
         GALLON: 0.125,
+        LITER: 0.473176,
     },
     QUART: {
         PINT: 2,
-        GALLON: 0.25
+        GALLON: 0.25,
+        LITER: 0.946353,
     },
     GALLON: {
         PINT: 8,
         QUART: 4,
+        LITER: 3.78541,
+    },
+    LITER: {
+        PINT: 2.11338,
+        QUART: 1.05669,
+        GALLON: 0.264172,
     },
     # Other:
     GS_DDM: {

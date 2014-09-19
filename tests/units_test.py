@@ -166,7 +166,17 @@ class TestUnitsModule(unittest.TestCase):
             (1, SECOND, MINUTE): 0.0166667,
             # Volume:
             (1, PINT, QUART): 0.5,
+            (1, PINT, GALLON): 0.125,
+            (1, PINT, LITER): 0.473176,
             (1, QUART, PINT): 2,
+            (1, QUART, GALLON): 0.25,
+            (1, QUART, LITER): 0.946353,
+            (1, GALLON, PINT): 8,
+            (1, GALLON, QUART): 4,
+            (1, GALLON, LITER): 3.78541,
+            (1, LITER, PINT): 2.11338,
+            (1, LITER, QUART): 1.05669,
+            (1, LITER, GALLON): 0.264172,
             # Other:
             (1, GS_DDM, DOTS): 11.428571428571429,
             (1, LOC_DDM, DOTS): 12.903225806451614,
