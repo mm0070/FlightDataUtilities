@@ -13,7 +13,7 @@ import unittest
 from decimal import Decimal
 from itertools import chain
 
-from flightdatautilities.units import *  # flake8: noqa
+from flightdatautilities.units import *  # noqa
 
 
 ##############################################################################
