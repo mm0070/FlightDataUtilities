@@ -33,7 +33,6 @@ import math
 
 # Acceleration:
 G = 'g'  # [2]
-RMS_G = 'RMS g'
 
 # Angles:
 DEGREE = 'deg'  # [1]
@@ -726,7 +725,7 @@ UNIT_CORRECTIONS = {
 
 
 UNIT_CATEGORIES = {
-    'Acceleration': (G, RMS_G),
+    'Acceleration': (G,),
     'Angles': (DEGREE, RADIAN, DEGREE_S),
     'Electricity': (AMP, VOLT, KVA, OHM, MILLIVOLT, MICROAMP, MILLIAMP),
     'Energy': (JOULE, KJ, MJ),
@@ -748,7 +747,6 @@ UNIT_CATEGORIES = {
 UNIT_DESCRIPTIONS = {
     # Acceleration:
     G: 'acceleration',
-    RMS_G: 'root-mean-squared acceleration',
     # Angles:
     DEGREE: 'degrees',
     RADIAN: 'radians',
