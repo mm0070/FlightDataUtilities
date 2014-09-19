@@ -63,6 +63,7 @@ TONNE_H = 't/h'
 PINT_H = 'pt/h'  # [3]
 QUART_H = 'qt/h'  # [3]
 GALLON_H = 'gal/h'  # [3]
+LITER_H = 'l/h'
 
 # Force:
 LBF = 'lbf'
@@ -175,14 +176,22 @@ CONVERSION_MULTIPLIERS = {
     PINT_H: {
         QUART_H: 0.5,
         GALLON_H: 0.125,
+        LITER_H: 0.473176,
     },
     QUART_H: {
         PINT_H: 2,
-        GALLON_H: 0.25
+        GALLON_H: 0.25,
+        LITER_H: 0.946353,
     },
     GALLON_H: {
         PINT_H: 8,
         QUART_H: 4,
+        LITER_H: 3.78541,
+    },
+    LITER_H: {
+        PINT_H: 2.11338,
+        QUART_H: 1.05669,
+        GALLON_H: 0.264172,
     },
     # Force:
     LBF: {
@@ -767,7 +776,7 @@ UNIT_CATEGORIES = {
     'Electricity': (AMP, VOLT, KVA, OHM, MILLIVOLT, MICROAMP, MILLIAMP),
     'Energy': (JOULE, KJ, MJ),
     'Flow (Mass)': (LB_H, LB_MIN, KG_H, TONNE_H),
-    'Flow (Volume)': (PINT_H, QUART_H, GALLON_H),
+    'Flow (Volume)': (PINT_H, QUART_H, GALLON_H, LITER_H),
     'Force': (LBF, KGF, DECANEWTON, NEWTON),
     'Frequency': (HZ, KHZ, MHZ, GHZ),
     'Length': (FT, METER, KM, MILE, NM, INCH, MILLIMETER),
@@ -810,6 +819,7 @@ UNIT_DESCRIPTIONS = {
     PINT_H: 'pints per hour',
     QUART_H: 'quarts per hour',
     GALLON_H: 'gallons per hour',
+    LITER_H: 'liters per hour',
     # Force:
     LBF: 'pound-force',
     KGF: 'kilogram-force',

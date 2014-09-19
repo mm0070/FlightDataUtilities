@@ -82,10 +82,16 @@ class TestUnitsModule(unittest.TestCase):
             # Flow (Volume):
             (1, PINT_H, QUART_H): 0.5,
             (1, PINT_H, GALLON_H): 0.125,
+            (1, PINT_H, LITER_H): 0.473176,
             (1, QUART_H, PINT_H): 2,
             (1, QUART_H, GALLON_H): 0.25,
+            (1, QUART_H, LITER_H): 0.946353,
             (1, GALLON_H, PINT_H): 8,
             (1, GALLON_H, QUART_H): 4,
+            (1, GALLON_H, LITER_H): 3.78541,
+            (1, LITER_H, PINT_H): 2.11338,
+            (1, LITER_H, QUART_H): 1.05669,
+            (1, LITER_H, GALLON_H): 0.264172,
             # Force:
             (1, LBF, KGF): 0.45359237,
             (1, LBF, DECANEWTON): 0.444822162,
