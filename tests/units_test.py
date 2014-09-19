@@ -66,6 +66,13 @@ class TestUnitsModule(unittest.TestCase):
             # Angles:
             (1, DEGREE, RADIAN): 0.0174532925,
             (1, RADIAN, DEGREE): 57.2957795,
+            # Energy:
+            (1, JOULE, KJ): 0.001,
+            (1, JOULE, MJ): 0.000001,
+            (1, KJ, JOULE): 1000,
+            (1, KJ, MJ): 0.001,
+            (1, MJ, JOULE): 1000000,
+            (1, MJ, KJ): 1000,
             # Flow (Mass):
             (1, LB_H, KG_H): 0.453592,
             (1, LB_H, LB_MIN): 0.0166666667,

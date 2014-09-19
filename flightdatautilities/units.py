@@ -151,6 +151,19 @@ PSI_MINUTE = 'psi/min'
 
 
 CONVERSION_MULTIPLIERS = {
+    # Energy:
+    JOULE: {
+        KJ: 0.001,
+        MJ: 0.000001,
+    },
+    KJ: {
+        JOULE: 1000,
+        MJ: 0.001,
+    },
+    MJ: {
+        JOULE: 1000000,
+        KJ: 1000,
+    },
     # Flow (Mass):
     LB_H: {
         LB_MIN: 0.0166666667,
@@ -492,6 +505,10 @@ UNIT_CORRECTIONS = {
     'microamps': MICROAMP,
     'ma': MILLIAMP,
     'milliamps': MILLIAMP,
+    # Energy:
+    'joule': JOULE,
+    'kilojoule': KJ,
+    'megajoule': MJ,
     # Flow (Mass):
     'lb/hr': LB_H,
     'lbs/h': LB_H,
