@@ -128,8 +128,8 @@ YEAR = 'yr'
 
 # Torque:
 FT_LB = 'ft.lb'  # [1]
-IN_OZ = 'in.oz'  # [1]
 IN_LB = 'in.lb'  # [1]
+IN_OZ = 'in.oz'  # [1]
 
 # Volume:
 PINT = 'pt'  # [3]
@@ -330,6 +330,19 @@ CONVERSION_MULTIPLIERS = {
     SECOND: {
         HOUR: 0.000277778,
         MINUTE: 0.016666667,
+    },
+    # Torque:
+    FT_LB: {
+        IN_LB: 12,
+        IN_OZ: 192,
+    },
+    IN_LB: {
+        FT_LB: 0.0833,
+        IN_OZ: 16,
+    },
+    IN_OZ: {
+        FT_LB: 0.00520833,
+        IN_LB: 0.0625,
     },
     # Volume:
     PINT: {
@@ -690,12 +703,12 @@ UNIT_CORRECTIONS = {
     'ft-lb': FT_LB,
     'ft-lbs': FT_LB,
     'ft.lbs': FT_LB,
+    'in-lb': IN_LB,
+    'in-lbs': IN_LB,
+    'in.lbs': IN_LB,
     'in-oz': IN_OZ,
     'In-Oz': IN_OZ,
     'IN-OZ': IN_OZ,
-    'in-lbs': IN_LB,
-    'in-lb': IN_LB,
-    'in.lbs': IN_LB,
     # Volume:
     'PT': PINT,
     'PTS': PINT,
@@ -785,7 +798,7 @@ UNIT_CATEGORIES = {
     'Speed': (KT, MPH, FPM, FPS, IPS, METER_S, MACH, RPM),
     'Temperature': (CELSIUS, FAHRENHEIT, KELVIN),
     'Time': (HOUR, MINUTE, SECOND, DAY, WEEK, MONTH, YEAR),
-    'Torque': (FT_LB, IN_OZ, IN_LB),
+    'Torque': (FT_LB, IN_LB, IN_OZ),
     'Volume': (PINT, QUART, GALLON, LITER),
     'Other': (DDM, GS_DDM, LOC_DDM, DOTS, TRIM, CYCLES, PERCENT, NM_KG, LB_GALLON, PSI_MINUTE),
 }
@@ -875,8 +888,8 @@ UNIT_DESCRIPTIONS = {
     YEAR: 'years',
     # Torque:
     FT_LB: 'foot-pounds',
-    IN_OZ: 'inch-ounces',
     IN_LB: 'inch-pounds',
+    IN_OZ: 'inch-ounces',
     # Volume:
     PINT: 'pints',
     QUART: 'quarts',

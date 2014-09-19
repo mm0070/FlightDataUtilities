@@ -170,6 +170,13 @@ class TestUnitsModule(unittest.TestCase):
             (1, MINUTE, SECOND): 60,
             (1, SECOND, HOUR): 0.000277778,
             (1, SECOND, MINUTE): 0.0166667,
+            # Torque:
+            (1, FT_LB, IN_LB): 12,
+            (1, FT_LB, IN_OZ): 192,
+            (1, IN_LB, FT_LB): 0.0833,
+            (1, IN_LB, IN_OZ): 16,
+            (1, IN_OZ, FT_LB): 0.00520833,
+            (1, IN_OZ, IN_LB): 0.0625,
             # Volume:
             (1, PINT, QUART): 0.5,
             (1, PINT, GALLON): 0.125,
