@@ -353,7 +353,7 @@ class TestVelocitySpeed(unittest.TestCase):
         ma_test.assert_masked_array_equal(self.vs.v2('20', weight), v2_20)
 
     def test__v2__weight_unit__invalid(self):
-        invalid = set(ut.available()) - set((None, ut.KG, ut.LB, ut.TONNE))
+        invalid = set(ut.available()) - set((None, ut.KG, ut.LB, ut.SLUG, ut.TONNE))
         for unit in invalid:
             self.vs.weight_unit = unit
             self.assertRaises(KeyError, self.vs.v2, '15', 120000)
@@ -500,7 +500,7 @@ class TestVelocitySpeed(unittest.TestCase):
         ma_test.assert_masked_array_equal(self.vs.vref('20', weight), vref_20)
 
     def test__vref__weight_unit__invalid(self):
-        invalid = set(ut.available()) - set((None, ut.KG, ut.LB, ut.TONNE))
+        invalid = set(ut.available()) - set((None, ut.KG, ut.LB, ut.SLUG, ut.TONNE))
         for unit in invalid:
             self.vs.weight_unit = unit
             self.assertRaises(KeyError, self.vs.vref, '15', 120000)
@@ -647,7 +647,7 @@ class TestVelocitySpeed(unittest.TestCase):
         ma_test.assert_masked_array_equal(self.vs.vapp('20', weight), vapp_20)
 
     def test__vapp__weight_unit__invalid(self):
-        invalid = set(ut.available()) - set((None, ut.KG, ut.LB, ut.TONNE))
+        invalid = set(ut.available()) - set((None, ut.KG, ut.LB, ut.SLUG, ut.TONNE))
         for unit in invalid:
             self.vs.weight_unit = unit
             self.assertRaises(KeyError, self.vs.vapp, '15', 120000)
