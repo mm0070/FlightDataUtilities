@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# vim:et:ft=python:nowrap:sts=4:sw=4:ts=4
 ##############################################################################
 
 '''
@@ -33,12 +34,15 @@ import math
 
 # Acceleration:
 G = 'g'  # [2]
-RMS_G = 'RMS g'
 
 # Angles:
 DEGREE = 'deg'  # [1]
 RADIAN = 'rad'
 DEGREE_S = 'deg/s'  # [1]
+
+# Density:
+KG_LITER = 'kg/l'
+LB_GALLON = 'lb/gal'
 
 # Electricity:
 AMP = 'A'
@@ -54,10 +58,17 @@ JOULE = 'J'
 KJ = 'kJ'
 MJ = 'MJ'
 
-# Flow (Volume):
+# Flow (Mass):
 LB_H = 'lb/h'
+LB_MIN = 'lb/min'
 KG_H = 'kg/h'
 TONNE_H = 't/h'
+
+# Flow (Volume):
+PINT_H = 'pt/h'  # [3]
+QUART_H = 'qt/h'  # [3]
+GALLON_H = 'gal/h'  # [3]
+LITER_H = 'l/h'
 
 # Force:
 LBF = 'lbf'
@@ -78,11 +89,13 @@ KM = 'km'
 MILE = 'mi'
 NM = 'NM'  # Nautical Miles
 INCH = 'in'
+MILLIMETER = 'mm'
 
 # Mass:
 LB = 'lb'
 KG = 'kg'
 TONNE = 't'
+SLUG = 'slug'
 
 # Pressure:
 INHG = 'inHg'
@@ -93,6 +106,7 @@ PSI = 'psi'
 PSIA = 'psia'
 PSID = 'psid'
 PSIG = 'psig'
+PSI_MINUTE = 'psi/min'
 
 # Speed:
 KT = 'kt'
@@ -120,6 +134,7 @@ YEAR = 'yr'
 
 # Torque:
 FT_LB = 'ft.lb'  # [1]
+IN_LB = 'in.lb'  # [1]
 IN_OZ = 'in.oz'  # [1]
 
 # Volume:
@@ -140,18 +155,67 @@ NM_KG = 'NM/kg'
 
 
 CONVERSION_MULTIPLIERS = {
-    # Flow (Volume):
+    # Density:
+    KG_LITER: {
+        LB_GALLON: 8.3454063545262,
+    },
+    LB_GALLON: {
+        KG_LITER: 0.1198264,
+    },
+    # Energy:
+    JOULE: {
+        KJ: 0.001,
+        MJ: 0.000001,
+    },
+    KJ: {
+        JOULE: 1000,
+        MJ: 0.001,
+    },
+    MJ: {
+        JOULE: 1000000,
+        KJ: 1000,
+    },
+    # Flow (Mass):
     LB_H: {
+        LB_MIN: 0.0166666667,
         KG_H: 0.45359237,
         TONNE_H: 0.00045359237,
     },
+    LB_MIN: {
+        LB_H: 60,
+        KG_H: 27.2155422,
+        TONNE_H: 0.0272155422,
+    },
     KG_H: {
         LB_H: 2.204622622,
+        LB_MIN: 0.0367437104,
         TONNE_H: 0.001,
     },
     TONNE_H: {
         LB_H: 2204.622621849,
+        LB_MIN: 36.7437104,
         KG_H: 1000.0,
+    },
+    # Flow (Volume):
+    PINT_H: {
+        QUART_H: 0.5,
+        GALLON_H: 0.125,
+        LITER_H: 0.473176,
+    },
+    QUART_H: {
+        PINT_H: 2,
+        GALLON_H: 0.25,
+        LITER_H: 0.946353,
+    },
+    GALLON_H: {
+        PINT_H: 8,
+        QUART_H: 4,
+        LITER_H: 3.78541,
+    },
+    LITER_H: {
+        PINT_H: 2.11338,
+        QUART_H: 1.05669,
+        GALLON_H: 0.264172,
     },
     # Force:
     LBF: {
@@ -201,64 +265,94 @@ CONVERSION_MULTIPLIERS = {
         KM: 0.0003048,
         MILE: 0.00018939,
         NM: 0.000164579,
+        MILLIMETER: 304.8,
     },
     METER: {
         FT: 3.280839895,
         KM: 0.001,
         MILE: 0.000621371,
         NM: 0.000539957,
+        MILLIMETER: 1000,
     },
     KM: {
         FT: 3280.839895013,
-        METER: 1000.0,
+        METER: 1000,
         MILE: 0.621371192,
         NM: 0.539956803,
+        MILLIMETER: 1000000,
     },
     MILE: {
-        FT: 5280.0,
+        FT: 5280,
         METER: 1609.344,
         KM: 1.609344,
         NM: 0.868976242,
+        MILLIMETER: 1609344,
     },
     NM: {
         FT: 6076.11548554,
-        METER: 1852.0,
+        METER: 1852,
         KM: 1.852,
         MILE: 1.150779448,
+        MILLIMETER: 1852000,
+    },
+    MILLIMETER: {
+        FT: 0.003280839895,
+        METER: 0.001,
+        KM: 0.000001,
+        MILE: 0.000000621371,
+        NM: 0.000000539957,
     },
     # Mass:
     LB: {
         KG: 0.45359237,
+        SLUG: 0.0310809502,
         TONNE: 0.00045359237,
     },
     KG: {
         LB: 2.204622622,
+        SLUG: 0.0685217659,
         TONNE: 0.001,
+    },
+    SLUG: {
+        LB: 32.1740486,
+        KG: 14.5939029,
+        TONNE: 0.0145939029,
     },
     TONNE: {
         LB: 2204.622621849,
         KG: 1000.0,
+        SLUG: 68.5217659,
     },
     # Pressure:
     INHG: {
-        HECTOPASCAL: 33.86389,
         MILLIBAR: 33.86389,
+        PASCAL: 3386.389,
+        HECTOPASCAL: 33.86389,
         PSI: 0.491154221,
-    },
-    HECTOPASCAL: {
-        INHG: 0.02952998,
-        MILLIBAR: 1.0,
-        PSI: 0.014503774,
     },
     MILLIBAR: {
         INHG: 0.02952998,
-        HECTOPASCAL: 1.0,
+        PASCAL: 100,
+        HECTOPASCAL: 1,
+        PSI: 0.014503774,
+    },
+    PASCAL: {
+        INHG: 0.0002952998,
+        MILLIBAR: 0.01,
+        HECTOPASCAL: 0.01,
+        PSI: 0.00014503774,
+    },
+    HECTOPASCAL: {
+        INHG: 0.02952998,
+        MILLIBAR: 1,
+        PASCAL: 100,
         PSI: 0.014503774,
     },
     PSI: {
         INHG: 2.036020375,
-        HECTOPASCAL: 68.94757,
         MILLIBAR: 68.94757,
+        PASCAL: 6894.757,
+        HECTOPASCAL: 68.94757,
     },
     # Speed:
     KT: {
@@ -290,18 +384,39 @@ CONVERSION_MULTIPLIERS = {
         HOUR: 0.000277778,
         MINUTE: 0.016666667,
     },
+    # Torque:
+    FT_LB: {
+        IN_LB: 12,
+        IN_OZ: 192,
+    },
+    IN_LB: {
+        FT_LB: 0.0833,
+        IN_OZ: 16,
+    },
+    IN_OZ: {
+        FT_LB: 0.00520833,
+        IN_LB: 0.0625,
+    },
     # Volume:
     PINT: {
         QUART: 0.5,
         GALLON: 0.125,
+        LITER: 0.473176,
     },
     QUART: {
         PINT: 2,
-        GALLON: 0.25
+        GALLON: 0.25,
+        LITER: 0.946353,
     },
     GALLON: {
         PINT: 8,
         QUART: 4,
+        LITER: 3.78541,
+    },
+    LITER: {
+        PINT: 2.11338,
+        QUART: 1.05669,
+        GALLON: 0.264172,
     },
     # Other:
     GS_DDM: {
@@ -355,9 +470,11 @@ STANDARD_CONVERSIONS = {
     # Electricity:
     MICROAMP: DOTS,
     MILLIVOLT: DOTS,
-    # Flow (Volume):
+    # Flow (Mass):
     LB_H: KG_H,
     TONNE_H: KG_H,
+    # Flow (Volume):
+    PINT_H: QUART_H,
     # Force:
     LBF: DECANEWTON,
     KGF: DECANEWTON,
@@ -365,6 +482,7 @@ STANDARD_CONVERSIONS = {
     MILE: NM,
     # Mass:
     LB: KG,
+    SLUG: KG,
     TONNE: KG,
     # Pressure:
     INHG: MILLIBAR,
@@ -400,6 +518,18 @@ UNIT_CORRECTIONS = {
     'degree/sec': DEGREE_S,
     'degrees/s': DEGREE_S,
     'degrees/sec': DEGREE_S,
+    # Density:
+    'kilogram/liter': KG_LITER,
+    'kilogram/litre': KG_LITER,
+    'kgs/liter': KG_LITER,
+    'kgs/litre': KG_LITER,
+    'kgs/l': KG_LITER,
+    'kg/liter': KG_LITER,
+    'kg/litre': KG_LITER,
+    'pound/gallon': LB_GALLON,
+    'lbs/gallon': LB_GALLON,
+    'lbs/gal': LB_GALLON,
+    'lb/gallon': LB_GALLON,
     # Electricity:
     'amp': AMP,
     'amps': AMP,
@@ -420,7 +550,11 @@ UNIT_CORRECTIONS = {
     'microamps': MICROAMP,
     'ma': MILLIAMP,
     'milliamps': MILLIAMP,
-    # Flow (Volume):
+    # Energy:
+    'joule': JOULE,
+    'kilojoule': KJ,
+    'megajoule': MJ,
+    # Flow (Mass):
     'lb/hr': LB_H,
     'lbs/h': LB_H,
     'lbs/hr': LB_H,
@@ -429,6 +563,10 @@ UNIT_CORRECTIONS = {
     'LBS/H': LB_H,
     'LBS/HR': LB_H,
     'PPH': LB_H,
+    'lbs/min': LB_MIN,
+    'LBS/MIN': LB_MIN,
+    'ppm': LB_MIN,
+    'PPM': LB_MIN,
     'kg/hr': KG_H,
     'kgs/h': KG_H,
     'kgs/hr': KG_H,
@@ -494,13 +632,19 @@ UNIT_CORRECTIONS = {
     'inch': INCH,
     'inches': INCH,
     'IN': INCH,
+    'MM': MILLIMETER,
+    'Mm': MILLIMETER,
     # Mass:
     'KGS': KG,
     'Kgs': KG,
     'kgs': KG,
+    'Kg': KG,
+    'KG': KG,
     'LBS': LB,
     'Lbs': LB,
     'lbs': LB,
+    'Slugs': SLUG,
+    'slugs': SLUG,
     'tonne': TONNE,
     'tonnes': TONNE,
     # Pressure:
@@ -629,6 +773,9 @@ UNIT_CORRECTIONS = {
     'ft-lb': FT_LB,
     'ft-lbs': FT_LB,
     'ft.lbs': FT_LB,
+    'in-lb': IN_LB,
+    'in-lbs': IN_LB,
+    'in.lbs': IN_LB,
     'in-oz': IN_OZ,
     'In-Oz': IN_OZ,
     'IN-OZ': IN_OZ,
@@ -707,20 +854,22 @@ UNIT_CORRECTIONS = {
 
 
 UNIT_CATEGORIES = {
-    'Acceleration': (G, RMS_G),
+    'Acceleration': (G,),
     'Angles': (DEGREE, RADIAN, DEGREE_S),
+    'Density': (KG_LITER, LB_GALLON),
     'Electricity': (AMP, VOLT, KVA, OHM, MILLIVOLT, MICROAMP, MILLIAMP),
     'Energy': (JOULE, KJ, MJ),
-    'Flow (Volume)': (LB_H, KG_H, TONNE_H),
+    'Flow (Mass)': (LB_H, LB_MIN, KG_H, TONNE_H),
+    'Flow (Volume)': (PINT_H, QUART_H, GALLON_H, LITER_H),
     'Force': (LBF, KGF, DECANEWTON, NEWTON),
     'Frequency': (HZ, KHZ, MHZ, GHZ),
-    'Length': (FT, METER, KM, MILE, NM, INCH),
-    'Mass': (LB, KG, TONNE),
-    'Pressure': (INHG, PASCAL, HECTOPASCAL, MILLIBAR, PSI, PSIA, PSID, PSIG),
+    'Length': (FT, METER, KM, MILE, NM, INCH, MILLIMETER),
+    'Mass': (LB, KG, SLUG, TONNE),
+    'Pressure': (INHG, PASCAL, HECTOPASCAL, MILLIBAR, PSI, PSIA, PSID, PSIG, PSI_MINUTE),
     'Speed': (KT, MPH, FPM, FPS, IPS, METER_S, MACH, RPM),
     'Temperature': (CELSIUS, FAHRENHEIT, KELVIN),
     'Time': (HOUR, MINUTE, SECOND, DAY, WEEK, MONTH, YEAR),
-    'Torque': (FT_LB, IN_OZ),
+    'Torque': (FT_LB, IN_LB, IN_OZ),
     'Volume': (PINT, QUART, GALLON, LITER),
     'Other': (DDM, GS_DDM, LOC_DDM, DOTS, TRIM, CYCLES, PERCENT, NM_KG),
 }
@@ -729,11 +878,13 @@ UNIT_CATEGORIES = {
 UNIT_DESCRIPTIONS = {
     # Acceleration:
     G: 'acceleration',
-    RMS_G: 'root-mean-squared acceleration',
     # Angles:
     DEGREE: 'degrees',
     RADIAN: 'radians',
     DEGREE_S: 'degrees per second',
+    # Density:
+    KG_LITER: 'kilograms per liter',
+    LB_GALLON: 'pounds per gallon',
     # Electricity:
     AMP: 'amperes',
     VOLT: 'volts',
@@ -743,18 +894,24 @@ UNIT_DESCRIPTIONS = {
     MILLIAMP: 'milliamperes',
     MICROAMP: 'microamperes',
     # Energy
-    JOULE: 'Joule',
+    JOULE: 'joule',
     KJ: 'kilojoule',
     MJ: 'megajoule',
-    # Flow (Volume):
+    # Flow (Mass):
     LB_H: 'pounds per hour',
+    LB_MIN: 'pounds per minute',
     KG_H: 'pounds per kilogram',
     TONNE_H: 'tonnes per hour',
+    # Flow (Volume):
+    PINT_H: 'pints per hour',
+    QUART_H: 'quarts per hour',
+    GALLON_H: 'gallons per hour',
+    LITER_H: 'liters per hour',
     # Force:
     LBF: 'pound-force',
     KGF: 'kilogram-force',
     DECANEWTON: 'decanewton',
-    NEWTON: 'Newton',
+    NEWTON: 'newton',
     # Frequency:
     HZ: 'hertz',
     KHZ: 'kilohertz',
@@ -767,9 +924,11 @@ UNIT_DESCRIPTIONS = {
     MILE: 'miles',
     NM: 'nautical miles',
     INCH: 'inches',
+    MILLIMETER: 'millimeters',
     # Mass:
     LB: 'pounds',
     KG: 'kilograms',
+    SLUG: 'slugs',
     TONNE: 'tonnes',
     # Pressure:
     INHG: 'inches of mercury',
@@ -780,6 +939,7 @@ UNIT_DESCRIPTIONS = {
     PSIA: 'pounds per square inch (absolute)',
     PSID: 'pounds per square inch (differential)',
     PSIG: 'pounds per square inch (gauge)',
+    PSI_MINUTE: 'pounds per square inch per minute',
     # Speed:
     KT: 'knots',
     MPH: 'miles per hour',
@@ -803,6 +963,7 @@ UNIT_DESCRIPTIONS = {
     YEAR: 'years',
     # Torque:
     FT_LB: 'foot-pounds',
+    IN_LB: 'inch-pounds',
     IN_OZ: 'inch-ounces',
     # Volume:
     PINT: 'pints',
@@ -926,7 +1087,3 @@ def convert(value, unit, output):
         raise ValueError('Unknown unit: %s' % unit)
     except KeyError:
         raise ValueError('Unknown output unit: %s' % output)
-
-
-##############################################################################
-# vim:et:ft=python:nowrap:sts=4:sw=4:ts=4
