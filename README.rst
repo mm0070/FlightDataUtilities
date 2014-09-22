@@ -4,8 +4,6 @@ Introduction
 FlightDataUtilties is a collection of tools used in various projects, including
 FlightDataConverter, FlightDataAccessor and FlightDataAnalyzer.
 
-THIS PROJECT IS CURRENTLY A WORK IN PROGRESS AND WILL BE AVAILABLE IN Q1 2013.
-
 Project sponsored by `Flight Data Services`_ and released under the Open 
 Software License (`OSL-3.0`_).
 
