@@ -734,6 +734,8 @@ UNIT_CORRECTIONS = {
     'DAYS': DAY,
     'hr': HOUR,
     'hrs': HOUR,
+    'hour': HOUR,
+    'hours': HOUR,
     'HR': HOUR,
     'HRS': HOUR,
     'HOUR': HOUR,
