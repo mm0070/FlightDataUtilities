@@ -53,7 +53,7 @@ CONF_TO_LEVER = {
     '1':      'Lever 1',
     '1(T/O)': 'Lever 1',
     '1+F':    'Lever 1',
-    '1*':     'Lever 1',  # Lever position is 2 when aircraft selects 1*
+    '1*':     'Lever 2',  # Lever position is 2 when aircraft selects 1*
     '2':      'Lever 2',
     '2*':     'Lever 3',  # Lever position is 3 when aircraft selects 2*
     '3':      'Lever 3',
