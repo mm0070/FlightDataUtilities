@@ -173,3 +173,48 @@ def align_arrays(slave_array, master_array):
         # take every other sample to downsample
         return slave_array[0::1/ratio]
 
+
+def save_compressed(path, array):
+    '''
+    Save either a MappedArray, np.ma.MaskedArray or np.ndarray in a compressed archive.
+    '''
+    try:
+        from hdfaccess.parameter import MappedArray
+    except ImportError:
+        pass
+    else:
+        if isinstance(array, MappedArray):
+            np.savez_compressed(
+                path,
+                np.array(array.values_mapping),
+                array.data,
+                array.mask,
+            )
+            return
+    if isinstance(array, np.ma.MaskedArray):
+        np.savez_compressed(path, array.data, array.mask)
+    elif isinstance(array, np.ndarray):
+        np.savez_compressed(path, array)
+    else:
+        raise NotImplementedError("Object of type '%s' cannot be saved." % type(array))
+
+
+def load_compressed(path):
+    '''
+    Load either a MappedArray, np.ma.MaskedArray or np.ndarray from a compressed archive.
+    '''
+    array_dict = np.load(path)
+    array_count = len(array_dict.keys())
+    if array_count == 3:
+        from hdfaccess.parameter import MappedArray
+        values_mapping = array_dict['arr_0'].item()
+        raw_array = np.ma.masked_array(array_dict['arr_1'], mask=array_dict['arr_2'])
+        array = MappedArray(raw_array, values_mapping=values_mapping)
+    elif array_count == 2:
+        array = np.ma.MaskedArray(array_dict['arr_0'], mask=array_dict['arr_1'])
+    elif array_count == 1:
+        array = array_dict['arr_0']
+    else:
+        raise NotImplementedError('Unknown array type with %d components.' % array_count)
+    return array
+
