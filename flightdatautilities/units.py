@@ -1036,6 +1036,9 @@ def function(unit, output):
     '''
     unit0, unit1 = normalise(unit), normalise(output)
 
+    if unit0 == unit1:
+        return lambda v: v
+
     try:
         return CONVERSION_FUNCTIONS[unit0][unit1]
     except KeyError:
@@ -1060,7 +1063,8 @@ def multiplier(unit, output):
     :returns: the conversion multiplier
     :rtype: float
     '''
-    return CONVERSION_MULTIPLIERS[normalise(unit)][normalise(output)]
+    unit0, unit1 = normalise(unit), normalise(output)
+    return 1 if unit == output else CONVERSION_MULTIPLIERS[unit0][unit1]
 
 
 def convert(value, unit, output):
@@ -1077,15 +1081,14 @@ def convert(value, unit, output):
     :rtype: numeric
     :raises: ValueError -- if any of the units are not known.
     '''
-    unit = normalise(unit)
-    output = normalise(output)
-    if unit == output:
+    unit0, unit1 = normalise(unit), normalise(output)
+    if unit0 == unit1:
         return value
     try:
-        if unit in CONVERSION_FUNCTIONS:
-            return function(unit, output)(value)
-        if unit in CONVERSION_MULTIPLIERS:
-            return value * multiplier(unit, output)
-        raise ValueError('Unknown unit: %s' % unit)
+        if unit0 in CONVERSION_FUNCTIONS:
+            return function(unit0, unit1)(value)
+        if unit0 in CONVERSION_MULTIPLIERS:
+            return value * multiplier(unit0, unit1)
+        raise ValueError('Unknown input unit: %s' % unit0)
     except KeyError:
-        raise ValueError('Unknown output unit: %s' % output)
+        raise ValueError('Unknown output unit: %s' % unit1)
