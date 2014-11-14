@@ -386,6 +386,7 @@ UNIT_CORRECTIONS = {
     'G\'s': G,
     'g\'s': G,
     # Angles:
+    u'\xb0': DEGREE,  # degree symbol
     'DEG': DEGREE,
     'Deg': DEGREE,
     'degree': DEGREE,
@@ -569,6 +570,7 @@ UNIT_CORRECTIONS = {
     'RPM': RPM,
     'Rpm': RPM,
     # Temperature:
+    u'\xb0C': CELSIUS,
     'DEGC': CELSIUS,
     'DEG C': CELSIUS,
     'degree C': CELSIUS,
