@@ -14,46 +14,50 @@
 # - Updating the multi-states in LFLs.
 
 
-# Mapping of value to configuration states (for use by Airbus):
+# Mapping of value to configuration states (for use by Airbus and similar aircraft):
 AVAILABLE_CONF_STATES = {
     0: '0',
-    1: '1',
-    2: '1+F',
-    3: '1*',
-    4: '2',
-    5: '2*',
-    6: '3',
-    7: '4',
-    8: '5',
-    9: 'Full',
+    10: '1',
+    12: '1(T/O)', # Detailed in A330 Flight Crew Operating Manual REV 004
+    13: '1+F',
+    16: '1*',
+    20: '2',
+    26: '2*',
+    30: '3',
+    40: '4',
+    50: '5',
+    90: 'Full',
 }
 
 
-# Reverse mapping of value to configuration states (for use by Airbus):
+# Reverse mapping of value to configuration states (for use by Airbus and similar aircraft):
 AVAILABLE_CONF_STATES_REV = {v: k for k, v in AVAILABLE_CONF_STATES.items()}
 
 
-# Mapping of value to lever positions (for use by Airbus):
+# Mapping of value to lever positions (for use by Airbus and similar aircraft):
 LEVER_STATES = {
     0: 'Lever 0',
-    1: 'Lever 1',
-    2: 'Lever 2',
-    3: 'Lever 3',
-    4: 'Lever Full',
+    10: 'Lever 1',
+    20: 'Lever 2',
+    30: 'Lever 3',
+    40: 'Lever 4',
+    50: 'Lever 5',
+    90: 'Lever Full',
 }
 
 
 # Mapping of configuration state to lever positions:
 CONF_TO_LEVER = {
     # Airbus:
-    '0':    LEVER_STATES[0],
-    '1':    LEVER_STATES[1],
-    '1+F':  LEVER_STATES[1],
-    '1*':   LEVER_STATES[2],  # Lever position is 2 when aircraft selects 1*
-    '2':    LEVER_STATES[2],
-    '2*':   LEVER_STATES[3],  # Lever position is 3 when aircraft selects 2*
-    '3':    LEVER_STATES[3],
-    'Full': LEVER_STATES[4],
+    '0':      'Lever 0',
+    '1':      'Lever 1',
+    '1(T/O)': 'Lever 1',
+    '1+F':    'Lever 1',
+    '1*':     'Lever 2',  # Lever position is 2 when aircraft selects 1*
+    '2':      'Lever 2',
+    '2*':     'Lever 3',  # Lever position is 3 when aircraft selects 2*
+    '3':      'Lever 3',
+    'Full':   'Lever Full',
 }
 
 
