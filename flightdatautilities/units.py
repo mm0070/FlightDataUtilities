@@ -263,6 +263,7 @@ CONVERSION_MULTIPLIERS = {
     # Speed:
     KT: {
         MPH: 1.150778454,
+        METER_S: 0.51444,
         FPM: 101.268503937,
     },
     MPH: {
