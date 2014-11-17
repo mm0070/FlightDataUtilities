@@ -16,6 +16,9 @@ import shutil
 import logging
 
 
+BUFFER_SIZE = 4096
+
+
 logger = logging.getLogger(name=__name__)
 
 
@@ -40,7 +43,7 @@ class CompressedFile(object):
     '''
     def __init__(self, compressed_path, uncompressed_path=None, format=None,
                  output_dir=None, temp_dir=None, create=False,
-                 compression_level=COMPRESSION_LEVEL):
+                 compression_level=COMPRESSION_LEVEL, buffer_size=BUFFER_SIZE):
         '''
         :param compressed_path: Path to the compressed file.
         :type compressed_path: str
@@ -88,6 +91,7 @@ class CompressedFile(object):
         self.temp_path = None
         self.create = create
         self.compression_level = compression_level
+        self.buffer_size = buffer_size
 
     def __repr__(self):
         args = [
@@ -111,7 +115,15 @@ class CompressedFile(object):
         # Uncompress to temp file
         with file(self.uncompressed_path, 'w+b') as uncompressed_file:
             with self.compressor(self.compressed_path, 'rb') as compressed_file:
-                uncompressed_file.write(compressed_file.read())
+                if self.buffer_size is None:
+                    buffer = compressed_file.read()
+                    uncompressed_file.write(buffer)
+                else:
+                    while True:
+                        buffer = compressed_file.read(self.buffer_size)
+                        uncompressed_file.write(buffer)
+                        if len(buffer) < self.buffer_size:
+                            break
 
         logger.debug('Uncompressed file stored in temporary location `%s`',
                      self.uncompressed_path)
@@ -164,7 +176,15 @@ class CompressedFile(object):
                 self.compressed_path, 'w',
                 compresslevel=self.compression_level) as compressed_file:
             with file(self.uncompressed_path, 'rb') as uncompressed_file:
-                compressed_file.write(uncompressed_file.read())
+                if self.buffer_size is None:
+                    buffer = uncompressed_file.read()
+                    compressed_file.write(buffer)
+                else:
+                    while True:
+                        buffer = uncompressed_file.read(self.buffer_size)
+                        compressed_file.write(buffer)
+                        if len(buffer) < self.buffer_size:
+                            break
 
     def cleanup(self):
         '''
@@ -269,11 +289,11 @@ if __name__ == '__main__':
     compress_parser = subparser.add_parser('compress')
     compress_parser.add_argument('compressor')
     decompress_parser = subparser.add_parser('decompress')
-    
+
     args = parser.parse_args()
-    
+
     output_path = args.output_file_path
-    
+
     if args.command == 'compress':
         compressor = COMPRESSION_FORMATS[args.compressor]
         if not output_path:
@@ -300,40 +320,40 @@ else:
     class BloscFile(object):
         # Size of bits to be compressed.
         TYPE_SIZE = 8
-        
+
         def __init__(self, file_path, mode='rb', compression='blosclz',
                      compresslevel=9):
             '''
             Compression is only required for writing files.
-            
+
             Q: Force maximum compresslevel?
             '''
             self.file_path = file_path
             self.compression = compression
             self.compresslevel = compresslevel
             self.file = open(self.file_path, mode)
-        
+
         def __enter__(self):
             return self
-        
+
         def __exit__(self, a_type, value, traceback):
             self.close()
-        
-        def read(self):
+
+        def read(self, buffer_size=None):
             '''
             Does not support byte count to read.
             '''
-            bytes = self.file.read()
+            bytes = self.file.read(buffer_size)
             return blosc.decompress(bytes)
-        
+
         def write(self, bytes):
-            compressed_bytes = blosc.compress(bytes, 8, clevel=self.compresslevel,
-                                              cname=self.compression)
+            compressed_bytes = blosc.compress(
+                bytes, 8, clevel=self.compresslevel, cname=self.compression)
             self.file.write(compressed_bytes)
-        
+
         def close(self):
             self.file.close()
-    
+
     COMPRESSION_FORMATS['blosc'] = BloscFile
 
 
