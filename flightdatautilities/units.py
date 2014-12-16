@@ -357,20 +357,33 @@ CONVERSION_MULTIPLIERS = {
     # Speed:
     KT: {
         MPH: 1.150778454,
-        METER_S: 0.51444,
         FPM: 101.268503937,
+        FPS: 1.68781,
+        METER_S: 0.51444,
     },
     MPH: {
         KT: 0.868976993,
         FPM: 88.0,
+        FPS: 1.46667,
+        METER_S: 0.44704,
     },
     FPM: {
         KT: 0.009874739,
         MPH: 0.011363636,
-        FPS: 60.0,
+        FPS: 1 / 60.0,
+        METER_S: 0.00508,
     },
     FPS: {
-        FPM: 1 / 60.0,
+        KT: 0.592483801,
+        MPH: 0.681818,
+        FPM: 60.0,
+        METER_S: 0.3048,
+    },
+    METER_S: {
+        KT: 1.94384,
+        MPH: 2.23694,
+        FPM: 196.850394,
+        FPS: 3.28084,
     },
     # Time:
     HOUR: {
