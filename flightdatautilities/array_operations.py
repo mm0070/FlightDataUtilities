@@ -119,14 +119,7 @@ def upsample_arrays(arrays):
     :returns: Arrays upsampled to the size of the largest.
     :rtype: iterable of np.ma.masked_array
     '''
-    lengths = []
-    for array in arrays:
-        try:
-            length = len(array)
-        except TypeError:
-            # Scalar
-            length = 1
-        lengths.append(length)
+    lengths = [1 if np.isscalar(a) else len(a) for a in arrays]
     largest = max(lengths)
     if largest == min(lengths):
         return arrays
