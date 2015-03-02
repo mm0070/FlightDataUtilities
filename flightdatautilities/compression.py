@@ -69,9 +69,9 @@ class CompressedFile(object):
             logger.debug('Using compressor `%s` for format `%s`',
                          self.compressor, format)
         else:
-            logger.warning('Compression format `%s` not recognised, '
-                           'passing the file %s unchanged', format,
-                           compressed_path)
+            logger.debug(
+                'Compression format `%s` not recognised, passing the file %s '
+                'unchanged', format, compressed_path)
             # We use bare file object, which will effectively copy the file to
             # the temp location and back.
             self.compressor = file
