@@ -1,4 +1,4 @@
+bz2file
+decorator
 numpy
 scipy
-decorator
-bz2file
