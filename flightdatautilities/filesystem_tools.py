@@ -23,6 +23,33 @@ import unittest
 import zipfile
 
 
+def open_raw_data(source_file_path):
+    '''
+    Open the input file which may be compressed.
+
+    :param source_file_path: Path of raw data file which can either be zip
+        (.SAC), bz2 or uncompressed.
+    :type source_file_path: str
+    :returns: Opened file object.
+    '''
+    extension = os.path.splitext(source_file_path)[1].lower()
+
+    if extension in ('.sac', '.zip'):
+        zip_file_obj = zipfile.ZipFile(source_file_path, 'r')
+        # Opening a file within the zip returns a file-like object.
+        filenames = zip_file_obj.namelist()
+        if len(filenames) == 1:
+            file_obj = zip_file_obj.open(filenames[0])
+        else:
+            raise IOError("Zip files must contain only a single data file.")
+    elif extension == '.bz2':
+        file_obj = bz2.BZ2File(source_file_path, 'r')
+    else:
+        file_obj = open(source_file_path, 'rb')
+
+    return file_obj
+
+
 def copy_file(orig_path, dest_dir=None, postfix='_copy'):
     '''
     Creates a copy of the file with the postfix inserted between the filename
