@@ -12,7 +12,7 @@
     list?
 """
 
-import bz2
+
 import hashlib
 import mimetypes
 import os
@@ -21,6 +21,13 @@ import shutil
 import subprocess
 import unittest
 import zipfile
+
+try:
+    # bz2file provides support for multiple streams and a compatible interface.
+    import bz2file as bz2
+except ImportError:
+    # Fallback to standard library.
+    import bz2
 
 
 def open_raw_data(source_file_path):
