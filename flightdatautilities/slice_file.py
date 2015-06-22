@@ -41,6 +41,7 @@ def slice_file(source_file_obj, _slice, words_to_read=WORDS_TO_READ, buffer_size
 
     while (bytes_read + buffer_size) < total_bytes:
         yield source_file_obj.read(buffer_size)
+        bytes_read += buffer_size
 
     remaining_bytes = total_bytes - bytes_read
     yield source_file_obj.read(remaining_bytes)
