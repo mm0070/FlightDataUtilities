@@ -2,4 +2,6 @@ blosc
 bz2file
 decorator
 numpy
+pyyaml
+requests
 scipy
