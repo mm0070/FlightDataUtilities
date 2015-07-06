@@ -1,3 +1,4 @@
+blosc
 bz2file
 decorator
 numpy
