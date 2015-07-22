@@ -248,7 +248,7 @@ class ReadOnlyCompressedFile(CompressedFile):
         self.cleanup()
 
 
-class CachedCompressedFile(CompressedFile):
+class CachedCompressedFile(ReadOnlyCompressedFile):
     '''
     Compressed file wrapper with caching.
 
