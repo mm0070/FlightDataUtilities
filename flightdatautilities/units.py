@@ -92,6 +92,7 @@ MILE = 'mi'
 NM = 'NM'  # Nautical Miles
 INCH = 'in'
 MILLIMETER = 'mm'
+MIL = 'mil'
 
 # Mass:
 LB = 'lb'
@@ -161,13 +162,9 @@ NM_KG = 'NM/kg'
 COUNTS = 'counts'
 DU = 'du'
 DI = 'di'
-
-# Engine Vibration
 UNITS = 'units'
 CU = 'cu'
 SCALAR = 'scalar'
-MILS = 'mils'
-
 
 
 CONVERSION_MULTIPLIERS = {
@@ -942,18 +939,19 @@ UNIT_CATEGORIES = {
     'Length': (FT, METER, KM, MILE, NM, INCH, MILLIMETER),
     'Mass': (LB, KG, SLUG, TONNE),
     'Pressure': (INHG, PASCAL, HECTOPASCAL, BAR, MILLIBAR, PSI, PSIA, PSID, PSIG, PSI_MINUTE, EPR),
-    'Speed': (KT, MPH, FPM, FPS, IPS, METER_S, MACH, RPM),
+    'Speed': (KT, MPH, FPM, FPS, FPS2, IPS, METER_S, MACH, RPM),
     'Temperature': (CELSIUS, FAHRENHEIT, KELVIN, RANKINE),
     'Time': (HOUR, MINUTE, SECOND, DAY, WEEK, MONTH, YEAR),
     'Torque': (FT_LB, IN_LB, IN_OZ),
     'Volume': (PINT, QUART, GALLON, LITER),
-    'Other': (DDM, GS_DDM, LOC_DDM, DOTS, TRIM, CYCLES, PERCENT, NM_KG, UNITS, CU, DU, DI, SCALAR, MILS, COUNTS),
+    'Other': (DDM, GS_DDM, LOC_DDM, DOTS, TRIM, CYCLES, PERCENT, NM_KG, UNITS, CU, DU, DI, SCALAR, MIL, COUNTS),
 }
 
 
 UNIT_DESCRIPTIONS = {
     # Acceleration:
     G: 'acceleration',
+    DEGREE_S2: 'degrees squared',
     # Angles:
     DEGREE: 'degrees',
     RADIAN: 'radians',
@@ -978,6 +976,7 @@ UNIT_DESCRIPTIONS = {
     LB_MIN: 'pounds per minute',
     KG_H: 'pounds per kilogram',
     TONNE_H: 'tonnes per hour',
+    LB_FT2: 'pounds per feet squared',
     # Flow (Volume):
     PINT_H: 'pints per hour',
     QUART_H: 'quarts per hour',
@@ -1001,6 +1000,7 @@ UNIT_DESCRIPTIONS = {
     NM: 'nautical miles',
     INCH: 'inches',
     MILLIMETER: 'millimeters',
+    MIL: 'mils',
     # Mass:
     LB: 'pounds',
     KG: 'kilograms',
@@ -1017,11 +1017,13 @@ UNIT_DESCRIPTIONS = {
     PSIG: 'pounds per square inch (gauge)',
     PSI_MINUTE: 'pounds per square inch per minute',
     EPR: 'Engine Pressure Ratio',
+    BAR: 'bar',
     # Speed:
     KT: 'knots',
     MPH: 'miles per hour',
     FPM: 'feet per minute',
     FPS: 'feet per second',
+    FPS2: 'feet per second squared',
     IPS: 'inches per second',
     METER_S: 'meters per second',
     MACH: 'Mach',
@@ -1057,9 +1059,12 @@ UNIT_DESCRIPTIONS = {
     CYCLES: 'cycles',
     PERCENT: 'percent',
     NM_KG: 'Nautical Miles per kilogram',
-    # Engine Vibration
+    DU: 'display unit',
+    DI: 'direction/deviation indicator',
+    COUNTS: 'counts',
     CU: 'Control Units',
-
+    SCALAR: 'scalar',
+    UNITS: 'units',
 }
 
 
