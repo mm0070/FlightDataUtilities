@@ -681,6 +681,11 @@ UNIT_CORRECTIONS = {
     'IN': INCH,
     'MM': MILLIMETER,
     'Mm': MILLIMETER,
+    'mils': MIL,
+    'Mil': MIL,
+    'MIL': MIL,
+    'Mils': MIL,
+    'MILS': MIL,
     # Mass:
     'KGS': KG,
     'Kgs': KG,
