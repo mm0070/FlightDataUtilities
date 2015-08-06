@@ -22,7 +22,7 @@ SYNC_PATTERNS = {'Standard': (0x0247, 0x05B8, 0x0A47, 0x0DB8),
 
 ORDINAL = ('first', 'second', 'third', 'fourth')
 
-SUPPORTED_WPS = [64, 128, 256, 512, 1024, 2048]
+SUPPORTED_WPS = [64, 65, 128, 129, 256, 257, 512, 513, 1024, 1025, 2048, 2049]
 
 
 def check_sync(file_obj, wps, word_index, pattern_name):
