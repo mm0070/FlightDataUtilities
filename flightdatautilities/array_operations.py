@@ -132,9 +132,13 @@ def upsample_arrays(arrays):
     
     upsampled_arrays = []
     for array, length in zip(arrays, lengths):
+        # XXX: Hack to fix MappedArray values mapping being stripped by repeat.
+        values_mapping = getattr(array, 'values_mapping', None)
         repeat = largest / length
         if repeat > 1:
             array = array.repeat(repeat)
+            if values_mapping:
+                array.values_mapping = values_mapping
         upsampled_arrays.append(array)
     return upsampled_arrays
 
