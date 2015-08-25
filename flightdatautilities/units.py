@@ -348,7 +348,7 @@ CONVERSION_MULTIPLIERS = {
         PASCAL: 100000,
         HECTOPASCAL: 1000,
         PSI: 14.5037738,
-        },    
+    },
     MILLIBAR: {
         INHG: 0.02952998,
         PASCAL: 100,
@@ -497,7 +497,7 @@ CONVERSION_FUNCTIONS = {
     RANKINE: {
         CELSIUS: lambda v: (v - 491.67) * 5.0 / 9.0,
         FAHRENHEIT: lambda v: v - 459.67,
-        },    
+    },
 }
 
 
@@ -956,7 +956,7 @@ UNIT_CATEGORIES = {
 UNIT_DESCRIPTIONS = {
     # Acceleration:
     G: 'acceleration',
-    DEGREE_S2: 'degrees squared',
+    DEGREE_S2: 'degrees per second squared',
     # Angles:
     DEGREE: 'degrees',
     RADIAN: 'radians',
@@ -1021,7 +1021,7 @@ UNIT_DESCRIPTIONS = {
     PSID: 'pounds per square inch (differential)',
     PSIG: 'pounds per square inch (gauge)',
     PSI_MINUTE: 'pounds per square inch per minute',
-    EPR: 'Engine Pressure Ratio',
+    EPR: 'engine pressure ratio',
     BAR: 'bar',
     # Speed:
     KT: 'knots',
@@ -1063,11 +1063,11 @@ UNIT_DESCRIPTIONS = {
     TRIM: 'trim',
     CYCLES: 'cycles',
     PERCENT: 'percent',
-    NM_KG: 'Nautical Miles per kilogram',
+    NM_KG: 'nautical miles per kilogram',
     DU: 'display unit',
     DI: 'direction/deviation indicator',
     COUNTS: 'counts',
-    CU: 'Control Units',
+    CU: 'control units',
     SCALAR: 'scalar',
     UNITS: 'units',
 }
