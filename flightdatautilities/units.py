@@ -34,6 +34,7 @@ import math
 
 # Acceleration:
 G = 'g'  # [2]
+FPS2 = 'ft/s/s'
 DEGREE_S2 = 'deg/s/s'
 
 # Angles:
@@ -64,7 +65,6 @@ LB_H = 'lb/h'
 LB_MIN = 'lb/min'
 KG_H = 'kg/h'
 TONNE_H = 't/h'
-LB_FT2 = 'lb/ft/ft'
 
 # Flow (Volume):
 PINT_H = 'pt/h'  # [3]
@@ -111,14 +111,13 @@ PSIA = 'psia'
 PSID = 'psid'
 PSIG = 'psig'
 PSI_MINUTE = 'psi/min'
-EPR = 'epr'
+LB_FT2 = 'lb/ft/ft'
 
 # Speed:
 KT = 'kt'
 MPH = 'mph'
 FPM = 'fpm'
 FPS = 'fps'
-FPS2 = 'ft/s/s'
 IPS = 'ips'
 METER_S = 'm/s'
 MACH = 'Mach'  # [0]
@@ -165,6 +164,7 @@ DI = 'di'
 UNITS = 'units'
 CU = 'cu'
 SCALAR = 'scalar'
+EPR = 'epr'
 
 
 CONVERSION_MULTIPLIERS = {
@@ -546,6 +546,13 @@ UNIT_CORRECTIONS = {
     'G': G,
     'G\'s': G,
     'g\'s': G,
+    'ft/sec^2': FPS2,
+    'ft/sec/sec': FPS2,
+    'deg/s^2': DEGREE_S2,
+    'deg/s2': DEGREE_S2,
+    'deg/sec/sec': DEGREE_S2,
+    'deg/sec2': DEGREE_S2,
+    'deg/sec^2': DEGREE_S2,
     # Angles:
     u'\xb0': DEGREE,  # degree symbol
     'DEG': DEGREE,
@@ -562,11 +569,6 @@ UNIT_CORRECTIONS = {
     'degree/sec': DEGREE_S,
     'degrees/s': DEGREE_S,
     'degrees/sec': DEGREE_S,
-    'deg/s^2': DEGREE_S2,
-    'deg/s2': DEGREE_S2,
-    'deg/sec/sec': DEGREE_S2,
-    'deg/sec2': DEGREE_S2,
-    'deg/sec^2': DEGREE_S2,
     # Density:
     'kilogram/liter': KG_LITER,
     'kilogram/litre': KG_LITER,
@@ -631,8 +633,6 @@ UNIT_CORRECTIONS = {
     'tonne/hr': TONNE_H,
     'tonnes/h': TONNE_H,
     'tonnes/hr': TONNE_H,
-    'lb/ft^2': LB_FT2,
-    'lb/ft2': LB_FT2,
     # Force:
     'pound-force': LBF,
     'kilogram-force': KGF,
@@ -726,6 +726,8 @@ UNIT_CORRECTIONS = {
     'PSIA': PSIA,
     'PSID': PSID,
     'PSIG': PSIG,
+    'lb/ft^2': LB_FT2,
+    'lb/ft2': LB_FT2,
     # Speed:
     'KT': KT,
     'KTS': KT,
@@ -747,8 +749,6 @@ UNIT_CORRECTIONS = {
     'FPM': FPM,
     'ft/s': FPS,
     'ft/sec': FPS,
-    'ft/sec^2': FPS2,
-    'ft/sec/sec': FPS2,
     'feet/sec': FPS,
     'FPS': FPS,
     'in/s': IPS,
@@ -936,30 +936,31 @@ UNIT_CORRECTIONS = {
 
 
 UNIT_CATEGORIES = {
-    'Acceleration': (G, DEGREE_S2),
+    'Acceleration': (G, FPS2, DEGREE_S2),
     'Angles': (DEGREE, RADIAN, DEGREE_S),
     'Density': (KG_LITER, LB_GALLON),
     'Electricity': (AMP, VOLT, KVA, OHM, MILLIVOLT, MICROAMP, MILLIAMP),
     'Energy': (JOULE, KJ, MJ),
-    'Flow (Mass)': (LB_H, LB_MIN, KG_H, TONNE_H, LB_FT2),
+    'Flow (Mass)': (LB_H, LB_MIN, KG_H, TONNE_H),
     'Flow (Volume)': (PINT_H, QUART_H, GALLON_H, LITER_H),
     'Force': (LBF, KGF, DECANEWTON, NEWTON),
     'Frequency': (HZ, KHZ, MHZ, GHZ),
     'Length': (FT, METER, KM, MILE, NM, INCH, MILLIMETER),
     'Mass': (LB, KG, SLUG, TONNE),
-    'Pressure': (INHG, PASCAL, HECTOPASCAL, BAR, MILLIBAR, PSI, PSIA, PSID, PSIG, PSI_MINUTE, EPR),
-    'Speed': (KT, MPH, FPM, FPS, FPS2, IPS, METER_S, MACH, RPM),
+    'Pressure': (INHG, PASCAL, HECTOPASCAL, BAR, MILLIBAR, PSI, PSIA, PSID, PSIG, PSI_MINUTE, LB_FT2),
+    'Speed': (KT, MPH, FPM, FPS, IPS, METER_S, MACH, RPM),
     'Temperature': (CELSIUS, FAHRENHEIT, KELVIN, RANKINE),
     'Time': (HOUR, MINUTE, SECOND, DAY, WEEK, MONTH, YEAR),
     'Torque': (FT_LB, IN_LB, IN_OZ),
     'Volume': (PINT, QUART, GALLON, LITER),
-    'Other': (DDM, GS_DDM, LOC_DDM, DOTS, TRIM, CYCLES, PERCENT, NM_KG, UNITS, CU, DU, DI, SCALAR, MIL, COUNTS),
+    'Other': (DDM, GS_DDM, LOC_DDM, DOTS, TRIM, CYCLES, PERCENT, NM_KG, UNITS, CU, DU, DI, SCALAR, MIL, COUNTS, EPR),
 }
 
 
 UNIT_DESCRIPTIONS = {
     # Acceleration:
     G: 'acceleration',
+    FPS2: 'feet per second squared',
     DEGREE_S2: 'degrees per second squared',
     # Angles:
     DEGREE: 'degrees',
@@ -985,7 +986,6 @@ UNIT_DESCRIPTIONS = {
     LB_MIN: 'pounds per minute',
     KG_H: 'pounds per kilogram',
     TONNE_H: 'tonnes per hour',
-    LB_FT2: 'pounds per feet squared',
     # Flow (Volume):
     PINT_H: 'pints per hour',
     QUART_H: 'quarts per hour',
@@ -1025,14 +1025,13 @@ UNIT_DESCRIPTIONS = {
     PSID: 'pounds per square inch (differential)',
     PSIG: 'pounds per square inch (gauge)',
     PSI_MINUTE: 'pounds per square inch per minute',
-    EPR: 'engine pressure ratio',
     BAR: 'bar',
+    LB_FT2: 'pounds per square foot',
     # Speed:
     KT: 'knots',
     MPH: 'miles per hour',
     FPM: 'feet per minute',
     FPS: 'feet per second',
-    FPS2: 'feet per second squared',
     IPS: 'inches per second',
     METER_S: 'meters per second',
     MACH: 'Mach',
@@ -1074,6 +1073,7 @@ UNIT_DESCRIPTIONS = {
     CU: 'control units',
     SCALAR: 'scalar',
     UNITS: 'units',
+    EPR: 'engine pressure ratio',
 }
 
 
