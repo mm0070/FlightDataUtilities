@@ -485,18 +485,22 @@ CONVERSION_FUNCTIONS = {
     CELSIUS: {
         FAHRENHEIT: lambda v: v * 9.0 / 5.0 + 32.0,
         KELVIN: lambda v: v + 273.15,
+        RANKINE: lambda v: (v + 273.15) * 9.0 / 5.0,
     },
     FAHRENHEIT: {
         CELSIUS: lambda v: (v - 32.0) * 5.0 / 9.0,
         KELVIN: lambda v: (v + 459.67) * 5.0 / 9.0,
+        RANKINE: lambda v: v + 459.67,
     },
     KELVIN: {
         CELSIUS: lambda v: v - 273.15,
         FAHRENHEIT: lambda v: v * 9.0 / 5.0 - 459.67,
+        RANKINE: lambda v: v * 9.0 / 5.0,
     },
     RANKINE: {
         CELSIUS: lambda v: (v - 491.67) * 5.0 / 9.0,
         FAHRENHEIT: lambda v: v - 459.67,
+        KELVIN: lambda v: v * 5.0 / 9.0,
     },
 }
 

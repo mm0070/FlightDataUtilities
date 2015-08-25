@@ -211,10 +211,17 @@ class TestUnitsModule(unittest.TestCase):
             # Temperature:
             (0, CELSIUS, FAHRENHEIT): 32,
             (0, CELSIUS, KELVIN): 273.15,
+            (0, CELSIUS, RANKINE): 491.67,
             (0, FAHRENHEIT, CELSIUS): -17.7778,
             (0, FAHRENHEIT, KELVIN): 255.372,
+            (0, FAHRENHEIT, RANKINE): 459.67,
             (0, KELVIN, CELSIUS): -273.15,
             (0, KELVIN, FAHRENHEIT): -459.67,
+            (0, KELVIN, RANKINE): 0.0,
+            (0, RANKINE, CELSIUS): -273.15,
+            (0, RANKINE, FAHRENHEIT): -459.67,
+            (0, RANKINE, KELVIN): 0.0,
+            (180, RANKINE, KELVIN): 100.0,
             # Time:
             (1, HOUR, MINUTE): 60,
             (1, HOUR, SECOND): 3600,
