@@ -127,7 +127,7 @@ RPM = 'rpm'
 CELSIUS = 'C'  # [1][2]
 FAHRENHEIT = 'F'  # [1][2]
 KELVIN = 'K'  # [1]
-# RANKINE = 'degR' #Readout
+RANKINE = 'R'
 
 # Time:
 HOUR = 'h'
