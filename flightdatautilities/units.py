@@ -127,7 +127,7 @@ RPM = 'rpm'
 CELSIUS = 'C'  # [1][2]
 FAHRENHEIT = 'F'  # [1][2]
 KELVIN = 'K'  # [1]
-RANKINE = 'degR'
+# RANKINE = 'degR' #Readout
 
 # Time:
 HOUR = 'h'
@@ -158,13 +158,13 @@ TRIM = 'trim'
 CYCLES = 'cycles'
 PERCENT = '%'
 NM_KG = 'NM/kg'
-COUNTS = 'counts'
+#COUNTS = 'counts'#Readout
 DU = 'du'
 DI = 'di'
-UNITS = 'units'
-CU = 'cu'
-SCALAR = 'scalar'
-EPR = 'epr'
+# UNITS = 'units'#Readout
+# CU = 'cu'#Readout
+# SCALAR = 'scalar'#Readout
+# EPR = 'epr'#Readout
 
 
 CONVERSION_MULTIPLIERS = {
@@ -919,15 +919,15 @@ UNIT_CORRECTIONS = {
     '% full': PERCENT,
     '%Full': PERCENT,
     '% FULL': PERCENT,
-    'Epr': EPR,
-    'EPR': EPR,
-    'UNIT': UNITS,
-    'Unit': UNITS,
-    'UNITS': UNITS,
-    'Units': UNITS,
-    'Unit': UNITS,
-    'Cu': CU,
-    'CU': CU,
+    # 'Epr': EPR,#Readout
+    # 'EPR': EPR,#Readout
+    # 'UNIT': UNITS,#Readout
+    # 'Unit': UNITS,#Readout
+    # 'UNITS': UNITS,#Readout
+    # 'Units': UNITS,#Readout
+    # 'Unit': UNITS,#Readout
+    # 'Cu': CU, #Readout
+    # 'CU': CU, #Readout
     'Du': DU,
     'DU': DU,
     'Di': DI,
@@ -953,7 +953,7 @@ UNIT_CATEGORIES = {
     'Time': (HOUR, MINUTE, SECOND, DAY, WEEK, MONTH, YEAR),
     'Torque': (FT_LB, IN_LB, IN_OZ),
     'Volume': (PINT, QUART, GALLON, LITER),
-    'Other': (DDM, GS_DDM, LOC_DDM, DOTS, TRIM, CYCLES, PERCENT, NM_KG, UNITS, CU, DU, DI, SCALAR, MIL, COUNTS, EPR),
+    'Other': (DDM, GS_DDM, LOC_DDM, DOTS, TRIM, CYCLES, PERCENT, NM_KG, DU, DI, MIL), #COUNTS, CU, SCALAR, UNITS, EPR #Readout, 
 }
 
 
@@ -1069,11 +1069,11 @@ UNIT_DESCRIPTIONS = {
     NM_KG: 'nautical miles per kilogram',
     DU: 'display unit',
     DI: 'direction/deviation indicator',
-    COUNTS: 'counts',
-    CU: 'control units',
-    SCALAR: 'scalar',
-    UNITS: 'units',
-    EPR: 'engine pressure ratio',
+    # COUNTS: 'counts',#Readout
+    # CU: 'control units',#Readout
+    # SCALAR: 'scalar',#Readout
+    # UNITS: 'units',#Readout
+    # EPR: 'engine pressure ratio',
 }
 
 
