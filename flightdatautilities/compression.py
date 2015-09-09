@@ -287,6 +287,22 @@ class CachedCompressedFile(ReadOnlyCompressedFile):
         pass
 
 
+class CompressedFileWithoutCleanup(CompressedFile):
+    '''
+    Cleanup will not be performed if an exception is raised. The remaining file
+    can be inspected for bug fixing purposes.
+    '''
+    def __exit__(self, exc_type, exc_value, traceback):
+        '''
+        Do not clean up if exception raised.
+        '''
+        if exc_type is None:
+            # save and cleanup
+            self.save()
+
+        return False  # re-raise exception, if any
+
+
 try:
     import blosc
 except ImportError:
