@@ -1,7 +1,8 @@
 import numpy as np
 import unittest
 
-from flightdatautilities import masked_array_testutils as ma_test
+from numpy.ma.testutils import assert_array_equal
+
 from flightdatautilities.array_operations import (
     downsample_arrays,
     mask_ratio,
@@ -86,8 +87,8 @@ class TestDownsampleArrays(unittest.TestCase):
         array2 = np.ma.arange(5)
         downsampled_array1, downsampled_array2 = downsample_arrays([array1,
                                                                     array2])
-        ma_test.assert_array_equal(downsampled_array1, np.ma.arange(0,10,2))
-        ma_test.assert_array_equal(downsampled_array2, array2)
+        assert_array_equal(downsampled_array1, np.ma.arange(0,10,2))
+        assert_array_equal(downsampled_array2, array2)
         # With mask.
         array1[5:8] = np.ma.masked
         array2[2:4] = np.ma.masked
@@ -95,8 +96,8 @@ class TestDownsampleArrays(unittest.TestCase):
                                                                     array2])
         result_array1 = np.ma.arange(0,10,2)
         result_array1[3] = np.ma.masked
-        ma_test.assert_array_equal(downsampled_array1, result_array1)
-        ma_test.assert_array_equal(downsampled_array2, array2)
+        assert_array_equal(downsampled_array1, result_array1)
+        assert_array_equal(downsampled_array2, array2)
 
 
 class TestUpsampleArrays(unittest.TestCase):
@@ -105,15 +106,15 @@ class TestUpsampleArrays(unittest.TestCase):
         array2 = np.arange(5)
         upsampled_array1, upsampled_array2 = upsample_arrays([array1,
                                                               array2])
-        ma_test.assert_array_equal(upsampled_array1, np.array([array1] * 5))
-        ma_test.assert_array_equal(upsampled_array2, array2)
+        assert_array_equal(upsampled_array1, np.array([array1] * 5))
+        assert_array_equal(upsampled_array2, array2)
         
         array1 = np.ma.arange(10)
         array2 = np.ma.arange(5)
         upsampled_array1, upsampled_array2 = upsample_arrays([array1,
                                                               array2])
-        ma_test.assert_array_equal(upsampled_array1, array1)
-        ma_test.assert_array_equal(upsampled_array2, array2.repeat(2))
+        assert_array_equal(upsampled_array1, array1)
+        assert_array_equal(upsampled_array2, array2.repeat(2))
         # With mask.
         array1[5:8] = np.ma.masked
         array2[2:4] = np.ma.masked
@@ -121,8 +122,8 @@ class TestUpsampleArrays(unittest.TestCase):
                                                               array2])
         result_array2 = array2.repeat(2)
         result_array2[4:8] = np.ma.masked
-        ma_test.assert_array_equal(upsampled_array1, array1)
-        ma_test.assert_array_equal(upsampled_array2, result_array2)
+        assert_array_equal(upsampled_array1, array1)
+        assert_array_equal(upsampled_array2, result_array2)
 
 
 class TestPercentUnmasked(unittest.TestCase):

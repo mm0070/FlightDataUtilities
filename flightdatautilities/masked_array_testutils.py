@@ -11,9 +11,8 @@ These build on the functions provided in the ``numpy.ma.testutils`` module.
 ##############################################################################
 # Imports
 
-
-from numpy.ma.testutils import *  # noqa
-
+import numpy as np
+from numpy.ma.testutils import approx, almost, operator, assert_, assert_array_equal, assert_array_compare
 
 ##############################################################################
 # Functions
@@ -61,8 +60,8 @@ def assert_mask_equivalent(m1, m2, err_msg=''):
     where each element is ``False``. We want to handle this situation as the
     two arrays are functionally equivalent.
     '''
-    if m1 is nomask or not np.any(m1):
-        assert_(m2 is nomask or not np.any(m2), msg=err_msg)
-    if m2 is nomask or not np.any(m2):
-        assert_(m1 is nomask or not np.any(m1), msg=err_msg)
+    if m1 is np.ma.nomask or not np.any(m1):
+        assert_(m2 is np.ma.nomask or not np.any(m2), msg=err_msg)
+    if m2 is np.ma.nomask or not np.any(m2):
+        assert_(m1 is np.ma.nomask or not np.any(m1), msg=err_msg)
     assert_array_equal(m1, m2, err_msg=err_msg)
