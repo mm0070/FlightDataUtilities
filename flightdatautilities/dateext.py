@@ -139,7 +139,7 @@ def is_day(when, latitude, longitude, twilight='civil'):
     else:
         raise ValueError('is_day() twilight argument must be one of: civil, nautical, astronomical or None.')
 
-    return elevation > limit  # true = day, false = night
+    return bool(elevation > limit)  # true = day, false = night
 
 
 def range(start, stop, step=1, field='days'):
