@@ -1,8 +1,7 @@
 import argparse
 import csv
-import httplib2
 import os
-import simplejson
+import requests
 
 from flightdatautilities.model_information import (
     get_aileron_map,
@@ -22,14 +21,9 @@ def get_series():
     Looks up currently active Aircraft Series and Families via web API and
     checks each mapping for entries
     '''
-    http = httplib2.Http(disable_ssl_certificate_validation=True)
-    try:
-        response, content = http.request(BASE_URL + '/api/aircraft/active_series.json')
-    except Exception as err:
-        print 'Exception raised when querying website:', str(err)
-        raise
-    else:
-        series_list = simplejson.loads(content)['series']
+    r = requests.get(BASE_URL + '/api/aircraft/active_series.json')
+    r.raise_for_status()
+    series_list = r.json()['series']
     lookups = (get_aileron_map, get_conf_map, get_flap_map, get_slat_map, get_vspeed_map)
     for series_info in series_list:
         series = series_info['Series']
