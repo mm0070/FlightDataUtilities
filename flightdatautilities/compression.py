@@ -70,7 +70,7 @@ class CompressedFile(object):
                          self.compressor, format)
         else:
             logger.debug(
-                'Compression format `%s` not recognised, passing the file %s '
+                'Format `%s` not recognised as compressed, passing the file %s '
                 'unchanged', format, compressed_path)
             # We use bare file object, which will effectively copy the file to
             # the temp location and back.
@@ -107,7 +107,7 @@ class CompressedFile(object):
             "'%s'" % v if isinstance(v, str) else v for v in args]
         return "%s(%s, uncompressed_path=%s, format=%s, output_dir=%s, " \
             "temp_dir=%s, create=%s, compression_level=%s)" % tuple(args)
-    
+
     def _buffer_support(self):
         '''
         Check that the compressor class supports buffered reading and writing.
