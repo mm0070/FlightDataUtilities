@@ -35,6 +35,7 @@ def configure(package):
     logger = logging.getLogger(name=__name__)
 
     paths = {
+        'et': 'engine_thresholds',
         'mi': 'model_information',
         'vs': 'velocity_speed',
     }

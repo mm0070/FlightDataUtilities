@@ -18,6 +18,7 @@ from flightdatautilities.aircrafttables import constants
 # Note: These are overridden as part of the aircraft table configuration!
 from flightdatautilities.aircrafttables import model_information as mi
 from flightdatautilities.aircrafttables import velocity_speed as vs
+from flightdatautilities.aircrafttables import engine_thresholds as et
 
 
 #############################################################################
@@ -34,6 +35,7 @@ __all__ = (
     'get_kaf_map', 'get_vls1g_map',
     'get_fms_map',
     'get_vspeed_map',
+    'get_engine_map',
 )
 
 
@@ -571,3 +573,47 @@ def get_vspeed_map(model=None, series=None, family=None, engine_type=None, engin
 
     message = "No velocity speed table for model '%s', series '%s', family '%s'."
     raise KeyError(message % keys)
+
+
+def get_engine_map(engine_type=None, engine_series=None, mods=None):
+    '''
+    Accessor for fetching engine threshold tables for Torque/N1/NP/Gas Temp.
+
+    Returns a class of VelocitySpeed that can be instantiated.
+
+    :param model: Aircraft series e.g. B737-333
+    :type model: string
+    :param series: Aircraft series e.g. B737-300
+    :type series: string
+    :param family: Aircraft family e.g. B737 Classic
+    :type family: string
+    :param engine_type: Engine type e.g. CFM56-3B1
+    :type engine_type: string
+    :param engine_series: Engine series e.g. CFM56-3
+    :type engine_series: string
+    :raises: KeyError if no table is found
+    :returns: lookup class for velocity speeds.
+    :rtype: VelocitySpeed
+    '''
+    keys = engine_series, engine_type
+
+    # Create an iterator that so that we can look up in the correct order:
+    #
+    # - aircraft model, engine type.
+    # - aircraft series, engine type.
+    # - aircraft family, engine type.
+    # - aircraft model, engine series.
+    # - aircraft series, engine series.
+    # - aircraft family, engine series.
+    # - aircraft model.
+    # - aircraft series.
+    # - aircraft family.
+    mod_keys = mods if mods else []
+    it = izip(imap(lambda x: x[::-1], product(mod_keys + [None], keys)), cycle([et.ENGINE_SERIES_MAP]))
+
+    for k, m in it:
+        if k in m:
+            return m[k]
+
+    message = "No engine threshods for  '%s', series '%s', family '%s' mods."
+    raise KeyError(message % (engine_series, engine_type, mods))
