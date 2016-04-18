@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# vim:et:ft=python:nowrap:sts=4:sw=4:ts=4
 ##############################################################################
 
 '''
@@ -9,14 +10,15 @@ Flight Data Utilities: Iter Extensions
 # Imports
 
 
-from itertools import count, groupby, izip, takewhile, tee
+from itertools import count, groupby, imap, islice, izip, takewhile, tee
+from operator import itemgetter
 
 
 ##############################################################################
 # Exports
 
 
-__all__ = ['nested_groupby']
+__all__ = ['batch', 'droplast', 'nested_groupby']
 
 
 ##############################################################################
@@ -44,6 +46,16 @@ def batch(start, stop, step):
         yield (last, stop)
 
 
+def droplast(n, iterable):
+    '''
+    Drops the last n items from the provided iterable.
+
+    Based on rejected examples in http://bugs.python.org/issue16774
+    '''
+    t1, t2 = tee(iterable)
+    return imap(itemgetter(0), izip(t1, islice(t2, n, None)))
+
+
 def nested_groupby(iterable, function_list, manipulate=None, output=list):
     '''
     Performs multi-level grouping on a list of data items.
@@ -63,7 +75,3 @@ def nested_groupby(iterable, function_list, manipulate=None, output=list):
         return manipulate(iterable) if manipulate else list(iterable)
     return output((k, nested_groupby(v, function_list[1:], manipulate, output))
                   for k, v in groupby(iterable, function_list[0]))
-
-
-##############################################################################
-# vim:et:ft=python:nowrap:sts=4:sw=4:ts=4
