@@ -360,3 +360,70 @@ FMS_FAMILY_MAP = {
         '40': ('40', 0),                                   # B737 FCTM
     },
 }
+
+##############################################################################
+# Control surface ranges
+
+# This is the list of tables required for full and free checks
+# Entries below should be made in the format
+#    'name': (min, max),   # Source of values
+#
+# Names used in each section must match those used in the Polaris database.
+# Lower level types (e.g. model) only need adding if they vary from the level
+# above (e.g. series, family)
+
+AILERON_RANGE_MODEL_MAP = {}
+
+AILERON_RANGE_SERIES_MAP = {}
+
+AILERON_RANGE_FAMILY_MAP = {}
+
+ELEVATOR_RANGE_MODEL_MAP = {}
+
+ELEVATOR_RANGE_SERIES_MAP = {}
+
+ELEVATOR_RANGE_FAMILY_MAP = {}
+
+RUDDER_RANGE_MODEL_MAP = {}
+
+RUDDER_RANGE_SERIES_MAP = {}
+
+RUDDER_RANGE_FAMILY_MAP = {}
+
+# This is the list of tables required for populating the new graph features
+
+CONTROL_COLUMN_RANGE_FAMILY_MAP = {}
+
+CONTROL_COLUMN_RANGE_SERIES_MAP = {}
+
+CONTROL_COLUMN_RANGE_MODEL_MAP = {}
+
+CONTROL_WHEEL_RANGE_FAMILY_MAP = {}
+
+CONTROL_WHEEL_RANGE_SERIES_MAP = {}
+
+CONTROL_WHEEL_RANGE_MODEL_MAP = {}
+
+SIDESTICK_PITCH_RANGE_FAMILY_MAP = {}
+
+SIDESTICK_PITCH_RANGE_SERIES_MAP = {}
+
+SIDESTICK_PITCH_RANGE_MODEL_MAP = {}
+
+SIDESTICK_ROLL_RANGE_FAMILY_MAP = {}
+
+SIDESTICK_ROLL_RANGE_SERIES_MAP = {}
+
+SIDESTICK_ROLL_RANGE_MODEL_MAP = {}
+
+RUDDER_PEDAL_RANGE_FAMILY_MAP = {}
+
+RUDDER_PEDAL_RANGE_SERIES_MAP = {}
+
+RUDDER_PEDAL_RANGE_MODEL_MAP = {}
+
+THROTTLE_LEVER_RANGE_FAMILY_MAP = {}
+
+THROTTLE_LEVER_RANGE_SERIES_MAP = {}
+
+THROTTLE_LEVER_RANGE_MODEL_MAP = {}

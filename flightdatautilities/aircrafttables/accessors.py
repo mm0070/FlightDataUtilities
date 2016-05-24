@@ -36,6 +36,9 @@ __all__ = (
     'get_fms_map',
     'get_vspeed_map',
     'get_engine_map',
+    'get_aileron_range',
+    'get_elevator_range',
+    'get_rudder_range',
 )
 
 
@@ -617,3 +620,93 @@ def get_engine_map(engine_type=None, engine_series=None, mods=None):
 
     message = "No engine threshods for  '%s', series '%s', family '%s' mods."
     raise KeyError(message % (engine_series, engine_type, mods))
+
+
+########################################
+# Flight Control Mappings
+
+def get_aileron_range(model=None, series=None, family=None):
+    '''
+    Accessor for fetching stabilizer limits.
+
+    Returns a tuple in the following form::
+
+        (angle, angle)
+
+    :param model: Aircraft series e.g. B737-888
+    :type model: string
+    :param series: Aircraft series e.g. B737-800
+    :type series: string
+    :param family: Aircraft family e.g. B737 NG
+    :type family: string
+    :raises: KeyError if no limits found
+    :returns: tuple of stabilizer angle limits
+    :rtype: tuple
+    '''
+    keys = model, series, family
+    maps = mi.AILERON_RANGE_MODEL_MAP, mi.AILERON_RANGE_SERIES_MAP, mi.AILERON_RANGE_FAMILY_MAP
+
+    for k, m in izip(keys, maps):
+        if k in m:
+            return m[k]
+
+    message = "No Aileron range for model '%s', series '%s', family '%s'."
+    raise KeyError(message % keys)
+
+
+def get_elevator_range(model=None, series=None, family=None):
+    '''
+    Accessor for fetching stabilizer limits.
+
+    Returns a tuple in the following form::
+
+        (angle, angle)
+
+    :param model: Aircraft series e.g. B737-888
+    :type model: string
+    :param series: Aircraft series e.g. B737-800
+    :type series: string
+    :param family: Aircraft family e.g. B737 NG
+    :type family: string
+    :raises: KeyError if no limits found
+    :returns: tuple of stabilizer angle limits
+    :rtype: tuple
+    '''
+    keys = model, series, family
+    maps = mi.ELEVATOR_RANGE_MODEL_MAP, mi.ELEVATOR_RANGE_SERIES_MAP, mi.ELEVATOR_RANGE_FAMILY_MAP
+
+    for k, m in izip(keys, maps):
+        if k in m:
+            return m[k]
+
+    message = "No Elevator range for model '%s', series '%s', family '%s'."
+    raise KeyError(message % keys)
+
+
+def get_rudder_range(model=None, series=None, family=None):
+    '''
+    Accessor for fetching stabilizer limits.
+
+    Returns a tuple in the following form::
+
+        (angle, angle)
+
+    :param model: Aircraft series e.g. B737-888
+    :type model: string
+    :param series: Aircraft series e.g. B737-800
+    :type series: string
+    :param family: Aircraft family e.g. B737 NG
+    :type family: string
+    :raises: KeyError if no limits found
+    :returns: tuple of stabilizer angle limits
+    :rtype: tuple
+    '''
+    keys = model, series, family
+    maps = mi.RUDDER_RANGE_MODEL_MAP, mi.RUDDER_RANGE_SERIES_MAP, mi.RUDDER_RANGE_FAMILY_MAP
+
+    for k, m in izip(keys, maps):
+        if k in m:
+            return m[k]
+
+    message = "No Rudder range for model '%s', series '%s', family '%s'."
+    raise KeyError(message % keys)
