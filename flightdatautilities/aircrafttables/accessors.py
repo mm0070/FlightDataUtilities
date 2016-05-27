@@ -710,3 +710,294 @@ def get_rudder_range(model=None, series=None, family=None):
 
     message = "No Rudder range for model '%s', series '%s', family '%s'."
     raise KeyError(message % keys)
+
+
+def get_cyclic_fore_aft_range(model=None, series=None, family=None):
+    '''
+    Accessor for fetching Cyclic Fore-Aft limits.
+
+    Returns a tuple in the following form::
+
+        (angle, angle)
+
+    :param model: Aircraft series e.g. B737-888
+    :type model: string
+    :param series: Aircraft series e.g. B737-800
+    :type series: string
+    :param family: Aircraft family e.g. B737 NG
+    :type family: string
+    :raises: KeyError if no limits found
+    :returns: tuple of limits
+    :rtype: tuple
+    '''
+    keys = model, series, family
+    maps = mi.CYCLIC_FORE_AFT_RANGE_MODEL_MAP, mi.CYCLIC_FORE_AFT_RANGE_SERIES_MAP, mi.CYCLIC_FORE_AFT_RANGE_FAMILY_MAP
+
+    for k, m in izip(keys, maps):
+        if k in m:
+            return m[k]
+
+    message = "No Cyclic Fore-Aft range for model '%s', series '%s', family '%s'."
+    raise KeyError(message % keys)
+
+
+def get_control_column_range(model=None, series=None, family=None):
+    '''
+    Accessor for fetching Control Column limits.
+
+    Returns a tuple in the following form::
+
+        (angle, angle)
+
+    :param model: Aircraft series e.g. B737-888
+    :type model: string
+    :param series: Aircraft series e.g. B737-800
+    :type series: string
+    :param family: Aircraft family e.g. B737 NG
+    :type family: string
+    :raises: KeyError if no limits found
+    :returns: tuple of limits
+    :rtype: tuple
+    '''
+    keys = model, series, family
+    maps = mi.CONTROL_COLUMN_RANGE_MODEL_MAP, mi.CONTROL_COLUMN_RANGE_SERIES_MAP, mi.CONTROL_COLUMN_RANGE_FAMILY_MAP
+
+    for k, m in izip(keys, maps):
+        if k in m:
+            return m[k]
+
+    message = "No Control Column range for model '%s', series '%s', family '%s'."
+    raise KeyError(message % keys)
+
+
+def get_control_wheel_range(model=None, series=None, family=None):
+    '''
+    Accessor for fetching Control Wheel limits.
+
+    Returns a tuple in the following form::
+
+        (angle, angle)
+
+    :param model: Aircraft series e.g. B737-888
+    :type model: string
+    :param series: Aircraft series e.g. B737-800
+    :type series: string
+    :param family: Aircraft family e.g. B737 NG
+    :type family: string
+    :raises: KeyError if no limits found
+    :returns: tuple of limits
+    :rtype: tuple
+    '''
+    keys = model, series, family
+    maps = mi.CONTROL_WHEEL_RANGE_MODEL_MAP, mi.CONTROL_WHEEL_RANGE_SERIES_MAP, mi.CONTROL_WHEEL_RANGE_FAMILY_MAP
+
+    for k, m in izip(keys, maps):
+        if k in m:
+            return m[k]
+
+    message = "No Control Wheel range for model '%s', series '%s', family '%s'."
+    raise KeyError(message % keys)
+
+
+def get_eng_epr_range(model=None, series=None, family=None):
+    '''
+    Accessor for fetching Eng EPR limits.
+
+    Returns a tuple in the following form::
+
+        (angle, angle)
+
+    :param model: Aircraft series e.g. B737-888
+    :type model: string
+    :param series: Aircraft series e.g. B737-800
+    :type series: string
+    :param family: Aircraft family e.g. B737 NG
+    :type family: string
+    :raises: KeyError if no limits found
+    :returns: tuple of limits
+    :rtype: tuple
+    '''
+    keys = model, series, family
+    maps = mi.ENG_EPR_RANGE_MODEL_MAP, mi.ENG_EPR_RANGE_SERIES_MAP, mi.ENG_EPR_RANGE_FAMILY_MAP
+
+    for k, m in izip(keys, maps):
+        if k in m:
+            return m[k]
+
+    message = "No Eng EPR range for model '%s', series '%s', family '%s'."
+    raise KeyError(message % keys)
+
+
+def get_eng_fuel_flow_range(model=None, series=None, family=None):
+    '''
+    Accessor for fetching Eng Fuel Flow limits.
+
+    Returns a tuple in the following form::
+
+        (angle, angle)
+
+    :param model: Aircraft series e.g. B737-888
+    :type model: string
+    :param series: Aircraft series e.g. B737-800
+    :type series: string
+    :param family: Aircraft family e.g. B737 NG
+    :type family: string
+    :raises: KeyError if no limits found
+    :returns: tuple of limits
+    :rtype: tuple
+    '''
+    keys = model, series, family
+    maps = mi.ENG_FUEL_FLOW_RANGE_MODEL_MAP, mi.ENG_FUEL_FLOW_RANGE_SERIES_MAP, mi.ENG_FUEL_FLOW_RANGE_FAMILY_MAP
+
+    for k, m in izip(keys, maps):
+        if k in m:
+            return m[k]
+
+    message = "No Eng Fuel Flow range for model '%s', series '%s', family '%s'."
+    raise KeyError(message % keys)
+
+
+def get_rudder_pedal_range(model=None, series=None, family=None):
+    '''
+    Accessor for fetching Rudder Pedal limits.
+
+    Returns a tuple in the following form::
+
+        (angle, angle)
+
+    :param model: Aircraft series e.g. B737-888
+    :type model: string
+    :param series: Aircraft series e.g. B737-800
+    :type series: string
+    :param family: Aircraft family e.g. B737 NG
+    :type family: string
+    :raises: KeyError if no limits found
+    :returns: tuple of limits
+    :rtype: tuple
+    '''
+    keys = model, series, family
+    maps = mi.RUDDER_PEDAL_RANGE_MODEL_MAP, mi.RUDDER_PEDAL_RANGE_SERIES_MAP, mi.RUDDER_PEDAL_RANGE_FAMILY_MAP
+
+    for k, m in izip(keys, maps):
+        if k in m:
+            return m[k]
+
+    message = "No Rudder Pedal range for model '%s', series '%s', family '%s'."
+    raise KeyError(message % keys)
+
+
+def get_sidestick_pitch_range(model=None, series=None, family=None):
+    '''
+    Accessor for fetching Sidestick Pitch limits.
+
+    Returns a tuple in the following form::
+
+        (angle, angle)
+
+    :param model: Aircraft series e.g. B737-888
+    :type model: string
+    :param series: Aircraft series e.g. B737-800
+    :type series: string
+    :param family: Aircraft family e.g. B737 NG
+    :type family: string
+    :raises: KeyError if no limits found
+    :returns: tuple of limits
+    :rtype: tuple
+    '''
+    keys = model, series, family
+    maps = mi.SIDESTICK_PITCH_RANGE_MODEL_MAP, mi.SIDESTICK_PITCH_RANGE_SERIES_MAP, mi.SIDESTICK_PITCH_RANGE_FAMILY_MAP
+
+    for k, m in izip(keys, maps):
+        if k in m:
+            return m[k]
+
+    message = "No Sidestick Pitch range for model '%s', series '%s', family '%s'."
+    raise KeyError(message % keys)
+
+
+def get_sidestick_roll_range(model=None, series=None, family=None):
+    '''
+    Accessor for fetching Sidestick Roll limits.
+
+    Returns a tuple in the following form::
+
+        (angle, angle)
+
+    :param model: Aircraft series e.g. B737-888
+    :type model: string
+    :param series: Aircraft series e.g. B737-800
+    :type series: string
+    :param family: Aircraft family e.g. B737 NG
+    :type family: string
+    :raises: KeyError if no limits found
+    :returns: tuple of limits
+    :rtype: tuple
+    '''
+    keys = model, series, family
+    maps = mi.SIDESTICK_ROLL_RANGE_MODEL_MAP, mi.SIDESTICK_ROLL_RANGE_SERIES_MAP, mi.SIDESTICK_ROLL_RANGE_FAMILY_MAP
+
+    for k, m in izip(keys, maps):
+        if k in m:
+            return m[k]
+
+    message = "No Sidestick Roll range for model '%s', series '%s', family '%s'."
+    raise KeyError(message % keys)
+
+
+def get_tail_rotor_pedal_range(model=None, series=None, family=None):
+    '''
+    Accessor for fetching Tail Rotor Pedal limits.
+
+    Returns a tuple in the following form::
+
+        (angle, angle)
+
+    :param model: Aircraft series e.g. B737-888
+    :type model: string
+    :param series: Aircraft series e.g. B737-800
+    :type series: string
+    :param family: Aircraft family e.g. B737 NG
+    :type family: string
+    :raises: KeyError if no limits found
+    :returns: tuple of limits
+    :rtype: tuple
+    '''
+    keys = model, series, family
+    maps = mi.TAIL_ROTOR_PEDAL_RANGE_MODEL_MAP, mi.TAIL_ROTOR_PEDAL_RANGE_SERIES_MAP, mi.TAIL_ROTOR_PEDAL_RANGE_FAMILY_MAP
+
+    for k, m in izip(keys, maps):
+        if k in m:
+            return m[k]
+
+    message = "No Tail Rotor pedal range for model '%s', series '%s', family '%s'."
+    raise KeyError(message % keys)
+
+
+def get_throttle_lever_range(model=None, series=None, family=None):
+    '''
+    Accessor for fetching Throttle Lever limits.
+
+    Returns a tuple in the following form::
+
+        (angle, angle)
+
+    :param model: Aircraft series e.g. B737-888
+    :type model: string
+    :param series: Aircraft series e.g. B737-800
+    :type series: string
+    :param family: Aircraft family e.g. B737 NG
+    :type family: string
+    :raises: KeyError if no limits found
+    :returns: tuple of limits
+    :rtype: tuple
+    '''
+    keys = model, series, family
+    maps = mi.THROTTLE_LEVER_RANGE_MODEL_MAP, mi.THROTTLE_LEVER_RANGE_SERIES_MAP, mi.THROTTLE_LEVER_RANGE_FAMILY_MAP
+
+    for k, m in izip(keys, maps):
+        if k in m:
+            return m[k]
+
+    message = "No Throttle Lever range for model '%s', series '%s', family '%s'."
+    raise KeyError(message % keys)
+
