@@ -712,35 +712,6 @@ def get_rudder_range(model=None, series=None, family=None):
     raise KeyError(message % keys)
 
 
-def get_cyclic_fore_aft_range(model=None, series=None, family=None):
-    '''
-    Accessor for fetching Cyclic Fore-Aft limits.
-
-    Returns a tuple in the following form::
-
-        (angle, angle)
-
-    :param model: Aircraft series e.g. B737-888
-    :type model: string
-    :param series: Aircraft series e.g. B737-800
-    :type series: string
-    :param family: Aircraft family e.g. B737 NG
-    :type family: string
-    :raises: KeyError if no limits found
-    :returns: tuple of limits
-    :rtype: tuple
-    '''
-    keys = model, series, family
-    maps = mi.CYCLIC_FORE_AFT_RANGE_MODEL_MAP, mi.CYCLIC_FORE_AFT_RANGE_SERIES_MAP, mi.CYCLIC_FORE_AFT_RANGE_FAMILY_MAP
-
-    for k, m in izip(keys, maps):
-        if k in m:
-            return m[k]
-
-    message = "No Cyclic Fore-Aft range for model '%s', series '%s', family '%s'."
-    raise KeyError(message % keys)
-
-
 def get_control_column_range(model=None, series=None, family=None):
     '''
     Accessor for fetching Control Column limits.
@@ -799,6 +770,64 @@ def get_control_wheel_range(model=None, series=None, family=None):
     raise KeyError(message % keys)
 
 
+def get_cyclic_fore_aft_range(model=None, series=None, family=None):
+    '''
+    Accessor for fetching Cyclic Fore-Aft limits.
+
+    Returns a tuple in the following form::
+
+        (angle, angle)
+
+    :param model: Aircraft series e.g. B737-888
+    :type model: string
+    :param series: Aircraft series e.g. B737-800
+    :type series: string
+    :param family: Aircraft family e.g. B737 NG
+    :type family: string
+    :raises: KeyError if no limits found
+    :returns: tuple of limits
+    :rtype: tuple
+    '''
+    keys = model, series, family
+    maps = mi.CYCLIC_FORE_AFT_RANGE_MODEL_MAP, mi.CYCLIC_FORE_AFT_RANGE_SERIES_MAP, mi.CYCLIC_FORE_AFT_RANGE_FAMILY_MAP
+
+    for k, m in izip(keys, maps):
+        if k in m:
+            return m[k]
+
+    message = "No Cyclic Fore-Aft range for model '%s', series '%s', family '%s'."
+    raise KeyError(message % keys)
+
+
+def get_cyclic_lateral_range(model=None, series=None, family=None):
+    '''
+    Accessor for fetching Cyclic Lateral limits.
+
+    Returns a tuple in the following form::
+
+        (angle, angle)
+
+    :param model: Aircraft series e.g. B737-888
+    :type model: string
+    :param series: Aircraft series e.g. B737-800
+    :type series: string
+    :param family: Aircraft family e.g. B737 NG
+    :type family: string
+    :raises: KeyError if no limits found
+    :returns: tuple of limits
+    :rtype: tuple
+    '''
+    keys = model, series, family
+    maps = mi.CYCLIC_LATERAL_RANGE_MODEL_MAP, mi.CYCLIC_LATERAL_RANGE_SERIES_MAP, mi.CYCLIC_LATERAL_RANGE_FAMILY_MAP
+
+    for k, m in izip(keys, maps):
+        if k in m:
+            return m[k]
+
+    message = "No Cyclic Lateral range for model '%s', series '%s', family '%s'."
+    raise KeyError(message % keys)
+
+
 def get_eng_epr_range(model=None, series=None, family=None):
     '''
     Accessor for fetching Eng EPR limits.
@@ -854,6 +883,35 @@ def get_eng_fuel_flow_range(model=None, series=None, family=None):
             return m[k]
 
     message = "No Eng Fuel Flow range for model '%s', series '%s', family '%s'."
+    raise KeyError(message % keys)
+
+
+def get_eng_gas_temp_range(model=None, series=None, family=None):
+    '''
+    Accessor for fetching Eng Gas Temp limits.
+
+    Returns a tuple in the following form::
+
+        (angle, angle)
+
+    :param model: Aircraft series e.g. B737-888
+    :type model: string
+    :param series: Aircraft series e.g. B737-800
+    :type series: string
+    :param family: Aircraft family e.g. B737 NG
+    :type family: string
+    :raises: KeyError if no limits found
+    :returns: tuple of limits
+    :rtype: tuple
+    '''
+    keys = model, series, family
+    maps = mi.ENG_GAS_TEMP_RANGE_MODEL_MAP, mi.ENG_GAS_TEMP_RANGE_SERIES_MAP, mi.ENG_GAS_TEMP_RANGE_FAMILY_MAP
+
+    for k, m in izip(keys, maps):
+        if k in m:
+            return m[k]
+
+    message = "No Eng Gas Temp range for model '%s', series '%s', family '%s'."
     raise KeyError(message % keys)
 
 
