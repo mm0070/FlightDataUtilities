@@ -39,6 +39,18 @@ __all__ = (
     'get_aileron_range',
     'get_elevator_range',
     'get_rudder_range',
+    'get_control_column_range',
+    'get_control_wheel_range',
+    'get_cyclic_fore_aft_range',
+    'get_cyclic_lateral_range',
+    'get_eng_epr_range',
+    'get_eng_fuel_flow_range',
+    'get_eng_gas_temp_range',
+    'get_rudder_pedal_range',
+    'get_sidestick_pitch_range',
+    'get_sidestick_roll_range',
+    'get_tail_rotor_pedal_range',
+    'get_throttle_lever_range',
 )
 
 
