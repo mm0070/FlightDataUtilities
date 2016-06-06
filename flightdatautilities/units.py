@@ -715,7 +715,6 @@ UNIT_CORRECTIONS = {
     'in.hg': INHG,
     'InHg': INHG,
     'inHG': INHG,
-    'inHg': INHG,
     'In-Hg': INHG,
     'In.Hg': INHG,
     'IN HG': INHG,
