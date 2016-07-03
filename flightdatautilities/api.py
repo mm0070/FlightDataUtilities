@@ -129,13 +129,13 @@ class HTTPHandler(Handler):
 
         retries = Retry(total=retries, backoff_factor=backoff, status_forcelist=[503])
 
-        logger.debug('API Request: %s %s', method, url)
         try:
             with requests.Session() as s:
                 a = requests.adapters.HTTPAdapter(max_retries=retries)
                 s.mount('http://', a)
                 s.mount('https://', a)
                 r = s.request(method, url, params=params, data=data, json=json, timeout=timeout)
+                logger.info('API Request: %s %s', method, r.request.url)
                 r.raise_for_status()
                 return r.json()
 
