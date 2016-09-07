@@ -45,7 +45,7 @@ class TestExpandCombinations(unittest.TestCase):
                           ['Altitude Radio (B)', 'Altitude Radio (C)']])
 
 
-class TestWilcardMatch(unittest.TestCase):
+class TestWildcardMatch(unittest.TestCase):
         
     def test_wildcard_match(self):
         params = [
@@ -63,7 +63,11 @@ class TestWilcardMatch(unittest.TestCase):
             'ILS Localizer Engaged',
             'ILS Localizer Test Tube Inhibit', 
             'ILS Localizer', 
-            'Rate of Climb', 
+            'Rate of Climb',
+            'Gear Down',
+            'Gear (R) Down',
+            'Gear (N) Down',
+            'Gear (L) Down'
         ]
         # exact match
         self.assertEqual(wildcard_match('ILS Localizer', params),
@@ -72,6 +76,11 @@ class TestWilcardMatch(unittest.TestCase):
         self.assertEqual(wildcard_match('ILS Localizer (*)', params),
                          ['ILS Localizer',
                           'ILS Localizer (L)',
+                          'ILS Localizer (R)'])
+        
+        self.assertEqual(wildcard_match('ILS Localizer (*)', params,
+                                        remove = ' '),
+                         ['ILS Localizer (L)',
                           'ILS Localizer (R)'])
         # test two wildcards
         self.assertEqual(wildcard_match('ILS Localizer (*) (1)', params),
@@ -86,11 +95,35 @@ class TestWilcardMatch(unittest.TestCase):
                           'ILS Localizer (R)',
                           'ILS Localizer (R) (1)'])
         
+        self.assertEqual(wildcard_match('ILS Localizer (*) (*)', params,
+                                        remove= ' '),
+                         ['ILS Localizer (L) (1)',
+                          'ILS Localizer (L) (2)',
+                          'ILS Localizer (L) (Capt)',
+                          'ILS Localizer (R) (1)'])
+        
         self.assertEqual(wildcard_match('ILS Localizer (L) (*)', params),
                          ['ILS Localizer (L)',
                           'ILS Localizer (L) (1)',
                           'ILS Localizer (L) (2)',
                           'ILS Localizer (L) (Capt)'])
+        
+        self.assertEqual(wildcard_match('ILS Localizer (L) (*)', params,
+                                        remove=' '),
+                         ['ILS Localizer (L) (1)',
+                          'ILS Localizer (L) (2)',
+                          'ILS Localizer (L) (Capt)'])
+        
+        self.assertEqual(wildcard_match('Gear (*) Down', params),
+                        ['Gear (L) Down',
+                         'Gear (N) Down',
+                         'Gear (R) Down',
+                         'Gear Down'])
+        
+        self.assertEqual(wildcard_match('Gear (*) Down', params, remove= ' '),
+                        ['Gear (L) Down',
+                         'Gear (N) Down',
+                         'Gear (R) Down'])
     
     def test_wildcard_match_multiple_chars(self):
         params = ['Spoiler (%d)' % n for n in range(1,13)]
