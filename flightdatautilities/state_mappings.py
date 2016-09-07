@@ -366,6 +366,8 @@ PARAMETER_CORRECTIONS = {
     'TAWS Terrain Awareness Inoperative': {1: 'Warning'},
     'TAWS Terrain Awareness Not Available': {1: 'Warning'},
     'TAWS Terrain Caution': {1: 'Caution'},
+    'TAWS Terrain Clearance Floor Alert': {1: 'Alert'},
+    'TAWS Terrain Clearance Floor Alert (2)': {1: 'Alert'},
     'TAWS Terrain Display Selected (Capt)': {1: 'Selected'},
     'TAWS Terrain Display Selected (FO)': {1: 'Selected'},
     'TAWS Terrain Override': {1: 'Warning'},
