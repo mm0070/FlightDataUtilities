@@ -24,6 +24,7 @@ AVAILABLE_CONF_STATES = {
     20: '2',
     26: '2*',
     30: '3',
+    33: '3+S',
     40: '4',
     50: '5',
     90: 'Full',
@@ -57,6 +58,7 @@ CONF_TO_LEVER = {
     '2':      'Lever 2',
     '2*':     'Lever 3',  # Lever position is 3 when aircraft selects 2*
     '3':      'Lever 3',
+    '3+S':    'Lever 3',  # Lever position is 3 when aircraft selects 3+S
     'Full':   'Lever Full',
 }
 
