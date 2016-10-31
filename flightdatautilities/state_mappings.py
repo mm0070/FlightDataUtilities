@@ -212,7 +212,7 @@ PARAMETER_CORRECTIONS = {
     'GPS Selected': {1: 'GPS Active'},
     'Gear (*) Down (*)': {1: 'Up'},
     'Gear (*) Locked Down (*)': {1: 'Locked'},
-    'Gear (*) On Ground': {1: 'Air'},
+    'Gear (*) On Ground': {1: 'Air', 0: 'Ground'},
     'Gear (*) Red Warning': {1: 'Warning'},
     'Gear (*) Up (*)': {1: 'Up'},
     'Gear (*) WOW (*)': {1: 'Air'},
