@@ -517,6 +517,7 @@ STANDARD_CONVERSIONS = {
     # Flow (Volume):
     PINT_H: QUART_H,
     # Force:
+    NEWTON: DECANEWTON,
     LBF: DECANEWTON,
     KGF: DECANEWTON,
     # Length:
