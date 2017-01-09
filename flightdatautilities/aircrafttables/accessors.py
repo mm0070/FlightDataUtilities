@@ -590,7 +590,7 @@ def get_vspeed_map(model=None, series=None, family=None, engine_type=None, engin
     raise KeyError(message % keys)
 
 
-def get_engine_map(engine_type=None, engine_series=None, mods=None):
+def get_engine_map(engine_type=None, engine_series=None, mods=None, restriction=None):
     '''
     Accessor for fetching engine threshold tables for Torque/N1/NP/Gas Temp.
 
@@ -610,6 +610,7 @@ def get_engine_map(engine_type=None, engine_series=None, mods=None):
     :returns: lookup class for velocity speeds.
     :rtype: VelocitySpeed
     '''
+    series_map = et.SINGLE_ENGINE_SERIES_MAP if restriction == 'single' else et.ENGINE_SERIES_MAP
     keys = engine_series, engine_type
 
     # Create an iterator that so that we can look up in the correct order:
@@ -624,7 +625,7 @@ def get_engine_map(engine_type=None, engine_series=None, mods=None):
     # - aircraft series.
     # - aircraft family.
     mod_keys = mods if mods else []
-    it = izip(imap(lambda x: x[::-1], product(mod_keys + [None], keys)), cycle([et.ENGINE_SERIES_MAP]))
+    it = izip(imap(lambda x: x[::-1], product(mod_keys + [None], keys)), cycle([series_map]))
 
     for k, m in it:
         if k in m:
