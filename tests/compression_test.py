@@ -32,7 +32,7 @@ class TestCompression(unittest.TestCase):
     def generateContent(self, filename):
         # Create a new compressed file
         with CompressedFile(filename, create=True) as uncompressed:
-            with file(uncompressed, 'w+') as f:
+            with open(uncompressed, 'w+') as f:
                 text = ' 1. This is the first line of content\n'
                 f.write(text)
 
@@ -46,7 +46,7 @@ class TestCompression(unittest.TestCase):
             self.generateContent(filename)
             # Now let's try to write to it
             with CompressedFile(filename) as uncompressed:
-                with file(uncompressed, 'a') as f:
+                with open(uncompressed, 'a') as f:
                     text = ' 2. This is the second line of content\n'
                     f.write(text)
     
@@ -56,7 +56,7 @@ class TestCompression(unittest.TestCase):
                 ' 2. This is the second line of content\n',
             ]
             with CompressedFile(filename) as uncompressed:
-                with file(uncompressed) as f:
+                with open(uncompressed) as f:
                     self.assertListEqual(f.readlines(), expected)
 
     def test_ro(self):
@@ -74,7 +74,7 @@ class TestCompression(unittest.TestCase):
             
             # Now let's open it in read-only mode:
             with ReadOnlyCompressedFile(filename) as uncompressed:
-                with file(uncompressed, 'a') as f:
+                with open(uncompressed, 'a') as f:
                     # This is ineffective, the compressed file will not be changed
                     text = 'WARNING: this will not be saved in the file!\n'
                     f.write(text)
@@ -84,7 +84,7 @@ class TestCompression(unittest.TestCase):
                 ' 1. This is the first line of content\n',
             ]
             with ReadOnlyCompressedFile(filename) as uncompressed:
-                with file(uncompressed) as f:
+                with open(uncompressed) as f:
                     self.assertListEqual(f.readlines(), expected)
 
     def test_cache(self):
@@ -101,7 +101,7 @@ class TestCompression(unittest.TestCase):
             # Now let's open it in cache mode:
             with CachedCompressedFile(filename, output_dir=cache_dir) \
                     as uncompressed:
-                with file(uncompressed, 'a') as f:
+                with open(uncompressed, 'a') as f:
                     text = ' 2. This is the second line of content, ' \
                         'only available in the cached copy!\n'
                     f.write(text)
@@ -117,7 +117,7 @@ class TestCompression(unittest.TestCase):
                     as uncompressed:
                 # The contents of the cached file will be changed
                 # read-only
-                with file(uncompressed) as f:
+                with open(uncompressed) as f:
                     self.assertListEqual(f.readlines(), expected)
     
             # Sleep for 1 sec. to let the mtimes differ
@@ -134,7 +134,7 @@ class TestCompression(unittest.TestCase):
             ]
             with CachedCompressedFile(filename, output_dir=cache_dir) \
                     as uncompressed:
-                with file(uncompressed) as f:
+                with open(uncompressed) as f:
                     self.assertListEqual(f.readlines(), expected)
     
             os.unlink(uncompressed)
@@ -146,7 +146,7 @@ class TestCompression(unittest.TestCase):
         '''
         def _raiseValueError(filename):
             with CompressedFile(filename, create=True) as uncompressed:
-                with file(uncompressed, 'w+') as f:
+                with open(uncompressed, 'w+') as f:
                     text = ' This is a failed content, ' \
                         'it should not appear in the compressed file\n'
                     f.write(text)
@@ -167,7 +167,7 @@ class TestCompression(unittest.TestCase):
                 ' 1. This is the first line of content\n',
             ]
             with ReadOnlyCompressedFile(filename) as uncompressed:
-                with file(uncompressed) as f:
+                with open(uncompressed) as f:
                     self.assertListEqual(f.readlines(), expected)
 
 
@@ -183,7 +183,7 @@ class TestCompression_from_file(unittest.TestCase):
             filename = tempfile.mktemp(suffix='.gz')
             uncompressed_filename = tempfile.mktemp()
 
-            with file(uncompressed_filename, 'w+') as f:
+            with open(uncompressed_filename, 'w+') as f:
                 text = ' 1. This is the first line of content\n'
                 f.write(text)
                 text = ' 2. This is the second line of content\n'
@@ -212,12 +212,12 @@ class TestCompression_from_file(unittest.TestCase):
             cf = CompressedFile(filename, uncompressed_filename)
             cf.compress()
 
-            with file(uncompressed_filename) as f:
+            with open(uncompressed_filename) as f:
                 expected = f.readlines()
     
             # next uncompress the file and compare the contents
             with CompressedFile(filename) as uncompressed:
-                with file(uncompressed) as f:
+                with open(uncompressed) as f:
                     self.assertListEqual(f.readlines(), expected)
 
 

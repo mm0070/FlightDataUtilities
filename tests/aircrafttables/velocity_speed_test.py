@@ -11,12 +11,18 @@ Unit tests for aircraft velocity speed tables and functions.
 
 
 import inspect
+import six
 import unittest
 import warnings
 
 import numpy as np
 
-from itertools import chain, imap
+from itertools import chain
+
+try:
+    from itertools import imap as map
+except ImportError:
+    pass
 
 from flightdatautilities import aircrafttables as at, units as ut
 from flightdatautilities import masked_array_testutils as ma_test
@@ -43,7 +49,7 @@ def _generate_tests(generator):
     '''
 
     ref = vs.VSPEED_MODEL_MAP, vs.VSPEED_SERIES_MAP, vs.VSPEED_FAMILY_MAP
-    ref = imap(lambda d: d.itervalues(), ref)
+    ref = map(lambda d: six.itervalues(d), ref)
     ref = set(c for c in chain.from_iterable(ref))
 
     def class_decorator(cls):
@@ -83,7 +89,7 @@ def _velocity_speed_tables_integrity_test_generator():
         self.assertGreaterEqual(cls.weight_scale, 1, 'Invalid weight scale defined.')
 
         # Check that the weight unit option is valid:
-        self.assertIsInstance(cls.weight_unit, (type(None), basestring), 'Invalid weight unit type.')
+        self.assertIsInstance(cls.weight_unit, (type(None), six.string_types), 'Invalid weight unit type.')
         self.assertIn(cls.weight_unit, (ut.KG, ut.LB, ut.TONNE, None), 'Invalid weight unit defined.')
 
         # Warn about weight scale and unit issues:
@@ -106,7 +112,7 @@ def _velocity_speed_tables_integrity_test_generator():
             self.assertIsNot(cls.weight_unit, None, 'Must have a weight unit for standard tables.')
 
         # Check the integrity of values in the standard tables:
-        for name, table in cls.tables.iteritems():
+        for name, table in cls.tables.items():
 
             if name in ('v2', 'vref', 'vapp'):
                 self.assertTrue('weight' in table, 'Weight not in %s table.' % name)
@@ -114,22 +120,22 @@ def _velocity_speed_tables_integrity_test_generator():
                 self.assertEqual(weights, sorted(weights), 'Weights in %s table not ordered.' % name)
                 self.assertTrue(all(w > 0 for w in weights), 'Weights in %s table cannot be negative.' % name)
                 self.assertGreater(len(table), 1, 'No flap/conf rows in %s table.' % name)
-                lengths = map(len, table.itervalues())
+                lengths = map(len, table.values())
                 self.assertEqual(len(set(lengths)), 1, 'Row lengths mismatch in %s table.' % name)
-                t = all(isinstance(k, basestring) for k in table.iterkeys())
+                t = all(isinstance(k, six.string_types) for k in table.keys())
                 self.assertTrue(t, 'Expected flap/conf string keys in %s table.' % name)
-                t = all(isinstance(v, tuple) for v in table.itervalues())
+                t = all(isinstance(v, tuple) for v in table.values())
                 self.assertTrue(t, 'Expected tuple values in %s table.' % name)
-                t = all(isinstance(v, (type(None), int, float)) for v in chain.from_iterable(table.itervalues()))
+                t = all(isinstance(v, (type(None), int, float)) for v in chain.from_iterable(six.itervalues(table)))
                 self.assertTrue(t, 'Invalid velocity speed types in %s table.' % name)
-                t = all((v is None or 80 <= v < 500) for v in chain.from_iterable(b for a, b in table.iteritems() if not a == 'weight'))
+                t = all((v is None or 80 <= v < 500) for v in chain.from_iterable(b for a, b in six.iteritems(table) if not a == 'weight'))
                 self.assertTrue(t, 'Invalid velocity speed values in %s table.' % name)
                 # Require that value is in a sensible range...
-                t = all((v is None or 80 <= v < 500) for v in chain.from_iterable(b for a, b in table.iteritems() if not a == 'weight'))
+                t = all((v is None or 80 <= v < 500) for v in chain.from_iterable(b for a, b in six.iteritems(table) if not a == 'weight'))
                 self.assertTrue(t, 'Invalid velocity speed values in %s table.' % name)
                 ##### Require that speed values increase with weight...
                 ####from itertools import izip, tee
-                ####for k, v in table.iteritems():
+                ####for k, v in table.items():
                 ####    if k == 'weight':
                 ####        continue
                 ####    a, b = tee(z for z in v if z is not None)
@@ -146,9 +152,9 @@ def _velocity_speed_tables_integrity_test_generator():
                     self.assertEqual(altitudes, sorted(altitudes), 'Altitudes in %s table not ordered.' % name)
                     self.assertTrue(all(a >= 0 for a in altitudes), 'Altitudes in %s table cannot be negative.' % name)
                     self.assertEqual(len(table), 2, 'Unexpected entries in %s table.' % name)
-                    lengths = map(len, table.itervalues())
+                    lengths = map(len, table.values())
                     self.assertEqual(len(set(lengths)), 1, 'Row lengths mismatch in %s table.' % name)
-                    t = all(isinstance(v, tuple) for v in table.itervalues())
+                    t = all(isinstance(v, tuple) for v in table.values())
                     self.assertTrue(t, 'Expected tuple values in %s table.' % name)
                     values = table['speed']
                 else:
@@ -165,17 +171,17 @@ def _velocity_speed_tables_integrity_test_generator():
                 continue
 
         # Check the integrity of values in the fallback tables:
-        for name, table in cls.fallback.iteritems():
+        for name, table in cls.fallback.items():
 
             if name in ('v2', 'vref', 'vapp'):
                 self.assertFalse('weight' in table, 'Weight must not be in %s fallback table.' % name)
                 self.assertGreater(len(table), 0, 'No flap/conf rows in %s fallback table.' % name)
-                t = all(isinstance(k, basestring) for k in table.iterkeys())
+                t = all(isinstance(k, six.string_types) for k in table.keys())
                 self.assertTrue(t, 'Expected flap/conf string keys in %s fallback table.' % name)
-                t = all(isinstance(v, (type(None), int, float)) for v in table.itervalues())
+                t = all(isinstance(v, (type(None), int, float)) for v in table.values())
                 self.assertTrue(t, 'Invalid velocity speed types in %s fallback table.' % name)
                 # Require that value is in a sensible range...
-                t = all((v is None or 80 <= v < 500) for v in table.itervalues())
+                t = all((v is None or 80 <= v < 500) for v in table.values())
                 self.assertTrue(t, 'Invalid velocity speed values in %s table.' % name)
 
     f = lambda x: inspect.isclass(x) \

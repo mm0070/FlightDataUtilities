@@ -1,3 +1,4 @@
+from __future__ import print_function
 
 try:
     # bz2file provides support for multiple streams and a compatible interface.
@@ -55,7 +56,7 @@ def check_sync(file_obj, wps, word_index, pattern_name):
     syncs = np.concatenate((s1, s2, s3, s4))
     syncs = np.sort(syncs)
     syncs_i = iter(syncs)
-    # print 'Sync words\n', syncs
+    # print('Sync words\n', syncs)
     prev_sync = next(syncs_i)
     ix = prev_sync
     while ix < array.size:
@@ -78,9 +79,9 @@ def check_sync(file_obj, wps, word_index, pattern_name):
     syncs = np.ediff1d(syncs, to_begin=0, to_end=0)
     syncs[0] = syncs[1]
     syncs[-1] = syncs[-2]
-    # print 'Distances\n', syncs
+    # print('Distances\n', syncs)
     syncs = np.ediff1d(syncs, to_begin=0, to_end=0)
-    # print 'Slips\n', syncs
+    # print('Slips\n', syncs)
 
 
 def inspect(file_obj_or_str, words_to_read):
@@ -169,10 +170,10 @@ def inspect(file_obj_or_str, words_to_read):
 
 
 def main():
-    print 'FlightDataInspector (c) Copyright 2013 Flight Data Services, Ltd.'
-    print '  - Powered by POLARIS'
-    print '  - http://www.flightdatacommunity.com'
-    print ''
+    print('FlightDataInspector (c) Copyright 2013 Flight Data Services, Ltd.')
+    print('  - Powered by POLARIS')
+    print('  - http://www.flightdatacommunity.com')
+    print('')
 
     parser = argparse.ArgumentParser()
 

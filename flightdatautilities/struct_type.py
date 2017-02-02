@@ -38,7 +38,7 @@ class Struct(dict):
         else:
             d = d.copy()
             d.update(kwargs)
-            generator = d.iteritems()
+            generator = d.items()
         for k, v in generator:
             if type(v) == Struct:
                 # Ensure that we clone structures (uses dict.copy())
@@ -83,7 +83,7 @@ class Struct(dict):
         :returns: A string representation of the structure.
         :rtype: str
         '''
-        kv = ['%s=%s' % (k, repr(v)) for (k, v) in self.iteritems()]
+        kv = ['%s=%s' % (k, repr(v)) for (k, v) in self.items()]
         return 'Struct(%s)' % ', '.join(kv)
 
     def to_dict(self):
@@ -94,7 +94,7 @@ class Struct(dict):
         :rtype: dict
         '''
         convert = lambda v: v.to_dict() if type(v) == Struct else v
-        return dcompact(dict((k, convert(v)) for k, v in self.iteritems()))
+        return dcompact(dict((k, convert(v)) for k, v in self.items()))
 
 
 ################################################################################

@@ -10,6 +10,7 @@ Unit tests for aircraft model information tables and functions.
 # Imports
 
 
+import six
 import unittest
 
 from flightdatautilities import aircrafttables as at
@@ -50,8 +51,8 @@ class TestFlapInformation(unittest.TestCase):
         # Ensure we have what looks like a values mapping dictionary:
         x = at.get_flap_map(None, 'B737-300', 'B737 Classic')
         self.assertIsInstance(x, dict)
-        self.assertTrue(all(isinstance(k, (float, int)) for k in x.iterkeys()))
-        self.assertTrue(all(isinstance(v, str) for v in x.itervalues()))
+        self.assertTrue(all(isinstance(k, (float, int)) for k in x.keys()))
+        self.assertTrue(all(isinstance(v, str) for v in x.values()))
 
 
 class TestSlatInformation(unittest.TestCase):
@@ -75,8 +76,8 @@ class TestSlatInformation(unittest.TestCase):
         # Ensure we have what looks like a values mapping dictionary:
         x = at.get_slat_map(None, 'A330-300', 'A330')
         self.assertIsInstance(x, dict)
-        self.assertTrue(all(isinstance(k, (float, int)) for k in x.iterkeys()))
-        self.assertTrue(all(isinstance(v, str) for v in x.itervalues()))
+        self.assertTrue(all(isinstance(k, (float, int)) for k in x.keys()))
+        self.assertTrue(all(isinstance(v, str) for v in x.values()))
 
 
 class TestAileronInformation(unittest.TestCase):
@@ -97,8 +98,8 @@ class TestAileronInformation(unittest.TestCase):
         # Ensure we have what looks like a values mapping dictionary:
         x = at.get_aileron_map(None, 'A330-300', 'A330')
         self.assertIsInstance(x, dict)
-        self.assertTrue(all(isinstance(k, (float, int)) for k in x.iterkeys()))
-        self.assertTrue(all(isinstance(v, str) for v in x.itervalues()))
+        self.assertTrue(all(isinstance(k, (float, int)) for k in x.keys()))
+        self.assertTrue(all(isinstance(v, str) for v in x.values()))
 
 
 class TestConfInformation(unittest.TestCase):
@@ -108,7 +109,7 @@ class TestConfInformation(unittest.TestCase):
         # All detents must be strings:
         self.assertTrue(all(isinstance(d, str) for d in detents))
         # We expect all values to be in the available set:
-        available = at.constants.AVAILABLE_CONF_STATES.itervalues()
+        available = at.constants.AVAILABLE_CONF_STATES.values()
         self.assertLessEqual(set(detents), set(available))
         # Must have a value for the retracted state:
         self.assertIn('0', detents)
@@ -122,8 +123,8 @@ class TestConfInformation(unittest.TestCase):
         # Ensure we have what looks like a values mapping dictionary:
         x = at.get_conf_map(None, 'A330-300', 'A330')
         self.assertIsInstance(x, dict)
-        self.assertTrue(all(isinstance(k, (float, int)) for k in x.iterkeys()))
-        self.assertTrue(all(isinstance(v, str) for v in x.itervalues()))
+        self.assertTrue(all(isinstance(k, (float, int)) for k in x.keys()))
+        self.assertTrue(all(isinstance(v, str) for v in x.values()))
 
     def test__get_conf_angles(self):
         # Ensure that we raise an exception if no valid arguments are provided:
@@ -140,36 +141,36 @@ class TestConfInformation(unittest.TestCase):
         # Ensure that we get the expected structure returned:
         for key, types in ('both', tuple), ('state', str), ('value', (float, int)):
             x = at.get_conf_angles(None, None, 'A330', key=key)
-            self.assertTrue(all(isinstance(v, types) for v in x.iterkeys()))
-            self.assertTrue(all(isinstance(v, tuple) for v in x.itervalues()))
+            self.assertTrue(all(isinstance(v, types) for v in x.keys()))
+            self.assertTrue(all(isinstance(v, tuple) for v in x.values()))
 
     def test__conf_maps_integrity(self):
         for t in 'MODEL', 'SERIES', 'FAMILY':
             m = getattr(mi, 'CONF_%s_MAP' % t)
-            for name, x in m.iteritems():
+            for name, x in m.items():
                 # Ensure model, series or family name is a string:
                 self.assertIsInstance(name, str)
                 # Ensure the mapping of states is a dictionary:
                 self.assertIsInstance(x, dict)
                 # Ensure that all the states are strings:
-                self.assertTrue(all(isinstance(k, str) for k in x.iterkeys()))
+                self.assertTrue(all(isinstance(k, str) for k in x.keys()))
                 # Ensure all values are tuples of length 2 or 3, but the same:
-                self.assertTrue(all(isinstance(v, tuple) for v in x.itervalues()))
-                self.assertTrue(all(2 <= len(v) <= 3 for v in x.itervalues()))
-                self.assertEqual(len(set(len(v) for v in x.itervalues())), 1)
+                self.assertTrue(all(isinstance(v, tuple) for v in x.values()))
+                self.assertTrue(all(2 <= len(v) <= 3 for v in x.values()))
+                self.assertEqual(len(set(len(v) for v in x.values())), 1)
                 # Ensure all states are in the available conf states constant:
-                available = at.constants.AVAILABLE_CONF_STATES.itervalues()
-                self.assertLessEqual(set(x.iterkeys()), set(available))
+                available = at.constants.AVAILABLE_CONF_STATES.values()
+                self.assertLessEqual(set(x.keys()), set(available))
                 # Ensure that the angles are found in related mappings:
-                length = len(x.itervalues().next())
-                s0 = set(v[0] for v in x.itervalues())
+                length = len(next(six.itervalues(x)))
+                s0 = set(v[0] for v in x.values())
                 s1 = set(getattr(mi, 'SLAT_%s_MAP' % t)[name])
                 self.assertEqual(s0, s1, 'Broken slat values for %s' % name)
-                f0 = set(v[1] for v in x.itervalues())
+                f0 = set(v[1] for v in x.values())
                 f1 = set(getattr(mi, 'FLAP_%s_MAP' % t)[name])
                 self.assertEqual(f0, f1, 'Broken flap values for %s' % name)
                 if length == 3:
-                    a0 = set(v[2] for v in x.itervalues())
+                    a0 = set(v[2] for v in x.values())
                     a1 = set(getattr(mi, 'AILERON_%s_MAP' % t)[name])
                     self.assertEqual(a0, a1, 'Broken aileron values for %s' % name)
 
@@ -192,8 +193,8 @@ class TestLeverInformation(unittest.TestCase):
         # Ensure we have what looks like a values mapping dictionary:
         x = at.get_lever_map(None, 'Global Express XRS', 'Global')
         self.assertIsInstance(x, dict)
-        self.assertTrue(all(isinstance(k, (float, int)) for k in x.iterkeys()))
-        self.assertTrue(all(isinstance(v, str) for v in x.itervalues()))
+        self.assertTrue(all(isinstance(k, (float, int)) for k in x.keys()))
+        self.assertTrue(all(isinstance(v, str) for v in x.values()))
 
     def test__get_lever_angles(self):
         # Ensure that we raise an exception if no valid arguments are provided:
@@ -210,29 +211,29 @@ class TestLeverInformation(unittest.TestCase):
         # Ensure that we get the expected structure returned:
         for key, types in ('both', tuple), ('state', str), ('value', (float, int)):
             x = at.get_lever_angles(None, None, 'Global', key=key)
-            self.assertTrue(all(isinstance(v, types) for v in x.iterkeys()))
-            self.assertTrue(all(isinstance(v, tuple) for v in x.itervalues()))
+            self.assertTrue(all(isinstance(v, types) for v in x.keys()))
+            self.assertTrue(all(isinstance(v, tuple) for v in x.values()))
 
     def test__lever_maps_integrity(self):
         for t in 'MODEL', 'SERIES', 'FAMILY':
             m = getattr(mi, 'LEVER_%s_MAP' % t)
-            for name, x in m.iteritems():
+            for name, x in m.items():
                 self.assertIsInstance(name, str)
                 self.assertIsInstance(x, dict)
-                self.assertTrue(all(isinstance(k, tuple) for k in x.iterkeys()))
-                self.assertTrue(all(isinstance(v, tuple) for v in x.itervalues()))
-                self.assertTrue(all(len(k) == 2 for k in x.iterkeys()))
-                self.assertTrue(all(len(v) == 3 for v in x.itervalues()))
+                self.assertTrue(all(isinstance(k, tuple) for k in x.keys()))
+                self.assertTrue(all(isinstance(v, tuple) for v in x.values()))
+                self.assertTrue(all(len(k) == 2 for k in x.keys()))
+                self.assertTrue(all(len(v) == 3 for v in x.values()))
                 # Ensure that the angles are found in related mappings:
-                s0 = set(v[0] for v in x.itervalues() if v[0] is not None)
+                s0 = set(v[0] for v in x.values() if v[0] is not None)
                 if s0:
                     s1 = set(getattr(mi, 'SLAT_%s_MAP' % t)[name])
                     self.assertEqual(s0, s1, 'Broken slat values for %s' % name)
-                f0 = set(v[1] for v in x.itervalues() if v[1] is not None)
+                f0 = set(v[1] for v in x.values() if v[1] is not None)
                 if f0:
                     f1 = set(getattr(mi, 'FLAP_%s_MAP' % t)[name])
                     self.assertEqual(f0, f1, 'Broken flap values for %s' % name)
-                a0 = set(v[2] for v in x.itervalues() if v[2] is not None)
+                a0 = set(v[2] for v in x.values() if v[2] is not None)
                 if a0:
                     a1 = set(getattr(mi, 'AILERON_%s_MAP' % t)[name])
                     self.assertEqual(a0, a1, 'Broken aileron values for %s' % name)

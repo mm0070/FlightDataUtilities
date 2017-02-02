@@ -8,8 +8,14 @@
 #############################################################################
 # Imports
 
+import six
 
-from itertools import chain, cycle, imap, izip, product
+from itertools import chain, cycle, product
+
+try:
+    from itertools import imap as map, izip as zip
+except ImportError:
+    pass
 
 from flightdatautilities import sortext
 
@@ -74,7 +80,7 @@ def get_flap_detents():
     '''
     detents = set()
     for x in mi.FLAP_MODEL_MAP, mi.FLAP_SERIES_MAP, mi.FLAP_FAMILY_MAP:
-        detents.update(chain.from_iterable(x.itervalues()))
+        detents.update(chain.from_iterable(six.itervalues(x)))
     return sortext.nsorted(detents)
 
 
@@ -87,7 +93,7 @@ def get_slat_detents():
     '''
     detents = set()
     for x in mi.SLAT_MODEL_MAP, mi.SLAT_SERIES_MAP, mi.SLAT_FAMILY_MAP:
-        detents.update(chain.from_iterable(x.itervalues()))
+        detents.update(chain.from_iterable(six.itervalues(x)))
     return sortext.nsorted(detents)
 
 
@@ -100,7 +106,7 @@ def get_aileron_detents():
     '''
     detents = set()
     for x in mi.AILERON_MODEL_MAP, mi.AILERON_SERIES_MAP, mi.AILERON_FAMILY_MAP:
-        detents.update(chain.from_iterable(x.itervalues()))
+        detents.update(chain.from_iterable(six.itervalues(x)))
     return sortext.nsorted(detents)
 
 
@@ -111,10 +117,10 @@ def get_conf_detents():
     :returns: list of detent values
     :rtype: list
     '''
-    extract = dict.iterkeys
+    extract = six.iterkeys
     detents = set()
     for x in mi.CONF_MODEL_MAP, mi.CONF_SERIES_MAP, mi.CONF_FAMILY_MAP:
-        detents.update(chain.from_iterable(imap(extract, x.itervalues())))
+        detents.update(chain.from_iterable(map(extract, six.itervalues(x))))
     return sortext.nsorted(detents)
 
 
@@ -125,10 +131,10 @@ def get_lever_detents():
     :returns: list of detent values
     :rtype: list
     '''
-    extract = lambda x: (v[1] for v in x.iterkeys())
+    extract = lambda x: (v[1] for v in x.keys())
     detents = set(map(str, get_flap_detents()))  # initialise with flap detents
     for x in mi.LEVER_MODEL_MAP, mi.LEVER_SERIES_MAP, mi.LEVER_FAMILY_MAP:
-        detents.update(chain.from_iterable(imap(extract, x.itervalues())))
+        detents.update(chain.from_iterable(map(extract, six.itervalues(x))))
     detents.update(constants.LEVER_STATES.values())  # include conf lever states
     return sortext.nsorted(detents)
 
@@ -162,7 +168,7 @@ def get_flap_map(model=None, series=None, family=None):
     keys = model, series, family
     maps = mi.FLAP_MODEL_MAP, mi.FLAP_SERIES_MAP, mi.FLAP_FAMILY_MAP
 
-    for k, m in izip(keys, maps):
+    for k, m in zip(keys, maps):
         if k in m:
             return {v: str(v) for v in m[k]}
 
@@ -191,7 +197,7 @@ def get_slat_map(model=None, series=None, family=None):
     keys = model, series, family
     maps = mi.SLAT_MODEL_MAP, mi.SLAT_SERIES_MAP, mi.SLAT_FAMILY_MAP
 
-    for k, m in izip(keys, maps):
+    for k, m in zip(keys, maps):
         if k in m:
             return {v: str(v) for v in m[k]}
 
@@ -220,7 +226,7 @@ def get_aileron_map(model=None, series=None, family=None):
     keys = model, series, family
     maps = mi.AILERON_MODEL_MAP, mi.AILERON_SERIES_MAP, mi.AILERON_FAMILY_MAP
 
-    for k, m in izip(keys, maps):
+    for k, m in zip(keys, maps):
         if k in m:
             return {v: str(v) for v in m[k]}
 
@@ -250,7 +256,7 @@ def get_conf_map(model=None, series=None, family=None):
     maps = mi.CONF_MODEL_MAP, mi.CONF_SERIES_MAP, mi.CONF_FAMILY_MAP
     conf = constants.AVAILABLE_CONF_STATES.items()
 
-    for k, m in izip(keys, maps):
+    for k, m in zip(keys, maps):
         if k in m:
             return {x: v for x, v in conf if v in m[k]}
 
@@ -279,9 +285,9 @@ def get_lever_map(model=None, series=None, family=None):
     keys = model, series, family
     maps = mi.LEVER_MODEL_MAP, mi.LEVER_SERIES_MAP, mi.LEVER_FAMILY_MAP
 
-    for k, m in izip(keys, maps):
+    for k, m in zip(keys, maps):
         if k in m:
-            return dict(m[k].iterkeys())
+            return dict(m[k].keys())
 
     # Fallback to using the flap mapping if no lever mapping:
     try:
@@ -335,7 +341,7 @@ def get_conf_angles(model=None, series=None, family=None, key='state'):
     maps = mi.CONF_MODEL_MAP, mi.CONF_SERIES_MAP, mi.CONF_FAMILY_MAP
     conf = constants.AVAILABLE_CONF_STATES.items()
 
-    for k, m in izip(keys, maps):
+    for k, m in zip(keys, maps):
         if k not in m:
             continue
         if key == 'both':
@@ -378,16 +384,16 @@ def get_lever_angles(model=None, series=None, family=None, key='state'):
     keys = model, series, family
     maps = mi.LEVER_MODEL_MAP, mi.LEVER_SERIES_MAP, mi.LEVER_FAMILY_MAP
 
-    for k, m in izip(keys, maps):
+    for k, m in zip(keys, maps):
         if k not in m:
             continue
         d = m[k]
         if key == 'both':
             return d
         if key == 'state':
-            return {x[1]: v for x, v in d.iteritems()}
+            return {x[1]: v for x, v in d.items()}
         if key == 'value':
-            return {x[0]: v for x, v in d.iteritems()}
+            return {x[0]: v for x, v in d.items()}
 
     # Fallback to using the flap mapping if no lever mapping:
     try:
@@ -434,7 +440,7 @@ def get_stabilizer_limits(model=None, series=None, family=None):
     keys = model, series, family
     maps = mi.STABILIZER_MODEL_MAP, mi.STABILIZER_SERIES_MAP, mi.STABILIZER_FAMILY_MAP
 
-    for k, m in izip(keys, maps):
+    for k, m in zip(keys, maps):
         if k in m:
             return m[k]
 
@@ -467,7 +473,7 @@ def get_kaf_map(model=None, series=None, family=None):
     keys = model, series, family
     maps = mi.KAF_MODEL_MAP, mi.KAF_SERIES_MAP, mi.KAF_FAMILY_MAP
 
-    for k, m in izip(keys, maps):
+    for k, m in zip(keys, maps):
         if k in m:
             return m[k]
 
@@ -500,7 +506,7 @@ def get_vls1g_map(model=None, series=None, family=None, engine_manufacturer=None
     keys = model, series, family
     maps = mi.VLS1G_MODEL_MAP, mi.VLS1G_SERIES_MAP, mi.VLS1G_FAMILY_MAP
 
-    for k, m in izip(keys, maps):
+    for k, m in zip(keys, maps):
         if k in m and engine_manufacturer in m[k]:
             return m[k][engine_manufacturer]
 
@@ -533,7 +539,7 @@ def get_fms_map(model=None, series=None, family=None):
     keys = model, series, family
     maps = mi.FMS_MODEL_MAP, mi.FMS_SERIES_MAP, mi.FMS_FAMILY_MAP
 
-    for k, m in izip(keys, maps):
+    for k, m in zip(keys, maps):
         if k in m:
             return m[k]
 
@@ -580,7 +586,7 @@ def get_vspeed_map(model=None, series=None, family=None, engine_type=None, engin
     # - aircraft series.
     # - aircraft family.
     engines = engine_type, engine_series, None
-    it = izip(imap(lambda x: x[::-1], product(engines, keys)), cycle(maps))
+    it = zip(map(lambda x: x[::-1], product(engines, keys)), cycle(maps))
 
     for k, m in it:
         if k in m:
@@ -625,7 +631,7 @@ def get_engine_map(engine_type=None, engine_series=None, mods=None, restriction=
     # - aircraft series.
     # - aircraft family.
     mod_keys = mods if mods else []
-    it = izip(imap(lambda x: x[::-1], product(mod_keys + [None], keys)), cycle([series_map]))
+    it = zip(imap(lambda x: x[::-1], product(mod_keys + [None], keys)), cycle([series_map]))
 
     for k, m in it:
         if k in m:
@@ -659,7 +665,7 @@ def get_aileron_range(model=None, series=None, family=None):
     keys = model, series, family
     maps = mi.AILERON_RANGE_MODEL_MAP, mi.AILERON_RANGE_SERIES_MAP, mi.AILERON_RANGE_FAMILY_MAP
 
-    for k, m in izip(keys, maps):
+    for k, m in zip(keys, maps):
         if k in m:
             return m[k]
 
@@ -688,7 +694,7 @@ def get_elevator_range(model=None, series=None, family=None):
     keys = model, series, family
     maps = mi.ELEVATOR_RANGE_MODEL_MAP, mi.ELEVATOR_RANGE_SERIES_MAP, mi.ELEVATOR_RANGE_FAMILY_MAP
 
-    for k, m in izip(keys, maps):
+    for k, m in zip(keys, maps):
         if k in m:
             return m[k]
 
@@ -717,7 +723,7 @@ def get_rudder_range(model=None, series=None, family=None):
     keys = model, series, family
     maps = mi.RUDDER_RANGE_MODEL_MAP, mi.RUDDER_RANGE_SERIES_MAP, mi.RUDDER_RANGE_FAMILY_MAP
 
-    for k, m in izip(keys, maps):
+    for k, m in zip(keys, maps):
         if k in m:
             return m[k]
 
@@ -746,7 +752,7 @@ def get_control_column_range(model=None, series=None, family=None):
     keys = model, series, family
     maps = mi.CONTROL_COLUMN_RANGE_MODEL_MAP, mi.CONTROL_COLUMN_RANGE_SERIES_MAP, mi.CONTROL_COLUMN_RANGE_FAMILY_MAP
 
-    for k, m in izip(keys, maps):
+    for k, m in zip(keys, maps):
         if k in m:
             return m[k]
 
@@ -775,7 +781,7 @@ def get_control_wheel_range(model=None, series=None, family=None):
     keys = model, series, family
     maps = mi.CONTROL_WHEEL_RANGE_MODEL_MAP, mi.CONTROL_WHEEL_RANGE_SERIES_MAP, mi.CONTROL_WHEEL_RANGE_FAMILY_MAP
 
-    for k, m in izip(keys, maps):
+    for k, m in zip(keys, maps):
         if k in m:
             return m[k]
 
@@ -804,7 +810,7 @@ def get_cyclic_fore_aft_range(model=None, series=None, family=None):
     keys = model, series, family
     maps = mi.CYCLIC_FORE_AFT_RANGE_MODEL_MAP, mi.CYCLIC_FORE_AFT_RANGE_SERIES_MAP, mi.CYCLIC_FORE_AFT_RANGE_FAMILY_MAP
 
-    for k, m in izip(keys, maps):
+    for k, m in zip(keys, maps):
         if k in m:
             return m[k]
 
@@ -833,7 +839,7 @@ def get_cyclic_lateral_range(model=None, series=None, family=None):
     keys = model, series, family
     maps = mi.CYCLIC_LATERAL_RANGE_MODEL_MAP, mi.CYCLIC_LATERAL_RANGE_SERIES_MAP, mi.CYCLIC_LATERAL_RANGE_FAMILY_MAP
 
-    for k, m in izip(keys, maps):
+    for k, m in zip(keys, maps):
         if k in m:
             return m[k]
 
@@ -862,7 +868,7 @@ def get_eng_epr_range(model=None, series=None, family=None):
     keys = model, series, family
     maps = mi.ENG_EPR_RANGE_MODEL_MAP, mi.ENG_EPR_RANGE_SERIES_MAP, mi.ENG_EPR_RANGE_FAMILY_MAP
 
-    for k, m in izip(keys, maps):
+    for k, m in zip(keys, maps):
         if k in m:
             return m[k]
 
@@ -891,7 +897,7 @@ def get_eng_fuel_flow_range(model=None, series=None, family=None):
     keys = model, series, family
     maps = mi.ENG_FUEL_FLOW_RANGE_MODEL_MAP, mi.ENG_FUEL_FLOW_RANGE_SERIES_MAP, mi.ENG_FUEL_FLOW_RANGE_FAMILY_MAP
 
-    for k, m in izip(keys, maps):
+    for k, m in zip(keys, maps):
         if k in m:
             return m[k]
 
@@ -920,7 +926,7 @@ def get_eng_gas_temp_range(model=None, series=None, family=None):
     keys = model, series, family
     maps = mi.ENG_GAS_TEMP_RANGE_MODEL_MAP, mi.ENG_GAS_TEMP_RANGE_SERIES_MAP, mi.ENG_GAS_TEMP_RANGE_FAMILY_MAP
 
-    for k, m in izip(keys, maps):
+    for k, m in zip(keys, maps):
         if k in m:
             return m[k]
 
@@ -949,7 +955,7 @@ def get_rudder_pedal_range(model=None, series=None, family=None):
     keys = model, series, family
     maps = mi.RUDDER_PEDAL_RANGE_MODEL_MAP, mi.RUDDER_PEDAL_RANGE_SERIES_MAP, mi.RUDDER_PEDAL_RANGE_FAMILY_MAP
 
-    for k, m in izip(keys, maps):
+    for k, m in zip(keys, maps):
         if k in m:
             return m[k]
 
@@ -978,7 +984,7 @@ def get_sidestick_pitch_range(model=None, series=None, family=None):
     keys = model, series, family
     maps = mi.SIDESTICK_PITCH_RANGE_MODEL_MAP, mi.SIDESTICK_PITCH_RANGE_SERIES_MAP, mi.SIDESTICK_PITCH_RANGE_FAMILY_MAP
 
-    for k, m in izip(keys, maps):
+    for k, m in zip(keys, maps):
         if k in m:
             return m[k]
 
@@ -1007,7 +1013,7 @@ def get_sidestick_roll_range(model=None, series=None, family=None):
     keys = model, series, family
     maps = mi.SIDESTICK_ROLL_RANGE_MODEL_MAP, mi.SIDESTICK_ROLL_RANGE_SERIES_MAP, mi.SIDESTICK_ROLL_RANGE_FAMILY_MAP
 
-    for k, m in izip(keys, maps):
+    for k, m in zip(keys, maps):
         if k in m:
             return m[k]
 
@@ -1036,7 +1042,7 @@ def get_tail_rotor_pedal_range(model=None, series=None, family=None):
     keys = model, series, family
     maps = mi.TAIL_ROTOR_PEDAL_RANGE_MODEL_MAP, mi.TAIL_ROTOR_PEDAL_RANGE_SERIES_MAP, mi.TAIL_ROTOR_PEDAL_RANGE_FAMILY_MAP
 
-    for k, m in izip(keys, maps):
+    for k, m in zip(keys, maps):
         if k in m:
             return m[k]
 
@@ -1065,7 +1071,7 @@ def get_throttle_lever_range(model=None, series=None, family=None):
     keys = model, series, family
     maps = mi.THROTTLE_LEVER_RANGE_MODEL_MAP, mi.THROTTLE_LEVER_RANGE_SERIES_MAP, mi.THROTTLE_LEVER_RANGE_FAMILY_MAP
 
-    for k, m in izip(keys, maps):
+    for k, m in zip(keys, maps):
         if k in m:
             return m[k]
 

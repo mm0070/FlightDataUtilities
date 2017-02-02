@@ -47,7 +47,7 @@ def nsorted(iterable, key=None, reverse=False):
     c = lambda t: float(t) if t.isdigit() else t
     if not key:
         key = lambda x: x
-    wrapper = lambda x: map(c, z.split(unicode(key(x)).replace(' ', '')))
+    wrapper = lambda x: list(map(c, z.split(str(key(x)).replace(' ', ''))))
     return sorted(iterable, key=wrapper, reverse=reverse)
 
 

@@ -74,7 +74,7 @@ class TestIsDay(unittest.TestCase):
         self.assertTrue(dateext.is_day(datetime(2013, 6, 4, 4, 54), 0.454927, 9.411872, twilight='civil'))
         self.assertFalse(dateext.is_day(datetime(2013, 6, 4, 4, 52), 0.454927, 9.411872))
         self.assertTrue(dateext.is_day(datetime(2013, 6, 4, 4, 29), 0.454927, 9.411872, twilight='nautical'))
-        self.assertTrue(dateext.is_day(datetime(2013, 6, 4, 4, 05), 0.454927, 9.411872, twilight='astronomical'))
+        self.assertTrue(dateext.is_day(datetime(2013, 6, 4, 4, 5), 0.454927, 9.411872, twilight='astronomical'))
 
     def test_uk_aip(self):
         # These cases are taken from the United Kingdom AIP, page GEN 2.7.1 dated 13 Dec 2012.

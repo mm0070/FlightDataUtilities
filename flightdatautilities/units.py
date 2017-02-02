@@ -16,6 +16,7 @@ The following links are useful resources:
 
 
 import math
+import six
 
 
 ##############################################################################
@@ -1117,7 +1118,7 @@ def available(values=True):
     module = sys.modules[__name__]
     x = dir(module)
     x = filter(lambda v: v.isupper() and not v.startswith('_'), x)
-    x = filter(lambda v: isinstance(getattr(module, v), basestring), x)
+    x = filter(lambda v: isinstance(getattr(module, v), six.string_types), x)
     if values:
         return map(lambda c: getattr(module, c), x)
     else:

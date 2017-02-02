@@ -7,7 +7,7 @@
 ##############################################################################
 # Imports
 
-
+import six
 import unittest
 
 from decimal import Decimal
@@ -29,11 +29,11 @@ class TestUnitsModule(unittest.TestCase):
         # Check we have no redefinitions of units:
         self.assertEqual(len(values), len(constants), 'Unit redefinition!')
         # Check we have a category for every unit constant:
-        x = list(chain.from_iterable(UNIT_CATEGORIES.values()))
+        x = list(chain.from_iterable(six.itervalues(UNIT_CATEGORIES)))
         self.assertEqual(len(x), len(set(x)), 'Unit in multiple categories!')
-        self.assertItemsEqual(set(x), values)
+        self.assertEqual(set(x), values)
         # Check we have a description for every unit constant:
-        self.assertItemsEqual(set(UNIT_DESCRIPTIONS.keys()), values)
+        self.assertEqual(set(UNIT_DESCRIPTIONS.keys()), values)
         # Check we only correct to (and not from) standard units:
         self.assertLessEqual(set(UNIT_CORRECTIONS.values()), values)
         self.assertEqual(set(UNIT_CORRECTIONS.keys()) & values, set())
@@ -41,13 +41,13 @@ class TestUnitsModule(unittest.TestCase):
         self.assertLessEqual(set(STANDARD_CONVERSIONS.keys()), values)
         self.assertLessEqual(set(STANDARD_CONVERSIONS.values()), values)
         for mapping in CONVERSION_MULTIPLIERS, CONVERSION_FUNCTIONS:
-            for k, v in mapping.iteritems():
+            for k, v in mapping.items():
                 self.assertIn(k, values)
                 self.assertLessEqual(set(v.keys()), values)
 
     def test__normalise(self):
 
-        for wrong, correct in UNIT_CORRECTIONS.iteritems():
+        for wrong, correct in UNIT_CORRECTIONS.items():
             self.assertEqual(normalise(wrong), correct)
 
     @unittest.skip('Test not implemented.')
@@ -260,7 +260,7 @@ class TestUnitsModule(unittest.TestCase):
             (1, DOTS, MICROAMP): 75,
         }
 
-        for arguments, expected in data.iteritems():
+        for arguments, expected in data.items():
             dp = max(abs(Decimal(str(expected)).as_tuple().exponent) - 1, 0)
             # Check forward conversion:
             i = arguments

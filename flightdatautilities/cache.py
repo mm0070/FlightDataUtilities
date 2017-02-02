@@ -66,7 +66,7 @@ def memoize(*args, **kwargs):
 
             # Clear any stale items from the cache:
             obj.__cache = {k: v
-                           for k, v in obj.__cache.iteritems()
+                           for k, v in obj.__cache.items()
                            if v['timeout'] >= now}
 
             # Handle any unhashable arguments by pickling:

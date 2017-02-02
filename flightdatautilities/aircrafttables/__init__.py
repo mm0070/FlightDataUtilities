@@ -40,7 +40,7 @@ def configure(package):
         'vs': 'velocity_speed',
     }
 
-    for variable, name in paths.iteritems():
+    for variable, name in paths.items():
         try:
             module = importlib.import_module('%s.%s' % (package, name))
         except ImportError:

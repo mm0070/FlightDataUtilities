@@ -9,8 +9,11 @@
 # Imports
 
 
+from __future__ import unicode_literals
+
 import logging
 import numpy as np
+import six
 
 from abc import ABCMeta
 
@@ -101,7 +104,7 @@ class VelocitySpeed(object):
                 weight = np.ma.array(data=[0.0], dtype=np.double, mask=True)
 
             # Attempt to coerce the detent value if it isn't a string:
-            if not isinstance(detent, basestring):
+            if not isinstance(detent, six.string_types):
                 msg = "Non-string detent provided - %r - coercing..."
                 logger.warning(msg, detent)
                 if isinstance(detent, float) and detent.is_integer():
@@ -144,7 +147,7 @@ class VelocitySpeed(object):
                 x, y = self.tables[name]['weight'], lookup
                 # Scale the lookup table weights if necessary:
                 if not self.weight_scale == 1:
-                    x = map(lambda w: int(w * self.weight_scale), x)
+                    x = list(map(lambda w: int(w * self.weight_scale), x))
                 # Convert the aircraft weight to match the lookup table:
                 if not self.weight_unit == ut.KG:
                     weight *= ut.multiplier(ut.KG, self.weight_unit)

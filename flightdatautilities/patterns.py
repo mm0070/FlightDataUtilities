@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import itertools
 import re
 
@@ -334,8 +336,8 @@ if __name__ == '__main__':
     matches = wildcard_match(args.pattern, args.keys)
     
     if matches:
-        print 'Matches:'
+        print('Matches:')
         for match in matches:
-            print ' * %s' % match
+            print(' * %s' % match)
     else:
-        print 'No matches'
+        print('No matches')

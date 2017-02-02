@@ -9,8 +9,8 @@ def extrap1d(interpolator):
     http://stackoverflow.com/questions/2745329
         /how-to-make-scipy-interpolate-give-a-an-extrapolated-result-beyond
         -the-input-ran
-    TODO: Optimise, this is very slow since the extrapolation algorithm works
-    on values individually.
+    Optimised interpolation with extrapolation has been implemented in Cython
+    within the FlightDataConverter repository.
     '''
     xs = interpolator.x
     ys = interpolator.y
@@ -102,7 +102,7 @@ def downsample_arrays(arrays):
                 % lengths)
     downsampled_arrays = []
     for array in arrays:
-        step = len(array) / shortest
+        step = len(array) // shortest
         if step > 1:
             array = array[::step]
         downsampled_arrays.append(array)
@@ -134,7 +134,7 @@ def upsample_arrays(arrays):
     for array, length in zip(arrays, lengths):
         # XXX: Hack to fix MappedArray values mapping being stripped by repeat.
         values_mapping = getattr(array, 'values_mapping', None)
-        repeat = largest / length
+        repeat = largest // length
         if repeat > 1:
             array = array.repeat(repeat)
             if values_mapping:

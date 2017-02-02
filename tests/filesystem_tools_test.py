@@ -108,17 +108,16 @@ class TestFilesystemTools(unittest.TestCase):
         test_file_path = os.path.join(self._tmp_test_data_dir,
                                       "test_is_file_bzipped.false")
         test_file_obj = open(test_file_path, "wb")
-        test_file_obj.write("uncompressed")
+        test_file_obj.write(b"uncompressed")
         test_file_obj.close()
         self.assertFalse(fst.is_file_bzipped(test_file_path))
         test_file_path = os.path.join(self._tmp_test_data_dir,
                                       "test_is_file_bzipped.true")
         test_file_obj = bz2.BZ2File(test_file_path, "wb")
-        test_file_obj.write("uncompressed")
+        test_file_obj.write(b"uncompressed")
         test_file_obj.close()
         self.assertTrue(fst.is_file_bzipped(test_file_path))
 
 
 if __name__ == '__main__':
     TestFilesystemTools('test_remove_all_with_ignore').run()
-    print "Finished all tests"

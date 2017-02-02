@@ -120,7 +120,7 @@ class CompressedFile(object):
         Uncompress the file to temporary location.
         '''
         # Uncompress to temp file
-        with file(self.uncompressed_path, 'w+b') as uncompressed_file:
+        with open(self.uncompressed_path, 'w+b') as uncompressed_file:
             with self.compressor(self.compressed_path, 'rb') as compressed_file:
                 if self.buffer_size is None or not self._buffer_support():
                     buffer = compressed_file.read()
@@ -180,9 +180,9 @@ class CompressedFile(object):
                      self.compressed_path, self.uncompressed_path)
 
         with self.compressor(
-                self.compressed_path, 'w',
+                self.compressed_path, 'wb',
                 compresslevel=self.compression_level) as compressed_file:
-            with file(self.uncompressed_path, 'rb') as uncompressed_file:
+            with open(self.uncompressed_path, 'rb') as uncompressed_file:
                 if self.buffer_size is None or not self._buffer_support():
                     buffer = uncompressed_file.read()
                     compressed_file.write(buffer)

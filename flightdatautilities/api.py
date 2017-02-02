@@ -19,6 +19,7 @@ import sys
 import yaml
 
 from requests.packages.urllib3.util.retry import Retry
+from six import with_metaclass
 
 
 ##############################################################################
@@ -63,24 +64,20 @@ class NotFoundError(APIError):
 # Classes
 
 
-class Handler(object):
+class Handler(with_metaclass(abc.ABCMeta)):
     '''
     Abstract class providing basic interface for all handlers.
     '''
-
-    __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
     def request(self, *args, **kwargs):
         pass
 
 
-class FileHandler(Handler):
+class FileHandler(with_metaclass(abc.ABCMeta, Handler)):
     '''
     Abstract class providing method of accessing data from files.
     '''
-
-    __metaclass__ = abc.ABCMeta
 
     def request(self, path):
         '''
@@ -101,12 +98,10 @@ class FileHandler(Handler):
         raise NotImplementedError('Cannot load data for unknown file type.')
 
 
-class HTTPHandler(Handler):
+class HTTPHandler(with_metaclass(abc.ABCMeta, Handler)):
     '''
     Abstract class providing method of accessing an API via HTTP.
     '''
-
-    __metaclass__ = abc.ABCMeta
 
     def request(self, url, method='GET', params=None, data=None, json=None, **kw):
         '''

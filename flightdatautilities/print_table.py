@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import cStringIO
 import math
 import operator
@@ -34,16 +36,19 @@ def indent(rows, hasHeader=False, headerChar='-', delim=' | ', justify='left',
                                  len(delim)*(len(maxWidths)-1))
     # select the appropriate justify method
     justify = {'center':str.center, 'right':str.rjust, 'left':str.ljust}[justify.lower()]
-    output=cStringIO.StringIO()
-    if separateRows: print >> output, rowSeparator
+    output = cStringIO.StringIO()
+    if separateRows:
+        output.write(rowSeparator)
     for physicalRows in logicalRows:
         for row in physicalRows:
-            print >> output, \
-                prefix \
-                + delim.join([justify(str(item),width) for (item,width) in zip(row,maxWidths)]) \
-                + postfix
-        if separateRows or hasHeader: print >> output, rowSeparator; hasHeader=False
-    return output.getvalue() 
+            output.write(
+                prefix
+                + delim.join([justify(str(item),width) for (item,width) in zip(row,maxWidths)])
+                + postfix)
+        if separateRows or hasHeader:
+            output.write(rowSeparator)
+            hasHeader=False
+    return output.getvalue()
 
 # written by Mike Brown
 # http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/148061
@@ -78,8 +83,8 @@ def wrap_onspace_strict(text, width, carriage_return=None):
 def wrap_always(text, width, carriage_return='\n'):
     """A simple word-wrap function that wraps text on exactly width characters.
        It doesn't split the text in words."""
-    return carriage_return.join([ text[width*i:width*(i+1)] \
-                       for i in xrange(int(math.ceil(1.*len(text)/width))) ])
+    return carriage_return.join([text[width*i:width*(i+1)] \
+                                 for i in range(int(math.ceil(1.*len(text)/width)))])
     
 if __name__ == '__main__':
     labels = ('First Name', 'Last Name', 'Age', 'Position')
@@ -87,17 +92,17 @@ if __name__ == '__main__':
     '''John,Smith,24,Software Engineer
        Mary,Brohowski,23,Sales Manager
        Aristidis,Papageorgopoulos,28,Senior Reseacher'''
-    rows = [row.strip().split(',')  for row in data.splitlines()]
+    rows = [row.strip().split(',') for row in data.splitlines()]
 
-    print 'Without wrapping function\n'
-    print indent([labels]+rows, hasHeader=True)
+    print('Without wrapping function\n')
+    print(indent([labels]+rows, hasHeader=True))
     # test indent with different wrapping functions
     width = 10
     for wrapper in (wrap_always,wrap_onspace,wrap_onspace_strict):
-        print 'Wrapping function: %s(x,width=%d)\n' % (wrapper.__name__,width)
-        print indent([labels]+rows, hasHeader=True, separateRows=True,
+        print('Wrapping function: %s(x,width=%d)\n' % (wrapper.__name__,width))
+        print(indent([labels]+rows, hasHeader=True, separateRows=True,
                      prefix='| ', postfix=' |',
-                     wrapfunc=lambda x: wrapper(x,width))
+                     wrapfunc=lambda x: wrapper(x,width)))
     
     # output:
     #

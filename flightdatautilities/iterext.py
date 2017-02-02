@@ -10,8 +10,13 @@ Flight Data Utilities: Iter Extensions
 # Imports
 
 
-from itertools import count, groupby, imap, islice, izip, takewhile, tee
+from itertools import count, groupby, islice, takewhile, tee
 from operator import itemgetter
+
+try:
+    from itertools import imap as map, izip as zip
+except ImportError:
+    pass
 
 
 ##############################################################################
@@ -39,7 +44,7 @@ def batch(start, stop, step):
     a, b = tee(count(start, step))
     next(b, None)
     last = None
-    for x in takewhile(lambda z: z[1] < stop, izip(a, b)):
+    for x in takewhile(lambda z: z[1] < stop, zip(a, b)):
         last = x[1]
         yield x
     if last is not None:
@@ -53,7 +58,7 @@ def droplast(n, iterable):
     Based on rejected examples in http://bugs.python.org/issue16774
     '''
     t1, t2 = tee(iterable)
-    return imap(itemgetter(0), izip(t1, islice(t2, n, None)))
+    return map(itemgetter(0), zip(t1, islice(t2, n, None)))
 
 
 def nested_groupby(iterable, function_list, manipulate=None, output=list):

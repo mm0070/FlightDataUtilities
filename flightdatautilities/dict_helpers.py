@@ -2,6 +2,8 @@
 ################################################################################
 
 
+import six
+
 __all__ = ['dcompact', 'dflatten', 'dfilter', 'dmap', 'dmerge']
 
 
@@ -18,10 +20,10 @@ def dcompact(d):
     o = d.__class__()
 
     # Filter out any unset/empty values in the dictionary:
-    for k, v in d.iteritems():
+    for k, v in d.items():
         if isinstance(v, dict):
             x = dcompact(v)
-        elif isinstance(v, basestring):
+        elif isinstance(v, six.string_types):
             x = v.strip()
         else:
             x = v
@@ -51,10 +53,10 @@ def dflatten(d, glue=' ', manipulate=lambda k: k):
     o = d.__class__()
 
     # Loop over dictionary items and recursively flatten:
-    for k0, v0 in d.iteritems():
+    for k0, v0 in d.items():
         if isinstance(v0, dict):
             # Flatten nested dictionary and glue manipulated keys:
-            for k1, v1 in dflatten(v0).iteritems():
+            for k1, v1 in dflatten(v0).items():
                 k = glue.join(map(manipulate, [k0, k1]))
                 o[k] = v1
         else:
@@ -77,7 +79,7 @@ def dfilter(f, d):
     :return: A dictionary filtered according to the specified filter function.
     :rtype: dict
     '''
-    return d.__class__((k, v) for k, v in d.iteritems() if f(k, v))
+    return d.__class__((k, v) for k, v in d.items() if f(k, v))
 
 
 def dmap(f, d):
@@ -91,7 +93,7 @@ def dmap(f, d):
     :return: A dictionary where values have been mapped by the function.
     :rtype: dict
     '''
-    return d.__class__(f(k, v) for k, v in d.iteritems())
+    return d.__class__(f(k, v) for k, v in d.items())
 
 
 def dmerge(x, y, overwrite=()):
@@ -117,7 +119,7 @@ def dmerge(x, y, overwrite=()):
 
     if not isinstance(x, dict) or not isinstance(y, dict):
         raise TypeError('Arguments must be dictionaries.')
-    for k, v in y.iteritems():
+    for k, v in y.items():
         if not isinstance(v, dict):
             x[k] = v
         elif k not in x.keys():
@@ -147,7 +149,7 @@ def dict_filter(d, keep=None, remove=None):
     def replace_down(x, wildkey, thiskey):
         new_dict = {}
         try:
-            for key,value in x.iteritems():
+            for key,value in x.items():
                 new_dict[key] = replace_down(x[key], wildkey, thiskey)
         except:
             try:
