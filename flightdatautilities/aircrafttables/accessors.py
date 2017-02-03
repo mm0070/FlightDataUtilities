@@ -631,7 +631,7 @@ def get_engine_map(engine_type=None, engine_series=None, mods=None, restriction=
     # - aircraft series.
     # - aircraft family.
     mod_keys = mods if mods else []
-    it = zip(imap(lambda x: x[::-1], product(mod_keys + [None], keys)), cycle([series_map]))
+    it = zip(map(lambda x: x[::-1], product(mod_keys + [None], keys)), cycle([series_map]))
 
     for k, m in it:
         if k in m:
