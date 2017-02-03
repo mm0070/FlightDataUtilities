@@ -260,7 +260,7 @@ def _read_requirements_file(filename, data=None):
                             # FIXME: Find a solution or report an error?
                             continue
                     # Update list of extras:
-                    package[3] = sorted(list(set(package[3] + components[3])))
+                    package[3] = sorted(set(package[3] + components[3]))
                     updated = True
                     break
             if not updated:
@@ -353,7 +353,7 @@ class RequirementsParser(object):
         install_requires = []
         install_requires += data.get('p', [])
         install_requires += list(map(_extract_egg_names, data.get('e', [])))
-        return sorted(list(set(install_requires)))
+        return sorted(set(install_requires))
 
     @property
     def setup_requires(self):
@@ -369,7 +369,7 @@ class RequirementsParser(object):
         setup_requires = []
         setup_requires += data.get('p', [])
         setup_requires += list(map(_extract_egg_names, data.get('e', [])))
-        return sorted(list(set(setup_requires)))
+        return sorted(set(setup_requires))
 
     @property
     def tests_require(self):
@@ -385,7 +385,7 @@ class RequirementsParser(object):
         tests_require = []
         tests_require += data.get('p', [])
         tests_require += list(map(_extract_egg_names, data.get('e', [])))
-        return sorted(list(set(tests_require)))
+        return sorted(set(tests_require))
 
     @property
     def extras_require(self):
@@ -402,7 +402,7 @@ class RequirementsParser(object):
             packages = []
             packages += data.get('p')
             packages += list(map(_extract_egg_names, data.get('e', [])))
-            packages = sorted(list(set(packages)))
+            packages = sorted(set(packages))
             if packages:
                 extras_require[source] = packages
         return extras_require
@@ -420,7 +420,7 @@ class RequirementsParser(object):
         for data in self.data.values():
             dependency_links += data.get('f', [])
             dependency_links += data.get('e', [])
-        return sorted(list(set(dependency_links)))
+        return sorted(set(dependency_links))
 
 
 ################################################################################
