@@ -16,6 +16,8 @@ Flight Data Utilities: Sort Extensions
 
 import re
 
+from builtins import str
+
 
 ##############################################################################
 # Exports

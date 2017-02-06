@@ -1,6 +1,7 @@
 blosc
 bz2file
 decorator
+future
 numpy
 pyyaml
 requests
