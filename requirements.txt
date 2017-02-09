@@ -2,6 +2,7 @@ blosc
 bz2file
 decorator
 future
+natsort
 numpy
 pyyaml
 requests

@@ -11,13 +11,12 @@
 import six
 
 from itertools import chain, cycle, product
+from natsort import natsorted
 
 try:
     from itertools import imap as map, izip as zip
 except ImportError:
     pass
-
-from flightdatautilities import sortext
 
 from flightdatautilities.aircrafttables import constants
 
@@ -81,7 +80,7 @@ def get_flap_detents():
     detents = set()
     for x in mi.FLAP_MODEL_MAP, mi.FLAP_SERIES_MAP, mi.FLAP_FAMILY_MAP:
         detents.update(chain.from_iterable(six.itervalues(x)))
-    return sortext.nsorted(detents)
+    return natsorted(detents)
 
 
 def get_slat_detents():
@@ -94,7 +93,7 @@ def get_slat_detents():
     detents = set()
     for x in mi.SLAT_MODEL_MAP, mi.SLAT_SERIES_MAP, mi.SLAT_FAMILY_MAP:
         detents.update(chain.from_iterable(six.itervalues(x)))
-    return sortext.nsorted(detents)
+    return natsorted(detents)
 
 
 def get_aileron_detents():
@@ -107,7 +106,7 @@ def get_aileron_detents():
     detents = set()
     for x in mi.AILERON_MODEL_MAP, mi.AILERON_SERIES_MAP, mi.AILERON_FAMILY_MAP:
         detents.update(chain.from_iterable(six.itervalues(x)))
-    return sortext.nsorted(detents)
+    return natsorted(detents)
 
 
 def get_conf_detents():
@@ -121,7 +120,7 @@ def get_conf_detents():
     detents = set()
     for x in mi.CONF_MODEL_MAP, mi.CONF_SERIES_MAP, mi.CONF_FAMILY_MAP:
         detents.update(chain.from_iterable(map(extract, six.itervalues(x))))
-    return sortext.nsorted(detents)
+    return natsorted(detents)
 
 
 def get_lever_detents():
@@ -136,7 +135,7 @@ def get_lever_detents():
     for x in mi.LEVER_MODEL_MAP, mi.LEVER_SERIES_MAP, mi.LEVER_FAMILY_MAP:
         detents.update(chain.from_iterable(map(extract, six.itervalues(x))))
     detents.update(constants.LEVER_STATES.values())  # include conf lever states
-    return sortext.nsorted(detents)
+    return natsorted(detents)
 
 
 ########################################
