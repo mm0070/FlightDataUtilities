@@ -74,7 +74,7 @@ class CompressedFile(object):
                 'unchanged', format, compressed_path)
             # We use bare file object, which will effectively copy the file to
             # the temp location and back.
-            self.compressor = file
+            self.compressor = open
             format = None
 
         self.compressed_path = compressed_path
