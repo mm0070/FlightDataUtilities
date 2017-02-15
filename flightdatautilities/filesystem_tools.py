@@ -30,7 +30,7 @@ except ImportError:
     import bz2
 
 
-def open_raw_data(source_file_path):
+def open_raw_data(source_file_path, binary=True):
     '''
     Open the input file which may be compressed.
 
@@ -52,7 +52,7 @@ def open_raw_data(source_file_path):
     elif extension == '.bz2':
         file_obj = bz2.BZ2File(source_file_path, 'r')
     else:
-        file_obj = open(source_file_path, 'rb')
+        file_obj = open(source_file_path, 'rb' if binary else 'r')
 
     return file_obj
 
