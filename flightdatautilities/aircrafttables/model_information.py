@@ -463,3 +463,24 @@ THROTTLE_LEVER_RANGE_FAMILY_MAP = {}
 THROTTLE_LEVER_RANGE_SERIES_MAP = {}
 
 THROTTLE_LEVER_RANGE_MODEL_MAP = {}
+
+
+##############################################################################
+# Gear Transition times
+
+# This is the list of tables required for calculating gear extending/retracting 
+# phases for aircraft with only one source recorded.
+# Entries below should be made in the format
+#    'name': (retraction time, extention time),   # Source of values
+#
+# Names used in each section must match those used in the Polaris database.
+# Lower level types (e.g. model) only need adding if they vary from the level
+# above (e.g. series, family)
+
+GEAR_TRANSITION_TIME_MODEL_MAP = {}
+
+GEAR_TRANSITION_TIME_SERIES_MAP = {}
+
+GEAR_TRANSITION_TIME_FAMILY_MAP = {
+    'B737 Classic': (6, 8),
+    }

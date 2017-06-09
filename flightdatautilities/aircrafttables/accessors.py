@@ -56,6 +56,7 @@ __all__ = (
     'get_sidestick_roll_range',
     'get_tail_rotor_pedal_range',
     'get_throttle_lever_range',
+    'get_gear_transition_times',
 )
 
 
@@ -1077,3 +1078,31 @@ def get_throttle_lever_range(model=None, series=None, family=None):
     message = "No Throttle Lever range for model '%s', series '%s', family '%s'."
     raise KeyError(message % keys)
 
+
+def get_gear_transition_times(model=None, series=None, family=None):
+    '''
+    Accessor for fetching duration gears take of fully retract/extend.
+
+    Returns a tuple in the following form::
+
+        (retraction time, extention time)
+
+    :param model: Aircraft series e.g. B737-888
+    :type model: string
+    :param series: Aircraft series e.g. B737-800
+    :type series: string
+    :param family: Aircraft family e.g. B737 NG
+    :type family: string
+    :raises: KeyError if no limits found
+    :returns: tuple of durations
+    :rtype: tuple
+    '''
+    keys = model, series, family
+    maps = mi.GEAR_TRANSITION_TIME_MODEL_MAP, mi.GEAR_TRANSITION_TIME_SERIES_MAP, mi.GEAR_TRANSITION_TIME_FAMILY_MAP
+
+    for k, m in zip(keys, maps):
+        if k in m:
+            return m[k]
+
+    message = "No Gear transition times for model '%s', series '%s', family '%s'."
+    raise KeyError(message % keys)
