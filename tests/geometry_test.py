@@ -97,10 +97,10 @@ class TestCrossTrackDistance(unittest.TestCase):
         0,
         0,
         0,
-        23.299595295998408,
-        -20.043304061868042,
-        -113.10901156503668,
-        113.98807367814365,
+        23273.687779678614,
+        -20021.017313086195,
+        -112983.24227480617,
+        113861.32693247873,
     ]
 
     def test_cross_track_distance(self):
@@ -141,14 +141,14 @@ class TestAlongTrackDistance(unittest.TestCase):
         0,
         0,
         0,
-        267.10136270860215,
-        267.10136270860215,
-        4381.781235715842,
-        4381.781235715842,
-        139.4652872386661,
-        394.4816889981521,
-        4454.780635420024,
-        4311.682076469499,
+        266804.36472106207,
+        266804.36472106207,
+        4376909.0022099856,
+        4376909.0022099856,
+        139310.21161785477,
+        394043.05301903997,
+        4449827.2317000441,
+        4306887.7883137288,
     ]
 
     def test_along_track_distance(self):
@@ -177,10 +177,10 @@ class TestGreatCircleDistanceHaversine(unittest.TestCase):
         0,
         0,
         0,
-        534.2027254172123,  # Moveable Type JS Output: 533.60805939591057
-        534.2027254172123,  # Moveable Type JS Output: 533.60805939591057
-        8763.562471431684,  # Moveable Type JS Output: 8753.8070123534108
-        8763.562471431684,  # Moveable Type JS Output: 8753.8070123534108
+        533608.72944213205,  # Moveable Type JS Output: 533.60805939591057
+        533608.72944213205,  # Moveable Type JS Output: 533.60805939591057
+        8753818.0044199713,  # Moveable Type JS Output: 8753.8070123534108
+        8753818.0044199713,  # Moveable Type JS Output: 8753.8070123534108
     ]
 
     def test_great_circle_distance__haversine(self):
