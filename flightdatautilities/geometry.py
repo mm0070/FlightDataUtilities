@@ -1,19 +1,27 @@
 # -*- coding: utf-8 -*-
+# vim:et:ft=python:nowrap:sts=4:sw=4:ts=4
 ##############################################################################
 
 '''
+Flight Data Utilities: Geometry Functions
 '''
 
 ##############################################################################
 # Imports
 
+
 import numpy as np
+
+from . import units as ut
+
 
 ##############################################################################
 # Constants
 
+
 # https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html
-EARTH_RADIUS = 6371008 # Volumetric mean radius (meters)
+EARTH_RADIUS = 6371008  # volumetric mean radius (meters)
+
 
 ##############################################################################
 # Functions
@@ -48,7 +56,7 @@ def midpoint(p1_lat, p1_lon, p2_lat, p2_lon):
     return np.degrees(lat3), np.degrees(lon3)
 
 
-def cross_track_distance(p1_lat, p1_lon, p2_lat, p2_lon, p3_lat, p3_lon):
+def cross_track_distance(p1_lat, p1_lon, p2_lat, p2_lon, p3_lat, p3_lon, units=ut.METER):
     '''
     Determine the cross track distance (the distance of a point from a
     great-circle path).
@@ -71,16 +79,19 @@ def cross_track_distance(p1_lat, p1_lon, p2_lat, p2_lon, p3_lat, p3_lon):
     :type p3_lat: float or int
     :param p3_lon: The longitude to calculate cross-track error from.
     :type p3_lon: float or int
+    :param units: The units in which to represent the distance. (default: meters)
+    :type units: string
     :returns: The cross-track distance.
-    :rtype: float (units=Meters)
+    :rtype: float
     '''
     d13 = great_circle_distance__haversine(p1_lat, p1_lon, p3_lat, p3_lon)
     b12 = np.radians(initial_bearing(p1_lat, p1_lon, p2_lat, p2_lon))
     b13 = np.radians(initial_bearing(p1_lat, p1_lon, p3_lat, p3_lon))
-    return np.arcsin(np.sin(d13 / EARTH_RADIUS) * np.sin(b13 - b12)) * EARTH_RADIUS
+    value = np.arcsin(np.sin(d13 / EARTH_RADIUS) * np.sin(b13 - b12)) * EARTH_RADIUS
+    return ut.convert(value, ut.METER, units)
 
 
-def along_track_distance(p1_lat, p1_lon, p2_lat, p2_lon, p3_lat, p3_lon):
+def along_track_distance(p1_lat, p1_lon, p2_lat, p2_lon, p3_lat, p3_lon, units=ut.METER):
     '''
     Determine the along track distance (the distance of a point along a
     great-circle path).
@@ -102,15 +113,18 @@ def along_track_distance(p1_lat, p1_lon, p2_lat, p2_lon, p3_lat, p3_lon):
     :type p3_lat: float or int
     :param p3_lon: The longitude to calculate cross-track error from.
     :type p3_lon: float or int
+    :param units: The units in which to represent the distance. (default: meters)
+    :type units: string
     :returns: The along-track distance.
-    :rtype: float (units=Meters)
+    :rtype: float
     '''
     d13 = great_circle_distance__haversine(p1_lat, p1_lon, p3_lat, p3_lon)
     dxt = cross_track_distance(p1_lat, p1_lon, p2_lat, p2_lon, p3_lat, p3_lon)
-    return np.arccos(np.cos(d13 / EARTH_RADIUS) / np.cos(dxt / EARTH_RADIUS)) * EARTH_RADIUS
+    value = np.arccos(np.cos(d13 / EARTH_RADIUS) / np.cos(dxt / EARTH_RADIUS)) * EARTH_RADIUS
+    return ut.convert(value, ut.METER, units)
 
 
-def great_circle_distance__haversine(p1_lat, p1_lon, p2_lat, p2_lon):
+def great_circle_distance__haversine(p1_lat, p1_lon, p2_lat, p2_lon, units=ut.METER):
     '''
     Determine the great-circle distance between two points using the
     Haversine formula.
@@ -125,13 +139,16 @@ def great_circle_distance__haversine(p1_lat, p1_lon, p2_lat, p2_lon):
     :type p2_lat: float_or_int
     :param p2_lon: The end longitude of the great-circle path.
     :type p2_lon: float_or_int
+    :param units: The units in which to represent the distance. (default: meters)
+    :type units: string
     :returns: The great-circle distance.
-    :rtype: float (units=Meters)
+    :rtype: float
     '''
     sdlat2 = np.sin(np.radians(p1_lat - p2_lat) / 2.) ** 2
     sdlon2 = np.sin(np.radians(p1_lon - p2_lon) / 2.) ** 2
     a = sdlat2 + sdlon2 * np.cos(np.radians(p1_lat)) * np.cos(np.radians(p2_lat))
-    return 2 * np.arctan2(np.sqrt(a), np.sqrt(1 - a)) * EARTH_RADIUS
+    value = 2 * np.arctan2(np.sqrt(a), np.sqrt(1 - a)) * EARTH_RADIUS
+    return ut.convert(value, ut.METER, units)
 
 
 def initial_bearing(p1_lat, p1_lon, p2_lat, p2_lon):
@@ -153,7 +170,3 @@ def initial_bearing(p1_lat, p1_lon, p2_lat, p2_lon):
     y = np.sin(dlon) * np.cos(lat2)
     x = np.cos(lat1) * np.sin(lat2) - np.sin(lat1) * np.cos(lat2) * np.cos(dlon)
     return np.degrees(np.arctan2(y, x)) % 360
-
-
-##############################################################################
-# vim:et:ft=python:nowrap:sts=4:sw=4:ts=4
