@@ -379,7 +379,7 @@ CONVERSION_MULTIPLIERS = {
         MPH: 1.150778454,
         FPM: 101.268503937,
         FPS: 1.68781,
-        METER_S: 0.51444,
+        METER_S: 0.514444,
     },
     MPH: {
         KT: 0.868976993,
