@@ -1,7 +1,7 @@
 import argparse
 import os
 
-from flightdatautilities.byte_aligned import inspect
+from flightdataprocessing.formats.byte_aligned import inspect
 from flightdatautilities.filesystem_tools import open_raw_data
 
 
@@ -9,42 +9,45 @@ BUFFER_SIZE = 1024 ** 2
 WORDS_TO_READ = 16384
 
 
-def slice_file(source_file_obj, _slice, words_to_read=WORDS_TO_READ, buffer_size=BUFFER_SIZE):
+def slice_file(source, _slice, words_to_read=WORDS_TO_READ, buffer_size=BUFFER_SIZE):
     '''
-    Slice source_file_obj using a range defined in seconds of flight data.
+    Slice source file object using a range defined in seconds of flight data.
     TODO: Handle sync being lost within the file.
     
+    :param source: the file object to be sliced.
+    :type source: file
     :type _slice: slice
     :param words_to_read: Number of words to read from the file while attempting to find sync.
     :type words_to_read: int
     :param buffer_size: Size of data to store in memory while writing to dest_file_path.
     :type buffer_size: int
     '''
-    wps, word_index, pattern_name = inspect(source_file_obj, words_to_read)
-    if not wps:
+    output = inspect([source], count=words_to_read * 2)[source]
+    if output is None:
         raise LookupError("Could not find byte-aligned flight data.")
+    idx, wps = output[:2]
 
     bytes_per_second = wps * 2
     slice_start = _slice.start if _slice.start else 0
-    start_byte = (slice_start * bytes_per_second) + word_index
+    start_byte = (slice_start * bytes_per_second) + idx
     if _slice.stop:
-        end_byte = (_slice.stop * bytes_per_second) + word_index
+        end_byte = (_slice.stop * bytes_per_second) + idx
     else:
-        source_file_obj.seek(0, os.SEEK_END)
-        end_byte = source_file_obj.tell()
+        source.seek(0, os.SEEK_END)
+        end_byte = source.tell()
     
     total_bytes = end_byte - start_byte
 
     bytes_read = 0
     
-    source_file_obj.seek(start_byte)
+    source.seek(start_byte)
 
     while (bytes_read + buffer_size) < total_bytes:
-        yield source_file_obj.read(buffer_size)
+        yield source.read(buffer_size)
         bytes_read += buffer_size
 
     remaining_bytes = total_bytes - bytes_read
-    yield source_file_obj.read(remaining_bytes)
+    yield source.read(remaining_bytes)
 
 
 def parse_args():
