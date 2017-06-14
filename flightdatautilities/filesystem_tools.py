@@ -77,21 +77,6 @@ def copy_file(orig_path, dest_dir=None, postfix='_copy'):
     return copy_path
 
 
-def split_path(path):
-    '''
-    Split a path string into a list of path elements.
-
-    :type path: str
-    :rtype: [str]
-    '''
-    head, tail = os.path.split(path)
-    path_list = []
-    while tail:
-        path_list = [tail] + path_list
-        head, tail = os.path.split(head)
-    return [head] + path_list
-
-
 def pretty_size(size, suffix='B'):
     '''
     Converts size in bytes into human readable format.
