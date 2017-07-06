@@ -22,7 +22,7 @@ def slice_file(source, _slice, words_to_read=WORDS_TO_READ, buffer_size=BUFFER_S
     :param buffer_size: Size of data to store in memory while writing to dest_file_path.
     :type buffer_size: int
     '''
-    output = inspect([source], count=words_to_read * 2)[source]
+    output = inspect([source.name], count=words_to_read * 2)[source.name]
     if output is None:
         raise LookupError("Could not find byte-aligned flight data.")
     idx, wps = output[:2]
