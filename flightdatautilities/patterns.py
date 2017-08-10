@@ -8,15 +8,17 @@ from collections import defaultdict
 
 OPTIONS = ('(A)', '(B)', '(C)', '(N)', '(L)', '(R)',
            '(Foreign)', '(Local)', '(EFIS)', '(Capt)', '(FO)', '(Aux)', '(AP)',
+           '(Blue)', '(Yellow)', '(Green)',
+           '(MCP)', '(FMC)', '(PFD)',
            '(1)', '(2)', '(3)', '(4)', '(5)', '(6)', '(7)', '(8)', '(9)',
            '(10)', '(11)', '(12)', '(13)', '(14)', '(15)', '(16)',
-           '(1A)', '(1B)', '(2A)', '(2B)')
+           '(1A)', '(1B)', '(2A)', '(2B)', '(3A)', '(3B)', '(4A)', '(4B)')
 
 WILDCARD = '(*)'
 ESCAPED_WILDCARD = re.escape(WILDCARD) # '\(\*\)'
 
 
-def wildcard_match(pattern, keys, remove=' ' + WILDCARD):
+def wildcard_match(pattern, keys, missing=True):
     '''
     Return subset of keys where wildcard (*) pattern matches.
     Also matches keys where " (*)" is not in the string.
@@ -25,30 +27,16 @@ def wildcard_match(pattern, keys, remove=' ' + WILDCARD):
     :type pattern: String
     :param keys: Keys to search within
     :type keys: Iterable of Strings
-    :param remove: Optional removal of sub pattern, such as '(*)'
-    :type remove: String
+    :param missing: Whether or not to match variations of the pattern where wildcard options are missing.
+    :type missing: bool
     :returns: keys which match pattern
     :rtype: list
     '''
-    if '(*)' in pattern:
-        regex = re.escape(pattern).replace(ESCAPED_WILDCARD, '\([^)]+\)')
-    else:
-        regex = pattern
-    
-    re_obj = re.compile(regex + '\Z(?ms)')
-    # Replace the last instance of remove within pattern.
-    without = pattern[::-1].replace(remove[::-1], '', 1)[::-1]
-    
-    result = set()
-    for key in keys:
-        matched = re_obj.match(key)
-        if matched or key == without:
-            result.add(key)
-    
-    if without.count(remove):
-        result = result.union(set(wildcard_match(without, keys, remove=remove)))
-    
-    return sorted(result)
+    if WILDCARD not in pattern:
+        return [pattern] if pattern in keys else []
+    re_obj = re.compile(re.escape(pattern).replace(
+        re.escape(' (*)'), '( \\([^)]+\\))%s' % ('?' if missing else '')) + '\Z(?ms)')
+    return sorted({key for key in keys if re_obj.match(key)})
 
 
 def is_pattern(pattern):
