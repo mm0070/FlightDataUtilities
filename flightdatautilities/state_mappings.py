@@ -274,9 +274,9 @@ PARAMETER_CORRECTIONS = {
     'TCAS Combined Control': {0: 'No Advisory'}, # Multi-state
     'TCAS Down Advisory': {0: 'No Down Advisory'}, # Multi-state
     'TCAS Installed': {1: 'Installed'},
-    'TCAS RA (*)': {1: 'Warning'},
+    'TCAS RA (*)': {1: 'RA'},
     'TCAS System Status': {1: 'Failed'},
-    'TCAS TA (*)': {1: 'Warning'},
+    'TCAS TA (*)': {1: 'TA'},
     'TCAS Up Advisory': {0: 'No Up Advisory'}, # Multi-state
     'TFC Selected (*)': {1: 'Selected'},
     'Takeoff And Go Around': {1: 'TOGA'},
