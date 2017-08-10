@@ -18,7 +18,7 @@ WILDCARD = '(*)'
 ESCAPED_WILDCARD = re.escape(WILDCARD) # '\(\*\)'
 
 
-def wildcard_match(pattern, keys, remove=' ' + WILDCARD):
+def wildcard_match(pattern, keys, missing=True):
     '''
     Return subset of keys where wildcard (*) pattern matches.
     Also matches keys where " (*)" is not in the string.
@@ -32,25 +32,11 @@ def wildcard_match(pattern, keys, remove=' ' + WILDCARD):
     :returns: keys which match pattern
     :rtype: list
     '''
-    if '(*)' in pattern:
-        regex = re.escape(pattern).replace(ESCAPED_WILDCARD, '\([^)]+\)')
-    else:
-        regex = pattern
-    
-    re_obj = re.compile(regex + '\Z(?ms)')
-    # Replace the last instance of remove within pattern.
-    without = pattern[::-1].replace(remove[::-1], '', 1)[::-1]
-    
-    result = set()
-    for key in keys:
-        matched = re_obj.match(key)
-        if matched or key == without:
-            result.add(key)
-    
-    if without.count(remove):
-        result = result.union(set(wildcard_match(without, keys, remove=remove)))
-    
-    return sorted(result)
+    if WILDCARD not in pattern:
+        return [pattern] if pattern in keys else []
+    re_obj = re.compile(re.escape(pattern).replace(
+        re.escape(' (*)'), '( \\([^)]+\\))%s' % ('?' if missing else '')) + '\Z(?ms)')
+    return sorted({key for key in keys if re_obj.match(key)})
 
 
 def is_pattern(pattern):
