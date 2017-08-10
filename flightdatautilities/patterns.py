@@ -15,7 +15,6 @@ OPTIONS = ('(A)', '(B)', '(C)', '(N)', '(L)', '(R)',
            '(1A)', '(1B)', '(2A)', '(2B)', '(3A)', '(3B)', '(4A)', '(4B)')
 
 WILDCARD = '(*)'
-ESCAPED_WILDCARD = re.escape(WILDCARD) # '\(\*\)'
 
 
 def wildcard_match(pattern, keys, missing=True):
@@ -35,7 +34,8 @@ def wildcard_match(pattern, keys, missing=True):
     if WILDCARD not in pattern:
         return [pattern] if pattern in keys else []
     re_obj = re.compile(re.escape(pattern).replace(
-        re.escape(' (*)'), '( \\((%s)+\\))%s' % ('|'.join(OPTIONS), ('?' if missing else ''))) + '\Z(?ms)')
+        re.escape(' (*)'), '( \\((%s)+\\))%s' %
+        ('|'.join(OPTIONS), ('?' if missing else ''))) + '\Z(?ms)')
     return sorted({key for key in keys if re_obj.match(key)})
 
 
