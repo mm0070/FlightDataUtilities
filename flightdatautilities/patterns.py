@@ -8,9 +8,11 @@ from collections import defaultdict
 
 OPTIONS = ('(A)', '(B)', '(C)', '(N)', '(L)', '(R)',
            '(Foreign)', '(Local)', '(EFIS)', '(Capt)', '(FO)', '(Aux)', '(AP)',
+           '(Blue)', '(Yellow)', '(Green)',
+           '(MCP)', '(FMC)', '(PFD)',
            '(1)', '(2)', '(3)', '(4)', '(5)', '(6)', '(7)', '(8)', '(9)',
            '(10)', '(11)', '(12)', '(13)', '(14)', '(15)', '(16)',
-           '(1A)', '(1B)', '(2A)', '(2B)')
+           '(1A)', '(1B)', '(2A)', '(2B)', '(3A)', '(3B)', '(4A)', '(4B)')
 
 WILDCARD = '(*)'
 ESCAPED_WILDCARD = re.escape(WILDCARD) # '\(\*\)'
