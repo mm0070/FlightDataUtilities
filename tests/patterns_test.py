@@ -51,6 +51,7 @@ class TestWildcardMatch(unittest.TestCase):
             'Altitude Selected',
             'Altitude Selected (1)',
             'Altitude Selected (FMC)',
+            'Altitude Selected (Bad)',
             'Altitude STD',
             'Brake (L) Pressure Inboard', 
             'Brake (R) Pressure Ourboard', 

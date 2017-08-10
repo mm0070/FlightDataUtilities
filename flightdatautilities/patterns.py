@@ -35,7 +35,7 @@ def wildcard_match(pattern, keys, missing=True):
     if WILDCARD not in pattern:
         return [pattern] if pattern in keys else []
     re_obj = re.compile(re.escape(pattern).replace(
-        re.escape(' (*)'), '( \\([^)]+\\))%s' % ('?' if missing else '')) + '\Z(?ms)')
+        re.escape(' (*)'), '( \\((%s)+\\))%s' % ('|'.join(OPTIONS), ('?' if missing else ''))) + '\Z(?ms)')
     return sorted({key for key in keys if re_obj.match(key)})
 
 
