@@ -27,8 +27,8 @@ def wildcard_match(pattern, keys, missing=True):
     :type pattern: String
     :param keys: Keys to search within
     :type keys: Iterable of Strings
-    :param remove: Optional removal of sub pattern, such as '(*)'
-    :type remove: String
+    :param missing: Whether or not to match variations of the pattern where wildcard options are missing.
+    :type missing: bool
     :returns: keys which match pattern
     :rtype: list
     '''
