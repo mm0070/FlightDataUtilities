@@ -255,7 +255,7 @@ PARAMETER_CORRECTIONS = {
     'TAWS Terrain Caution': {1: 'Caution'},
     'TAWS Terrain Clearance Floor Alert (*)': {1: 'Alert'},
     'TAWS Terrain Display Selected (*)': {1: 'Selected'},
-    'TAWS Terrain Override': {1: 'Warning'},
+    'TAWS Terrain Override': {1: 'Override'},
     'TAWS Terrain Pull Up': {1: 'Warning'},
     'TAWS Terrain Pull Up Ahead': {1: 'Warning'},
     'TAWS Terrain Warning': {1: 'Warning'},
