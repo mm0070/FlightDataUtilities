@@ -15,6 +15,8 @@ The following links are useful resources:
 # Imports
 
 
+from __future__ import unicode_literals
+
 import math
 import six
 
