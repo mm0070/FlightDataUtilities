@@ -6,12 +6,16 @@ support compressed files. The files are stored compress to reduce storage
 space.
 '''
 
-import bz2
 import gzip
 import logging
 import os
 import shutil
 import tempfile
+
+try:
+    import bz2file as bz2  # support for multiple streams.
+except ImportError:
+    import bz2  # fallback to standard library implementation.
 
 
 logger = logging.getLogger(name=__name__)
