@@ -137,6 +137,16 @@ class VelocitySpeed(object):
                 else:
                     msg = "Using fallback %s values from table %s."
                     logger.info(msg, name, self.__class__.__name__)
+            
+            # VLS may contain extra center_of_gravity dimension:
+            if name == 'vls':
+                if None in lookup.keys():
+                    lookup = lookup[None]
+                else:
+                    cog = kwargs['center_of_gravity']
+                    keys = sorted(lookup.keys())
+                    lookup = [np.interp(cog, keys, row) for row in
+                              zip(*(lookup[key] for key in keys))]
 
             # Generate an array of velocity speed values for given parameters:
             if lookup is None:
