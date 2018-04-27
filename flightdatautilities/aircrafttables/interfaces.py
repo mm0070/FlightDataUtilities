@@ -137,16 +137,17 @@ class VelocitySpeed(object):
                 else:
                     msg = "Using fallback %s values from table %s."
                     logger.info(msg, name, self.__class__.__name__)
-            
+
             # VLS may contain extra center_of_gravity dimension:
-            if name == 'vls':
+            if name == 'vls' and lookup:
                 if None in lookup.keys():
                     lookup = lookup[None]
                 else:
-                    cog = kwargs['center_of_gravity']
+                    cog = kwargs['cg']
                     keys = sorted(lookup.keys())
-                    lookup = [np.interp(cog, keys, row) for row in
-                              zip(*(lookup[key] for key in keys))]
+                    lookup = tuple([np.interp(cog, keys, row) for row in
+                              zip(*(lookup[key] for key in keys))])
+
 
             # Generate an array of velocity speed values for given parameters:
             if lookup is None:
@@ -286,7 +287,7 @@ class VelocitySpeed(object):
         '''
         return self._determine_vspeed('vapp', detent=detent, weight=weight)
 
-    def vls(self, detent, weight=None):
+    def vls(self, detent, weight=None, cg=None):
         '''
         Look up values from tables for VLS.
 
@@ -304,7 +305,7 @@ class VelocitySpeed(object):
         :raises: KeyError -- when table or flap/conf detents is not found.
         :raises: ValueError -- when weight units cannot be converted.
         '''
-        return self._determine_vspeed('vls', detent=detent, weight=weight)
+        return self._determine_vspeed('vls', detent=detent, weight=weight, cg=cg)
 
     def vmo(self, altitude):
         '''
