@@ -143,9 +143,8 @@ class VelocitySpeed(object):
                 if None in lookup.keys():
                     lookup = lookup[None]
                 else:
-                    cog = kwargs['cg']
                     keys = sorted(lookup.keys())
-                    lookup = tuple([np.interp(cog, keys, row) for row in
+                    lookup = tuple([np.interp(kwargs['cg'], keys, row) for row in
                               zip(*(lookup[key] for key in keys))])
 
 
