@@ -41,6 +41,9 @@ def batch(start, stop, step):
     :param step: an integer step
     :type step: int
     '''
+    if stop - start <= step:
+        yield (start, stop)
+        return
     a, b = tee(count(start, step))
     next(b, None)
     last = None
