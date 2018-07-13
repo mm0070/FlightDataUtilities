@@ -94,7 +94,7 @@ class VelocitySpeed(object):
         :raises: KeyError -- when table or flap/conf detents is not found.
         :raises: ValueError -- when weight units cannot be converted.
         '''
-        if name in ('v2', 'vref', 'vapp'):
+        if name in ('v2', 'vref', 'vapp', 'vls'):
             detent = kwargs['detent']
             weight = kwargs['weight']
             scalar = isinstance(weight, (type(None), int, float))
@@ -137,6 +137,16 @@ class VelocitySpeed(object):
                 else:
                     msg = "Using fallback %s values from table %s."
                     logger.info(msg, name, self.__class__.__name__)
+
+            # VLS may contain extra center_of_gravity dimension:
+            if name == 'vls' and lookup:
+                if None in lookup.keys():
+                    lookup = lookup[None]
+                else:
+                    keys = sorted(lookup.keys())
+                    lookup = tuple([np.interp(kwargs['cg'], keys, row) for row in
+                              zip(*(lookup[key] for key in keys))])
+
 
             # Generate an array of velocity speed values for given parameters:
             if lookup is None:
@@ -276,6 +286,26 @@ class VelocitySpeed(object):
         '''
         return self._determine_vspeed('vapp', detent=detent, weight=weight)
 
+    def vls(self, detent, weight=None, cg=None):
+        '''
+        Look up values from tables for VLS.
+
+        Will use interpolation and convert units if necessary.
+
+        A masked array or value will be returned if provided parameter arrays
+        are outside of ranges defined within the lookup tables.
+
+        :param detent: flap or configuration detent to use in look-up.
+        :type detent: string
+        :param weight: weight of the aircraft.
+        :type weight: float or np.ma.array
+        :returns: one or more values of Vapp.
+        :rtype: float or np.ma.array
+        :raises: KeyError -- when table or flap/conf detents is not found.
+        :raises: ValueError -- when weight units cannot be converted.
+        '''
+        return self._determine_vspeed('vls', detent=detent, weight=weight, cg=cg)
+
     def vmo(self, altitude):
         '''
         Look up values from tables for VMO.
@@ -337,3 +367,13 @@ class VelocitySpeed(object):
         :rtype: list
         '''
         return self._determine_detents('vapp')
+
+    @property
+    def vls_detents(self):
+        '''
+        Provides a list of available flap/conf detents for Vapp.
+
+        :returns: a list of flap/conf detents.
+        :rtype: list
+        '''
+        return self._determine_detents('vls')
