@@ -1099,6 +1099,16 @@ UNIT_DESCRIPTIONS = {
     # EPR: 'engine pressure ratio',
 }
 
+UNIT_PROFILE_CONVERSIONS = {
+    'default': {
+        'lb':'kg',
+    },
+    'us': {
+        'lb':'kg',
+    }
+
+}
+
 
 ##############################################################################
 # Functions
@@ -1208,3 +1218,11 @@ def convert(value, unit, output):
         raise ValueError('Unknown input unit: %s' % unit0)
     except KeyError:
         raise ValueError('Unknown output unit: %s' % unit1)
+
+
+def localise(value, unit, profile):
+    if not profile or unit not in UNIT_PROFILE_CONVERSIONS[profile]:
+        return value, unit
+    output = UNIT_PROFILE_CONVERSIONS[profile][unit]
+    value = convert(value, unit, output)
+    return value, output
