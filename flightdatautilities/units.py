@@ -1100,13 +1100,17 @@ UNIT_DESCRIPTIONS = {
 }
 
 UNIT_PROFILE_CONVERSIONS = {
-    'default': {
-        'lb':'kg',
-    },
     'us': {
-        'lb':'kg',
+        KG:LB,
+        KG_H:LB_H,
+        TONNE_H: LB_H,
+        HECTOPASCAL:INHG,
+        MILLIBAR: INHG,
+        CELSIUS:FAHRENHEIT,
+        RANKINE:FAHRENHEIT,
+        KELVIN: FAHRENHEIT,
+        MPH: KT,
     }
-
 }
 
 
