@@ -81,26 +81,3 @@ def sha_hash_file(filepath):
         for chunk in iter(lambda: f.read(512 * h.block_size), b''):
             h.update(chunk)
     return h.hexdigest()
-
-
-def bz2_decompress(bz2_file_path, output_file_path=None):
-    if not output_file_path:
-        output_file_path = bz2_file_path.rstrip('.bz2')
-    with open(bz2_file_path, 'rb') as temp_file_obj:
-        with open(output_file_path, 'wb') as unbzipped_file_obj:
-            bz2_decompressor = bz2.BZ2Decompressor()
-            while True:
-                read_bytes = temp_file_obj.read(16384)
-                # if EOF
-                if not read_bytes:
-                    break
-                unbzipped_file_obj.write(bz2_decompressor.decompress(read_bytes))
-    return output_file_path
-
-
-def zip_compress(file_path_in):
-    archive = file_path_in + '.zip'
-    a = zipfile.ZipFile(archive, 'w', zipfile.ZIP_DEFLATED)
-    a.write(file_path_in, os.path.split(file_path_in)[-1])
-    a.close()
-    return archive
