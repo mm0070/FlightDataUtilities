@@ -25,7 +25,7 @@ class TestUnitsModule(unittest.TestCase):
     def test__check_definitions(self):
 
         values = set(available())
-        constants =  set(available(values=False)[1])
+        constants = set(available(values=False)[1])
         # Check we have no redefinitions of units:
         self.assertEqual(len(values), len(constants), 'Unit redefinition!')
         # Check we have a category for every unit constant:
