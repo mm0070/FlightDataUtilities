@@ -24,6 +24,11 @@ import six
 ##############################################################################
 # Constants
 
+
+# Names of localisation profiles:
+US_PROFILE = 'US'
+
+
 # NOTE: There are limitations for units because of technical issues.
 #
 # We cannot use certain symbols, e.g. degree, middot, mu, ohm; this is due to
@@ -1099,26 +1104,33 @@ UNIT_DESCRIPTIONS = {
     # EPR: 'engine pressure ratio',
 }
 
+
 UNIT_PROFILE_CONVERSIONS = {
-    'default':{
-    },
-    'us': {
-        KG:LB,
-        KG_H:LB_H,
+    US_PROFILE: {
+        # Flow (Mass):
+        KG_H: LB_H,
         TONNE_H: LB_H,
+        # Flow (Volume):
         LITER_H: GALLON_H,
-        PASCAL: INHG,
-        HECTOPASCAL:INHG,
+        # Length:
+        KM: NM,
+        METER: FT,
+        MILE: NM,
+        # Mass:
+        KG: LB,
+        # Pressure:
+        HECTOPASCAL: INHG,
         MILLIBAR: INHG,
-        CELSIUS:FAHRENHEIT,
-        RANKINE:FAHRENHEIT,
+        PASCAL: INHG,
+        # Temperature:
+        CELSIUS: FAHRENHEIT,
         KELVIN: FAHRENHEIT,
-        KM:NM,
-        METER:FT,
-        MILE:NM,
+        RANKINE: FAHRENHEIT,
+        # Speed:
         MPH: KT,
-        PINT:QUART,
-    }
+        # Volume:
+        PINT: QUART,
+    },
 }
 
 
@@ -1149,16 +1161,19 @@ def available(values=True):
         return module, x
 
 
-def normalise(unit):
+def normalise(unit, profile=None):
     '''
     Normalises the provided unit to a well known form.
 
     :param unit: the unit to normalise.
     :type unit: string
+    :param profile: the profile to use for conversion.
+    :type profile: string
     :returns: the normalised unit.
     :rtype: string
     '''
-    return UNIT_CORRECTIONS.get(unit, unit)
+    unit = UNIT_CORRECTIONS.get(unit, unit)
+    return UNIT_PROFILE_CONVERSIONS.get(profile, {}).get(unit, unit) if profile else unit
 
 
 def function(unit, output):
@@ -1233,8 +1248,17 @@ def convert(value, unit, output):
 
 
 def localise(value, unit, profile):
-    if not profile or unit not in UNIT_PROFILE_CONVERSIONS[profile]:
-        return value, unit
-    output = UNIT_PROFILE_CONVERSIONS[profile][unit]
-    value = convert(value, unit, output)
-    return value, output
+    '''
+    Converts a value from one unit to another based on a chosen localisation.
+
+    :param value: the value to convert.
+    :type value: numeric
+    :param unit: the unit to convert from.
+    :type unit: string
+    :param profile: the profile to use for conversion.
+    :type profile: string
+    :returns: the value altered to new units
+    :rtype: numeric
+    '''
+    output = normalise(unit, profile=profile)
+    return (value, unit) if output == unit else (convert(value, unit, output), output)
