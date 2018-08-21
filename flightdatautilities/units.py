@@ -17,6 +17,7 @@ The following links are useful resources:
 
 from __future__ import unicode_literals
 
+import decimal
 import math
 import six
 
@@ -1235,8 +1236,14 @@ def convert(value, unit, output):
     :raises: ValueError -- if any of the units are not known.
     '''
     unit0, unit1 = normalise(unit), normalise(output)
+
     if unit0 == unit1:
         return value
+
+    # XXX: Probably ought to preserve decimal type for precision?
+    if isinstance(value, decimal.Decimal):
+        value = float(value)
+
     try:
         if unit0 in CONVERSION_FUNCTIONS:
             return function(unit0, unit1)(value)
