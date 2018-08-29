@@ -44,6 +44,7 @@ US_PROFILE = 'US'
 # Acceleration:
 G = 'g'  # [2]
 FPS2 = 'ft/s/s'
+MPS2 = 'm/s/s'
 DEGREE_S2 = 'deg/s/s'
 
 # Angles:
@@ -177,6 +178,10 @@ DI = 'di'
 
 
 CONVERSION_MULTIPLIERS = {
+    # Acceleration:
+    MPS2: {
+        G: 0.101971621,
+    },
     # Density:
     KG_LITER: {
         LB_GALLON: 8.3454063545262,
@@ -515,6 +520,8 @@ CONVERSION_FUNCTIONS = {
 
 
 STANDARD_CONVERSIONS = {
+    # Acceleration
+    MPS2: G,
     # Angle:
     RADIAN: DEGREE,
     # Electricity:
@@ -558,6 +565,8 @@ UNIT_CORRECTIONS = {
     'g\'s': G,
     'ft/sec^2': FPS2,
     'ft/sec/sec': FPS2,
+    'm/s²': MPS2,
+    b'm/s\xc2\xb2': MPS2,
     'deg/s^2': DEGREE_S2,
     'deg/s2': DEGREE_S2,
     'deg/sec/sec': DEGREE_S2,
@@ -965,7 +974,7 @@ UNIT_CORRECTIONS = {
 
 
 UNIT_CATEGORIES = {
-    'Acceleration': (G, FPS2, DEGREE_S2),
+    'Acceleration': (G, FPS2, MPS2, DEGREE_S2),
     'Angles': (DEGREE, RADIAN, DEGREE_S),
     'Density': (KG_LITER, LB_GALLON),
     'Electricity': (AMP, VOLT, KVA, OHM, MILLIVOLT, MICROAMP, MILLIAMP),
@@ -990,6 +999,7 @@ UNIT_DESCRIPTIONS = {
     # Acceleration:
     G: 'acceleration',
     FPS2: 'feet per second squared',
+    MPS2: 'meters per second squared',
     DEGREE_S2: 'degrees per second squared',
     # Angles:
     DEGREE: 'degrees',
