@@ -246,7 +246,6 @@ PARAMETER_CORRECTIONS = {
     'Stable Approach Excluding Eng Thrust': {1: 'Stable'},
     'Stable Approach': {1: 'Stable'},
     'Stall Warning': {1: 'Warning'},
-    'Stall Warning': {1: 'Warning'},
     'Stick Pusher (*)': {1: 'Push'},
     'Stick Pusher': {1: 'Push'},
     'Stick Shaker (*)': {1: 'Shake'},
