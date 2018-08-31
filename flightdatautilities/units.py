@@ -1129,6 +1129,7 @@ UNIT_PROFILE_CONVERSIONS = {
         MILE: NM,
         # Mass:
         KG: LB,
+        TONNE: LB,
         # Pressure:
         HECTOPASCAL: INHG,
         MILLIBAR: INHG,
@@ -1138,6 +1139,7 @@ UNIT_PROFILE_CONVERSIONS = {
         KELVIN: FAHRENHEIT,
         RANKINE: FAHRENHEIT,
         # Speed:
+        METER_S: FPS,
         MPH: KT,
         # Volume:
         PINT: QUART,
@@ -1264,7 +1266,7 @@ def convert(value, unit, output):
         raise ValueError('Unknown output unit: %s' % unit1)
 
 
-def localise(value, unit, profile):
+def localise(value, unit, profile, reverse=False):
     '''
     Converts a value from one unit to another based on a chosen localisation.
 
@@ -1274,8 +1276,12 @@ def localise(value, unit, profile):
     :type unit: string
     :param profile: the profile to use for conversion.
     :type profile: string
+    :param reverse: convert the value back from the localised value.
+    :type reverse: boolean
     :returns: the value altered to new units
     :rtype: numeric
     '''
     output = normalise(unit, profile=profile)
+    if reverse:
+        unit, output = output, unit
     return (value, unit) if output == unit else (convert(value, unit, output), output)
