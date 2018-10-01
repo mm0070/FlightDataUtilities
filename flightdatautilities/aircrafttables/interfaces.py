@@ -308,7 +308,7 @@ class VelocitySpeed(object):
     
     def vfmin(self, detent, weight=None):
         '''
-        Look up values from tables for Vfmin.
+        Look up values from tables for VFmin.
 
         Will use interpolation and convert units if necessary.
 
@@ -319,7 +319,7 @@ class VelocitySpeed(object):
         :type detent: string
         :param weight: weight of the aircraft.
         :type weight: float or np.ma.array
-        :returns: one or more values of Vfmin.
+        :returns: one or more values of VFmin.
         :rtype: float or np.ma.array
         :raises: KeyError -- when table or flap/conf detents is not found.
         :raises: ValueError -- when weight units cannot be converted.
@@ -401,7 +401,7 @@ class VelocitySpeed(object):
     @property
     def vfmin_detents(self):
         '''
-        Provides a list of available flap/conf detents for Vfmin.
+        Provides a list of available flap/conf detents for VFmin.
 
         :returns: a list of flap/conf detents.
         :rtype: list
