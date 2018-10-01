@@ -94,7 +94,7 @@ class VelocitySpeed(object):
         :raises: KeyError -- when table or flap/conf detents is not found.
         :raises: ValueError -- when weight units cannot be converted.
         '''
-        if name in ('v2', 'vref', 'vapp', 'vls', 'vmin'):
+        if name in ('v2', 'vref', 'vapp', 'vls', 'vfmin'):
             detent = kwargs['detent']
             weight = kwargs['weight']
             scalar = isinstance(weight, (type(None), int, float))
@@ -306,9 +306,9 @@ class VelocitySpeed(object):
         '''
         return self._determine_vspeed('vls', detent=detent, weight=weight, cg=cg)
     
-    def vmin(self, detent, weight=None):
+    def vfmin(self, detent, weight=None):
         '''
-        Look up values from tables for Vmin.
+        Look up values from tables for Vfmin.
 
         Will use interpolation and convert units if necessary.
 
@@ -319,12 +319,12 @@ class VelocitySpeed(object):
         :type detent: string
         :param weight: weight of the aircraft.
         :type weight: float or np.ma.array
-        :returns: one or more values of Vmin.
+        :returns: one or more values of Vfmin.
         :rtype: float or np.ma.array
         :raises: KeyError -- when table or flap/conf detents is not found.
         :raises: ValueError -- when weight units cannot be converted.
         '''
-        return self._determine_vspeed('vmin', detent=detent, weight=weight)        
+        return self._determine_vspeed('vfmin', detent=detent, weight=weight)        
 
     def vmo(self, altitude):
         '''
@@ -399,12 +399,12 @@ class VelocitySpeed(object):
         return self._determine_detents('vls')
     
     @property
-    def vmin_detents(self):
+    def vfmin_detents(self):
         '''
-        Provides a list of available flap/conf detents for Vmin.
+        Provides a list of available flap/conf detents for Vfmin.
 
         :returns: a list of flap/conf detents.
         :rtype: list
         '''
-        return self._determine_detents('vmin')
+        return self._determine_detents('vfmin')
     
