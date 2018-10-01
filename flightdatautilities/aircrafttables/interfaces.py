@@ -94,7 +94,7 @@ class VelocitySpeed(object):
         :raises: KeyError -- when table or flap/conf detents is not found.
         :raises: ValueError -- when weight units cannot be converted.
         '''
-        if name in ('v2', 'vref', 'vapp', 'vls'):
+        if name in ('v2', 'vref', 'vapp', 'vls', 'vmin'):
             detent = kwargs['detent']
             weight = kwargs['weight']
             scalar = isinstance(weight, (type(None), int, float))
@@ -299,12 +299,32 @@ class VelocitySpeed(object):
         :type detent: string
         :param weight: weight of the aircraft.
         :type weight: float or np.ma.array
-        :returns: one or more values of Vapp.
+        :returns: one or more values of VLS.
         :rtype: float or np.ma.array
         :raises: KeyError -- when table or flap/conf detents is not found.
         :raises: ValueError -- when weight units cannot be converted.
         '''
         return self._determine_vspeed('vls', detent=detent, weight=weight, cg=cg)
+    
+    def vmin(self, detent, weight=None):
+        '''
+        Look up values from tables for Vmin.
+
+        Will use interpolation and convert units if necessary.
+
+        A masked array or value will be returned if provided parameter arrays
+        are outside of ranges defined within the lookup tables.
+
+        :param detent: flap or configuration detent to use in look-up.
+        :type detent: string
+        :param weight: weight of the aircraft.
+        :type weight: float or np.ma.array
+        :returns: one or more values of Vmin.
+        :rtype: float or np.ma.array
+        :raises: KeyError -- when table or flap/conf detents is not found.
+        :raises: ValueError -- when weight units cannot be converted.
+        '''
+        return self._determine_vspeed('vmin', detent=detent, weight=weight)        
 
     def vmo(self, altitude):
         '''
@@ -371,9 +391,20 @@ class VelocitySpeed(object):
     @property
     def vls_detents(self):
         '''
-        Provides a list of available flap/conf detents for Vapp.
+        Provides a list of available flap/conf detents for VLS.
 
         :returns: a list of flap/conf detents.
         :rtype: list
         '''
         return self._determine_detents('vls')
+    
+    @property
+    def vmin_detents(self):
+        '''
+        Provides a list of available flap/conf detents for Vmin.
+
+        :returns: a list of flap/conf detents.
+        :rtype: list
+        '''
+        return self._determine_detents('vmin')
+    
