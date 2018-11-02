@@ -168,7 +168,7 @@ class CompressedFile(object):
         logger.debug('Recompressing file `%s` from temporary location `%s`',
                      self.compressed_path, self.uncompressed_path)
 
-        with self.compressor(self.compressed_path, 'wb', compresslevel=self.compression_level) as compressed_file:
+        with self.compressor(self.compressed_path, 'wb', **{'compresslevel': self.compression_level} if self.format else {}) as compressed_file:
             with open(self.uncompressed_path, 'rb') as uncompressed_file:
                 if self.buffer_size is None:
                     compressed_file.write(uncompressed_file.read())
