@@ -772,6 +772,7 @@ UNIT_CORRECTIONS = {
     'ft/min': FPM,
     'FT/MIN': FPM,
     'Ft/Mn': FPM,
+    'Ft/min': FPM,
     'FEET/MIN': FPM,
     'feet/min': FPM,
     'FPM': FPM,
@@ -800,6 +801,7 @@ UNIT_CORRECTIONS = {
     'Rpm': RPM,
     # Temperature:
     u'\xb0C': CELSIUS,
+    b'\xf8C': CELSIUS,
     'DEGC': CELSIUS,
     'DEG C': CELSIUS,
     'degree C': CELSIUS,
@@ -991,7 +993,7 @@ UNIT_CATEGORIES = {
     'Time': (HOUR, MINUTE, SECOND, DAY, WEEK, MONTH, YEAR),
     'Torque': (FT_LB, IN_LB, IN_OZ),
     'Volume': (PINT, QUART, GALLON, LITER),
-    'Other': (DDM, GS_DDM, LOC_DDM, DOTS, TRIM, CYCLES, PERCENT, NM_KG, DU, DI, MIL), #COUNTS, CU, SCALAR, UNITS, EPR #Readout, 
+    'Other': (DDM, GS_DDM, LOC_DDM, DOTS, TRIM, CYCLES, PERCENT, NM_KG, DU, DI, MIL), #COUNTS, CU, SCALAR, UNITS, EPR #Readout,
 }
 
 
