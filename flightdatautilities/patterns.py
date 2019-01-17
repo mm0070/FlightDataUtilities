@@ -20,6 +20,21 @@ WILDCARD_ESCAPE = re.escape(' (*)')
 OPTIONS_GROUP = '(?: \\((?:%s)+\\))' % '|'.join(o.strip('()') for o in OPTIONS)
 
 
+def pattern_regex(pattern, missing=True):
+    '''
+    Create a regex which matches the pattern.
+    
+    :param pattern: Wildcard pattern to match
+    :type pattern: String
+    :param missing: Whether or not to match variations of the pattern where wildcard options are missing.
+    :type missing: bool
+    :returns: keys which match pattern
+    :rtype: list
+    '''
+    return re.escape(pattern).replace(
+        WILDCARD_ESCAPE, '%s%s' % (OPTIONS_GROUP, '?' if missing else '')) + '\Z(?ms)'
+
+
 def wildcard_match(pattern, keys, missing=True):
     '''
     Return subset of keys where wildcard (*) pattern matches.
@@ -36,8 +51,7 @@ def wildcard_match(pattern, keys, missing=True):
     '''
     if WILDCARD not in pattern:
         return [pattern] if pattern in keys else []
-    re_obj = re.compile(re.escape(pattern).replace(
-        WILDCARD_ESCAPE, '%s%s' % (OPTIONS_GROUP, '?' if missing else '')) + '\Z(?ms)')
+    re_obj = re.compile(pattern_regex(pattern, missing=missing))
     return sorted({key for key in keys if re_obj.match(key)})
 
 
