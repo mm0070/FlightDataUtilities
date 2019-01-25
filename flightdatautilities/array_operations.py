@@ -176,7 +176,7 @@ def save_compressed(path, array):
     Save either a MappedArray, np.ma.MaskedArray or np.ndarray in a compressed archive.
     '''
     try:
-        from hdfaccess.parameter import MappedArray
+        from flightdataaccessor import MappedArray
     except ImportError:
         pass
     else:
@@ -203,7 +203,7 @@ def load_compressed(path):
     array_dict = np.load(path, allow_pickle=True)
     array_count = len(array_dict.keys())
     if array_count == 3:
-        from hdfaccess.parameter import MappedArray
+        from flightdataaccessor import MappedArray
         values_mapping = array_dict['arr_0'].item()
         raw_array = np.ma.masked_array(array_dict['arr_1'], mask=array_dict['arr_2'])
         array = MappedArray(raw_array, values_mapping=values_mapping)
