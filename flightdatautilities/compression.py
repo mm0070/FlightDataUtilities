@@ -13,6 +13,7 @@ import logging
 import lzma
 import os
 import shutil
+import sys
 import tempfile
 import zipfile
 import zlib
