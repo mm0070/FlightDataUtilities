@@ -168,7 +168,7 @@ def align_arrays(slave_array, master_array):
         return slave_array.repeat(ratio)
     else:
         # take every other sample to downsample
-        return slave_array[0::1/ratio]
+        return slave_array[0::1 // ratio]
 
 
 def save_compressed(path, array):
