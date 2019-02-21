@@ -13,11 +13,6 @@ import six
 from itertools import chain, cycle, product
 from natsort import natsorted
 
-try:
-    from itertools import imap as map, izip as zip
-except ImportError:
-    pass
-
 from flightdatautilities.aircrafttables import constants
 
 # Note: These are overridden as part of the aircraft table configuration!

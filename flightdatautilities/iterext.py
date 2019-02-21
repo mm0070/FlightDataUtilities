@@ -10,13 +10,9 @@ Flight Data Utilities: Iter Extensions
 # Imports
 
 
+from builtins import map, zip
 from itertools import count, groupby, islice, takewhile, tee
 from operator import itemgetter
-
-try:
-    from itertools import imap as map, izip as zip
-except ImportError:
-    pass
 
 
 ##############################################################################

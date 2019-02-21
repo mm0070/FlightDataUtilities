@@ -5,16 +5,8 @@ import operator
 import re
 
 from io import StringIO
-
-try:
-    from itertools import izip_longest as zip_longest
-except ImportError:
-    from itertools import zip_longest
-
-try:
-    from functools import reduce
-except ImportError:
-    pass
+from functools import reduce
+from six.moves import zip_longest
 
 
 # http://code.activestate.com/recipes/267662/
@@ -27,7 +19,7 @@ def indent(rows, hasHeader=False, headerChar='-', delim=' | ', justify='left',
        - headerChar: Character to be used for the row separator line
          (if hasHeader==True or separateRows==True).
        - delim: The column delimiter.
-       - justify: Determines how are data justified in their column. 
+       - justify: Determines how are data justified in their column.
          Valid values are 'left','right' and 'center'.
        - separateRows: True if rows are to be separated by a line
          of 'headerChar's.
@@ -98,7 +90,7 @@ def wrap_always(text, width, carriage_return='\n'):
        It doesn't split the text in words."""
     return carriage_return.join([text[width*i:width*(i+1)] \
                                  for i in range(int(math.ceil(1.*len(text)/width)))])
-    
+
 if __name__ == '__main__':
     labels = ('First Name', 'Last Name', 'Age', 'Position')
     data = \
@@ -116,16 +108,16 @@ if __name__ == '__main__':
         print(indent([labels]+rows, hasHeader=True, separateRows=True,
                      prefix='| ', postfix=' |',
                      wrapfunc=lambda x: wrapper(x,width)))
-    
+
     # output:
     #
     #Without wrapping function
     #
-    #First Name | Last Name        | Age | Position         
+    #First Name | Last Name        | Age | Position
     #-------------------------------------------------------
     #John       | Smith            | 24  | Software Engineer
-    #Mary       | Brohowski        | 23  | Sales Manager    
-    #Aristidis  | Papageorgopoulos | 28  | Senior Reseacher 
+    #Mary       | Brohowski        | 23  | Sales Manager
+    #Aristidis  | Papageorgopoulos | 28  | Senior Reseacher
     #
     #Wrapping function: wrap_always(x,width=10)
     #

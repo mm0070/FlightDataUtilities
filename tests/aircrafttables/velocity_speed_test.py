@@ -17,18 +17,13 @@ import warnings
 
 import numpy as np
 
+from builtins import map
 from itertools import chain
-
-try:
-    from itertools import imap as map
-except ImportError:
-    pass
 
 from flightdatautilities import aircrafttables as at, units as ut
 from flightdatautilities import masked_array_testutils as ma_test
-from flightdatautilities.aircrafttables.interfaces import VelocitySpeed
-
 from flightdatautilities.aircrafttables import velocity_speed as vs
+from flightdatautilities.aircrafttables.interfaces import VelocitySpeed
 
 
 ##############################################################################
@@ -134,13 +129,13 @@ def _velocity_speed_tables_integrity_test_generator():
                 t = all((v is None or 80 <= v < 500) for v in chain.from_iterable(b for a, b in six.iteritems(table) if not a == 'weight'))
                 self.assertTrue(t, 'Invalid velocity speed values in %s table.' % name)
                 ##### Require that speed values increase with weight...
-                ####from itertools import izip, tee
+                ####from itertools import tee
                 ####for k, v in table.items():
                 ####    if k == 'weight':
                 ####        continue
                 ####    a, b = tee(z for z in v if z is not None)
                 ####    next(b, None)
-                ####    t = all(a <= b for a, b in izip(a, b))
+                ####    t = all(a <= b for a, b in zip(a, b))
                 ####    self.assertTrue(t, 'Invalid velocity speed values in %s table - shouldn\'t decrease.' % name)
                 continue
 
