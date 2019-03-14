@@ -154,7 +154,11 @@ class VelocitySpeed(object):
             elif isinstance(lookup, (int, float)):
                 array = self._build_array(weight, mask=False, value=lookup)
             elif isinstance(lookup, tuple):
-                x, y = self.tables[name]['weight'], lookup
+                x, y = map(
+                    list,
+                    zip(*[z for z in zip(self.tables[name]['weight'], lookup) \
+                          if z[0] is not None  and z[1] is not None])
+                )
                 # Scale the lookup table weights if necessary:
                 if not self.weight_scale == 1:
                     x = list(map(lambda w: int(w * self.weight_scale), x))
