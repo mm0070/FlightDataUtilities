@@ -2,35 +2,12 @@ import unittest
 
 import numpy as np
 import os
+from binascii import hexlify
 
 from numpy.ma.testutils import assert_array_equal
 
 from flightdatautilities import masked_array_testutils as ma_test
-from flightdatautilities.array import (
-    ByteAligner,
-    array_index_uint16,
-    contract_runs,
-    first_valid_sample,
-    key_value,
-    Interpolator,
-    index_of_subarray_uint8,
-    is_constant,
-    is_constant_uint8,
-    is_constant_uint16,
-    is_power2,
-    last_valid_sample,
-    max_values,
-    nearest_idx,
-    nearest_slice,
-    pack,
-    remove_small_runs,
-    repair_mask,
-    runs_of_ones,
-    section_overlap,
-    slices_to_array,
-    swap_bytes,
-    unpack,
-)
+from flightdatautilities import array
 from flightdatautilities.read import reader
 
 
@@ -40,10 +17,46 @@ TDQAR_DATA_PATH = os.path.join(FLIGHT_DATA_PATH, 'tdqar')
 TDWGL_DATA_PATH = os.path.join(FLIGHT_DATA_PATH, 'tdwgl')
 
 
+class TestAlignArrays(unittest.TestCase):
+    def test_align_arrays(self):
+        self.assertEqual(array.align_arrays(np.arange(10), np.arange(20, 30)).tolist(),
+                         [0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+        self.assertEqual(array.align_arrays(np.arange(40, 80), np.arange(20, 40)).tolist(),
+                         [40, 42, 44, 46, 48, 50, 52, 54, 56, 58, 60, 62, 64, 66, 68, 70, 72, 74, 76, 78])
+        self.assertEqual(array.align_arrays(np.arange(40,80), np.arange(30, 40)).tolist(),
+                         [40, 44, 48, 52, 56, 60, 64, 68, 72, 76])
+        self.assertEqual(array.align_arrays(np.arange(10), np.arange(20, 40)).tolist(),
+                         [0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9])
+
+
+class TestAllArray(unittest.TestCase):
+    def test_all_array(self):
+        def call(x):
+            return array.all_array(np.array(x))
+        self.assertTrue(call([]))
+        self.assertTrue(call([True]))
+        self.assertFalse(call([False]))
+        self.assertTrue(call([True, True]))
+        self.assertFalse(call([True, False]))
+        self.assertFalse(call([False, True]))
+
+
+class TestAnyArray(unittest.TestCase):
+    def test_any_array(self):
+        def call(x):
+            return array.any_array(np.array(x))
+        self.assertFalse(call([]))
+        self.assertTrue(call([True]))
+        self.assertFalse(call([False]))
+        self.assertTrue(call([True, True]))
+        self.assertTrue(call([True, False]))
+        self.assertTrue(call([False, True]))
+
+
 class TestByteAligner(unittest.TestCase):
     @unittest.skip('Test requires method gil enabled and cpdef')
     def test__get_word(self):
-        byte_aligned = ByteAligner()
+        byte_aligned = array.ByteAligner()
         byte_aligned._buff = np.zeros(4, dtype=np.uint8)
         self.assertEqual(byte_aligned._get_word(0), 0)
         self.assertEqual(byte_aligned._get_word(1), 0)
@@ -56,7 +69,7 @@ class TestByteAligner(unittest.TestCase):
 
     @unittest.skip('Test requires method gil enabled and cpdef')
     def test__sync_word_idx(self):
-        byte_aligned = ByteAligner()
+        byte_aligned = array.ByteAligner()
         byte_aligned._buff = np.zeros(4, dtype=np.uint8)
         self.assertEqual(byte_aligned._sync_word_idx(0), -1)
         self.assertEqual(byte_aligned._sync_word_idx(1), -1)
@@ -69,7 +82,7 @@ class TestByteAligner(unittest.TestCase):
 
     @unittest.skip('Test requires method gil enabled and cpdef')
     def test__frame_wps(self):
-        byte_aligned = ByteAligner()
+        byte_aligned = array.ByteAligner()
         path = os.path.join(TDWGL_DATA_PATH, '07', 'raw.dat')
         with reader(path, dtype=np.uint8) as data_gen:
             byte_aligned._buff = next(data_gen)
@@ -78,7 +91,7 @@ class TestByteAligner(unittest.TestCase):
 
     @unittest.skip('Test requires method gil enabled and cpdef')
     def test__next_frame_idx(self):
-        byte_aligned = ByteAligner()
+        byte_aligned = array.ByteAligner()
         path = os.path.join(TDWGL_DATA_PATH, '01', 'raw.dat')
         with reader(path, dtype=np.uint8) as data_gen:
             byte_aligned._buff = next(data_gen)
@@ -91,7 +104,7 @@ class TestByteAligner(unittest.TestCase):
             self.assertEqual(byte_aligned._next_frame_idx(0xF00), -1)
 
     def test__loop(self):
-        byte_aligned = ByteAligner()
+        byte_aligned = array.ByteAligner()
         path = os.path.join(TDWGL_DATA_PATH, '01', 'raw.dat')
         def func(idx):
             return idx
@@ -100,7 +113,7 @@ class TestByteAligner(unittest.TestCase):
                              [0x300, 0x700, 0xB00])
 
     def test_identify_1(self):
-        byte_aligned = ByteAligner()
+        byte_aligned = array.ByteAligner()
         path = os.path.join(TDWGL_DATA_PATH, '01', 'raw.dat')
         with reader(path, dtype=np.uint8) as data_gen:
             self.assertEqual(list(byte_aligned.identify(data_gen)),
@@ -111,35 +124,35 @@ class TestByteAligner(unittest.TestCase):
             self.assertEqual(next(byte_aligned.identify(data_gen)), (0x300, 128, '717'))
 
     def test_identify_2(self):
-        byte_aligned = ByteAligner()
+        byte_aligned = array.ByteAligner()
         path = os.path.join(TDQAR_DATA_PATH, '01', 'DAR.DAT')
         with reader(path, dtype=np.uint8) as data_gen:
             self.assertEqual(list(byte_aligned.identify(data_gen)),
                              [(0, 128, '717'), (1024, 128, '717'), (2048, 128, '717'), (3072, 128, '717')])
 
     def test_identify_3(self):
-        byte_aligned = ByteAligner()
+        byte_aligned = array.ByteAligner()
         path = os.path.join(TDQAR_DATA_PATH, '01', 'QAR.DAT')
         with reader(path, dtype=np.uint8) as data_gen:
             self.assertEqual(list(byte_aligned.identify(data_gen)),
                              [(0, 128, '717'), (1024, 128, '717'), (2048, 128, '717'), (3072, 128, '717')])
 
     def test_identify_4(self):
-        byte_aligned = ByteAligner()
+        byte_aligned = array.ByteAligner()
         path = os.path.join(TDWGL_DATA_PATH, '02', 'raw.dat')
         with reader(path, dtype=np.uint8) as data_gen:
             self.assertEqual(list(byte_aligned.identify(data_gen)),
                              [(0x300, 128, '717'), (0x700, 128, '717'), (0xB00, 128, '717')])
 
     def test_identify_5(self):
-        byte_aligned = ByteAligner()
+        byte_aligned = array.ByteAligner()
         path = os.path.join(TDWGL_DATA_PATH, '03', 'raw.dat')
         with reader(path, dtype=np.uint8) as data_gen:
             self.assertEqual(list(byte_aligned.identify(data_gen)),
                              [(1024, 128, '717'), (2048, 128, '717'), (3072, 128, '717')])
 
     def test_identify_6(self):
-        byte_aligned = ByteAligner()
+        byte_aligned = array.ByteAligner()
         path = os.path.join(TDWGL_DATA_PATH, '04', 'raw.dat')
         with reader(path, dtype=np.uint8) as data_gen:
             self.assertEqual(list(byte_aligned.identify(data_gen)),
@@ -147,14 +160,14 @@ class TestByteAligner(unittest.TestCase):
                               (5120, 128, '717'), (6144, 128, '717'), (7168, 128, '717')])
 
     def test_identify_7(self):
-        byte_aligned = ByteAligner()
+        byte_aligned = array.ByteAligner()
         path = os.path.join(TDWGL_DATA_PATH, '01', 'raw.dat')
         with reader(path, dtype=np.uint8) as data_gen:
             self.assertEqual(list(byte_aligned.identify(data_gen)),
                              [(0x300, 128, '717'), (0x700, 128, '717'), (0xB00, 128, '717')])
 
     def test_process_1(self):
-        byte_aligned = ByteAligner()
+        byte_aligned = array.ByteAligner()
         path = os.path.join(TDWGL_DATA_PATH, '01', 'raw.dat')
         expected = reader(path, dtype=np.uint8, start=0x300, stop=0xF00).first()
         with reader(path, dtype=np.uint8) as data_gen:
@@ -162,39 +175,39 @@ class TestByteAligner(unittest.TestCase):
         self.assertTrue(np.all(output == expected))
 
     def test_process_2(self):
-        byte_aligned = ByteAligner()
+        byte_aligned = array.ByteAligner()
         path = os.path.join(BYTE_ALIGNED_DATA_PATH, '01', 'all_sync.dat')
-        array = reader(path, dtype=np.uint8).first()
-        data = array.tostring()
-        self.assertEqual(data, next(byte_aligned.process(array)).tostring())
+        arr = reader(path, dtype=np.uint8).first()
+        data = arr.tostring()
+        self.assertEqual(data, next(byte_aligned.process(arr)).tostring())
         # split into 2 equal parts
         byte_aligned.reset()
-        data_gen = byte_aligned.process(iter(np.split(array, 2)))
+        data_gen = byte_aligned.process(iter(np.split(arr, 2)))
         self.assertEqual(data, np.concatenate(list(data_gen)).tostring())
         # split into 4 equal parts
         byte_aligned.reset()
-        data_gen = byte_aligned.process(iter(np.split(array, 4)))
+        data_gen = byte_aligned.process(iter(np.split(arr, 4)))
         self.assertEqual(data, np.concatenate(list(data_gen)).tostring())
         # split into 3 unequal parts
         byte_aligned.reset()
-        data_gen = byte_aligned.process(iter(np.array_split(array, 3)))
+        data_gen = byte_aligned.process(iter(np.array_split(arr, 3)))
         self.assertEqual(data, np.concatenate(list(data_gen)).tostring())
 
     def test_process_3(self):
-        byte_aligned = ByteAligner()
+        byte_aligned = array.ByteAligner()
         path = os.path.join(BYTE_ALIGNED_DATA_PATH, '01', 'all_sync.dat')
         data = reader(path).first()
         offset_data = b'\xFF' * 20 + data + b'\x47\x02' + b'\xFF' * 50
-        array = np.fromstring(offset_data, dtype=np.uint8)
-        self.assertEqual(data, next(byte_aligned.process(array)).tostring())
+        arr = np.fromstring(offset_data, dtype=np.uint8)
+        self.assertEqual(data, next(byte_aligned.process(arr)).tostring())
         # odd offset
         byte_aligned.reset()
         offset_data = b'\x47' * 21 + data + b'\x47\x02' + b'\xB8' * 57
-        array = np.fromstring(offset_data, dtype=np.uint8)
-        self.assertEqual(data, next(byte_aligned.process(array)).tostring())
+        arr = np.fromstring(offset_data, dtype=np.uint8)
+        self.assertEqual(data, next(byte_aligned.process(arr)).tostring())
         # split into 10 unequal parts
         byte_aligned.reset()
-        data_gen = iter(np.array_split(array, 4))
+        data_gen = iter(np.array_split(arr, 4))
         self.assertEqual(data, np.concatenate(list(byte_aligned.process(data_gen))).tostring())
         # 2 sections of data
         byte_aligned.reset()
@@ -203,42 +216,42 @@ class TestByteAligner(unittest.TestCase):
         self.assertEqual(data * 2, np.concatenate(list(data_gen)).tostring())
 
     def test_process_start_and_stop(self):
-        byte_aligned = ByteAligner()
+        byte_aligned = array.ByteAligner()
         path = os.path.join(BYTE_ALIGNED_DATA_PATH, '01', 'all_sync.dat')
         data = reader(path).first()
-        array = np.fromstring(data, dtype=np.uint8)
+        arr = np.fromstring(data, dtype=np.uint8)
         def call(expected, array, *args, **kwargs):
-            result = list(byte_aligned.process(array, *args, **kwargs))
+            result = list(byte_aligned.process(arr, *args, **kwargs))
             if result:
                 result = np.concatenate(result).tostring()
             self.assertEqual(result, expected)
             byte_aligned.reset()
             # also test split array buffering
-            result = list(byte_aligned.process(iter(np.split(array, 4)), *args, **kwargs))
+            result = list(byte_aligned.process(iter(np.split(arr, 4)), *args, **kwargs))
             if result:
                 result = np.concatenate(result).tostring()
             self.assertEqual(result, expected)
             byte_aligned.reset()
-        call(data, array, stop=100)
-        call([], array, start=100)
-        call(data[:512], array, stop=4)
-        call(data[:512], array, stop=2)
-        call(data[:1024], array, stop=6)
-        call(data[:1024], array, start=2, stop=7)
-        call(data[512:1024], array, start=4, stop=8)
-        call(data[512:1536], array, start=6, stop=10)
-        call(data[3584:4096], array, start=28)
-        self.assertRaises(ValueError, list, byte_aligned.process(array, 10, 10))
-        self.assertRaises(ValueError, list, byte_aligned.process(array, 10, 5))
-        self.assertRaises(ValueError, list, byte_aligned.process(array, None, 0))
-        self.assertRaises(ValueError, list, byte_aligned.process(array, None, -1))
-        self.assertRaises(ValueError, list, byte_aligned.process(array, -1, None))
+        call(data, arr, stop=100)
+        call([], arr, start=100)
+        call(data[:512], arr, stop=4)
+        call(data[:512], arr, stop=2)
+        call(data[:1024], arr, stop=6)
+        call(data[:1024], arr, start=2, stop=7)
+        call(data[512:1024], arr, start=4, stop=8)
+        call(data[512:1536], arr, start=6, stop=10)
+        call(data[3584:4096], arr, start=28)
+        self.assertRaises(ValueError, list, byte_aligned.process(arr, 10, 10))
+        self.assertRaises(ValueError, list, byte_aligned.process(arr, 10, 5))
+        self.assertRaises(ValueError, list, byte_aligned.process(arr, None, 0))
+        self.assertRaises(ValueError, list, byte_aligned.process(arr, None, -1))
+        self.assertRaises(ValueError, list, byte_aligned.process(arr, -1, None))
 
 
 class TestContractRuns(unittest.TestCase):
     def test_contract_runs(self):
         def call(x, *args, **kwargs):
-            return contract_runs(np.array(x, dtype=np.bool), *args, **kwargs).tolist()
+            return array.contract_runs(np.array(x, dtype=np.bool), *args, **kwargs).tolist()
         T, F = True, False
         self.assertEqual(call([], 1), [])
         self.assertEqual(call([F,F,F,F], 0), [F,F,F,F])
@@ -252,27 +265,63 @@ class TestContractRuns(unittest.TestCase):
         self.assertEqual(call([F,T,T,T,F,T,T,F], 1), [F,F,T,F,F,F,F,F])
 
 
+class TestEntirelyMasked(unittest.TestCase):
+    def test_entirely_masked(self):
+        data = np.ma.arange(5)
+        self.assertFalse(array.entirely_masked(data))
+        data.mask = True
+        self.assertTrue(array.entirely_masked(data))
+        def call(x):
+            data = np.ma.empty(len(x))
+            data.mask = x
+            return array.entirely_masked(data)
+        self.assertTrue(call([]))
+        self.assertTrue(call([True]))
+        self.assertFalse(call([False]))
+        self.assertTrue(call([True, True]))
+        self.assertFalse(call([True, False]))
+        self.assertFalse(call([False, True]))
+
+
+class TestEntirelyUnmasked(unittest.TestCase):
+    def test_entirely_unmasked(self):
+        data = np.ma.arange(5)
+        self.assertTrue(array.entirely_unmasked(data))
+        data.mask = True
+        self.assertFalse(array.entirely_unmasked(data))
+        def call(x):
+            data = np.ma.empty(len(x))
+            data.mask = x
+            return array.entirely_unmasked(data)
+        self.assertTrue(call([]))
+        self.assertFalse(call([True]))
+        self.assertTrue(call([False]))
+        self.assertFalse(call([True, True]))
+        self.assertFalse(call([True, False]))
+        self.assertFalse(call([False, True]))
+
+
 class TestFirstValidSample(unittest.TestCase):
     def test_first_valid_sample(self):
         data = np.arange(11, 15)
-        self.assertEqual(first_valid_sample(np.ma.array(data, mask=[1,0,1,0])), (1, 12))
-        self.assertEqual(first_valid_sample(np.ma.array(data, mask=True)), (None, None))
-        self.assertEqual(first_valid_sample(np.ma.array(data, mask=[1,0,1,0]), 2), (3, 14))
-        self.assertEqual(first_valid_sample(np.ma.array(data, mask=[1,0,1,0]), 1), (1, 12))
-        self.assertEqual(first_valid_sample(np.ma.array(data, mask=[1,0,1,0]), 9), (None, None))
-        self.assertEqual(first_valid_sample(np.ma.array(data, mask=[1,0,1,0]), -2), (3, 14))
+        self.assertEqual(array.first_valid_sample(np.ma.array(data, mask=[1,0,1,0])), (1, 12))
+        self.assertEqual(array.first_valid_sample(np.ma.array(data, mask=True)), (None, None))
+        self.assertEqual(array.first_valid_sample(np.ma.array(data, mask=[1,0,1,0]), 2), (3, 14))
+        self.assertEqual(array.first_valid_sample(np.ma.array(data, mask=[1,0,1,0]), 1), (1, 12))
+        self.assertEqual(array.first_valid_sample(np.ma.array(data, mask=[1,0,1,0]), 9), (None, None))
+        self.assertEqual(array.first_valid_sample(np.ma.array(data, mask=[1,0,1,0]), -2), (3, 14))
 
 
 class TestInterpolator(unittest.TestCase):
     def test_interpolator(self):
-        def interpolate(points, array, copy=True):
-            if not isinstance(array, np.ndarray):
-                array = np.array(array, dtype=np.float64)
-            return np.asarray(Interpolator(points).interpolate(array, copy=copy)).tolist()
+        def interpolate(points, data, copy=True):
+            if not isinstance(data, np.ndarray):
+                data = np.array(data, dtype=np.float64)
+            return np.asarray(array.Interpolator(points).interpolate(data, copy=copy)).tolist()
 
         # Must be at least two points.
-        self.assertRaises(ValueError, Interpolator, [])
-        self.assertRaises(ValueError, Interpolator, [(0, 1)])
+        self.assertRaises(ValueError, array.Interpolator, [])
+        self.assertRaises(ValueError, array.Interpolator, [(0, 1)])
         points = [(0, 1), (1, 2)]
         self.assertEqual(interpolate(points, [0, 1]), [1, 2])
         points = [(0, 1), (1, 2), (2, 3)]
@@ -291,7 +340,7 @@ class TestInterpolator(unittest.TestCase):
             (890.88, 25.2),
             (1024, 30),
         ]
-        array = [101.2, 203.5, 312.4, 442.1, 582.4, 632.12, 785.2, 890.21, 904.64, 1000, 1024, 1200]
+        data = [101.2, 203.5, 312.4, 442.1, 582.4, 632.12, 785.2, 890.21, 904.64, 1000, 1024, 1200]
         # output exactly matches array_operations.extrap1d implementation.
         expected = [
             0.23721590909090898,
@@ -307,139 +356,156 @@ class TestInterpolator(unittest.TestCase):
             30.0,
             36.34615384615385,
         ]
-        for x, y in zip(interpolate(points, array), expected):
+        for x, y in zip(interpolate(points, data), expected):
             self.assertAlmostEqual(x, y, places=8)
         points = [(0, 10), (1, 20), (1.5, 40), (2.0, 400)]
-        array = [0, 1, 1.5, 2.0]
+        data = [0, 1, 1.5, 2.0]
         expected = [10, 20, 40, 400]
-        self.assertEqual(interpolate(points, array), expected)
+        self.assertEqual(interpolate(points, data), expected)
         # check results are the same with copy=False
-        self.assertEqual(interpolate(points, array, copy=False), expected)
+        self.assertEqual(interpolate(points, data, copy=False), expected)
 
 
 class TestIsConstant(unittest.TestCase):
     def test_is_constant(self):
-        self.assertTrue(is_constant(np.empty(0, dtype=np.uint16)))
-        self.assertTrue(is_constant(np.zeros(10, dtype=np.uint8)))
-        self.assertTrue(is_constant(np.zeros(10, dtype=np.uint16)))
-        self.assertTrue(is_constant(np.zeros(10, dtype=np.uint32)))
-        self.assertFalse(is_constant(np.arange(10, dtype=np.uint32)))
+        self.assertTrue(array.is_constant(np.empty(0, dtype=np.uint16)))
+        self.assertTrue(array.is_constant(np.zeros(10, dtype=np.uint8)))
+        self.assertTrue(array.is_constant(np.zeros(10, dtype=np.uint16)))
+        self.assertTrue(array.is_constant(np.zeros(10, dtype=np.uint32)))
+        self.assertFalse(array.is_constant(np.arange(10, dtype=np.uint32)))
 
 
 class TestIsConstantUint16(unittest.TestCase):
     def test_is_constant_uint16(self):
-        self.assertTrue(is_constant_uint16(np.empty(0, dtype=np.uint16)))
-        self.assertTrue(is_constant_uint16(np.zeros(1, dtype=np.uint16)))
-        self.assertTrue(is_constant_uint16(np.zeros(10, dtype=np.uint16)))
-        self.assertTrue(is_constant_uint16(np.ones(10, dtype=np.uint16)))
-        self.assertFalse(is_constant_uint16(np.arange(10, dtype=np.uint16)))
+        self.assertTrue(array.is_constant_uint16(np.empty(0, dtype=np.uint16)))
+        self.assertTrue(array.is_constant_uint16(np.zeros(1, dtype=np.uint16)))
+        self.assertTrue(array.is_constant_uint16(np.zeros(10, dtype=np.uint16)))
+        self.assertTrue(array.is_constant_uint16(np.ones(10, dtype=np.uint16)))
+        self.assertFalse(array.is_constant_uint16(np.arange(10, dtype=np.uint16)))
 
 
 class TestIsConstantUint8(unittest.TestCase):
     def test_is_constant_uint8(self):
-        self.assertTrue(is_constant_uint8(np.empty(0, dtype=np.uint8)))
-        self.assertTrue(is_constant_uint8(np.zeros(1, dtype=np.uint8)))
-        self.assertTrue(is_constant_uint8(np.zeros(10, dtype=np.uint8)))
-        self.assertTrue(is_constant_uint8(np.ones(10, dtype=np.uint8)))
-        self.assertFalse(is_constant_uint8(np.arange(10, dtype=np.uint8)))
+        self.assertTrue(array.is_constant_uint8(np.empty(0, dtype=np.uint8)))
+        self.assertTrue(array.is_constant_uint8(np.zeros(1, dtype=np.uint8)))
+        self.assertTrue(array.is_constant_uint8(np.zeros(10, dtype=np.uint8)))
+        self.assertTrue(array.is_constant_uint8(np.ones(10, dtype=np.uint8)))
+        self.assertFalse(array.is_constant_uint8(np.arange(10, dtype=np.uint8)))
 
 
 class TestIsPower2(unittest.TestCase):
     def test_is_power2(self):
-        self.assertEqual([i for i in range(2000) if is_power2(i)],
+        self.assertEqual([i for i in range(2000) if array.is_power2(i)],
                          [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024])
-        self.assertFalse(is_power2(-2))
-        self.assertFalse(is_power2(2.2))
+        self.assertFalse(array.is_power2(-2))
+        self.assertFalse(array.is_power2(2.2))
+
+
+class TestIsPower2Fraction(unittest.TestCase):
+    def test_is_power2_fraction(self):
+        self.assertEqual([i for i in range(2000) if array.is_power2_fraction(i)],
+                         [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024])
+        self.assertFalse(array.is_power2_fraction(-2))
+        self.assertFalse(array.is_power2_fraction(2.2))
+        self.assertTrue(array.is_power2_fraction(0.5))
+        self.assertTrue(array.is_power2_fraction(0.25))
+        self.assertTrue(array.is_power2_fraction(0.125))
+        self.assertTrue(array.is_power2_fraction(0.0625))
+        self.assertTrue(array.is_power2_fraction(0.03125))
+        self.assertTrue(array.is_power2_fraction(0.015625))
+        self.assertFalse(array.is_power2_fraction(0.75))
+        self.assertFalse(array.is_power2_fraction(0.2))
+        self.assertFalse(array.is_power2_fraction(0.015626))
 
 
 class TestLastValidSample(unittest.TestCase):
     def test_last_valid_sample(self):
         data = np.arange(11, 15)
-        self.assertEqual(last_valid_sample(np.ma.array(data, mask=[1,0,1,0])), (3, 14))
-        self.assertEqual(last_valid_sample(np.ma.array(data, mask=True)), (None, None))
-        self.assertEqual(last_valid_sample(np.ma.array(data, mask=[1,0,1,0]), -2), (1, 12))
-        self.assertEqual(last_valid_sample(np.ma.array(data, mask=[1,0,1,0]), -3), (1, 12))
-        self.assertEqual(last_valid_sample(np.ma.array(data, mask=[1,0,1,0]), 9), (3, 14))
-        self.assertEqual(last_valid_sample(np.ma.array(data, mask=[0,0,0,1])), (2, 13))
+        self.assertEqual(array.last_valid_sample(np.ma.array(data, mask=[1,0,1,0])), (3, 14))
+        self.assertEqual(array.last_valid_sample(np.ma.array(data, mask=True)), (None, None))
+        self.assertEqual(array.last_valid_sample(np.ma.array(data, mask=[1,0,1,0]), -2), (1, 12))
+        self.assertEqual(array.last_valid_sample(np.ma.array(data, mask=[1,0,1,0]), -3), (1, 12))
+        self.assertEqual(array.last_valid_sample(np.ma.array(data, mask=[1,0,1,0]), 9), (3, 14))
+        self.assertEqual(array.last_valid_sample(np.ma.array(data, mask=[0,0,0,1])), (2, 13))
 
 
 class TestMaxValues(unittest.TestCase):
     def test_max_values(self):
-        self.assertEqual(list(max_values(np.ma.empty(0, dtype=np.float64), np.empty(0, dtype=np.bool))), [])
-        self.assertEqual(list(max_values(np.ma.zeros(1, dtype=np.float64), np.zeros(1, dtype=np.bool))), [])
-        self.assertEqual(list(max_values(np.ma.zeros(1, dtype=np.float64), np.ones(1, dtype=np.bool))), [(0, 0)])
-        self.assertEqual(list(max_values(np.ma.ones(1, dtype=np.float64), np.zeros(1, dtype=np.bool))), [])
-        self.assertEqual(list(max_values(np.ma.ones(1, dtype=np.float64), np.ones(1, dtype=np.bool))), [(0, 1)])
-        array = np.ma.arange(10, dtype=np.float64)
+        self.assertEqual(list(array.max_values(np.ma.empty(0, dtype=np.float64), np.empty(0, dtype=np.bool))), [])
+        self.assertEqual(list(array.max_values(np.ma.zeros(1, dtype=np.float64), np.zeros(1, dtype=np.bool))), [])
+        self.assertEqual(list(array.max_values(np.ma.zeros(1, dtype=np.float64), np.ones(1, dtype=np.bool))), [(0, 0)])
+        self.assertEqual(list(array.max_values(np.ma.ones(1, dtype=np.float64), np.zeros(1, dtype=np.bool))), [])
+        self.assertEqual(list(array.max_values(np.ma.ones(1, dtype=np.float64), np.ones(1, dtype=np.bool))), [(0, 1)])
+        arr = np.ma.arange(10, dtype=np.float64)
         matching = np.zeros(10, dtype=np.bool)
-        self.assertEqual(list(max_values(array, matching)), [])
+        self.assertEqual(list(array.max_values(arr, matching)), [])
         matching[0] = True
-        self.assertEqual(list(max_values(array, matching)), [(0, 0)])
+        self.assertEqual(list(array.max_values(arr, matching)), [(0, 0)])
         matching[1] = True
-        self.assertEqual(list(max_values(array, matching)), [(1, 1)])
+        self.assertEqual(list(array.max_values(arr, matching)), [(1, 1)])
         matching[3] = True
-        self.assertEqual(list(max_values(array, matching)), [(1, 1), (3, 3)])
+        self.assertEqual(list(array.max_values(arr, matching)), [(1, 1), (3, 3)])
         matching[7:] = True
-        self.assertEqual(list(max_values(array, matching)), [(1, 1), (3, 3), (9, 9)])
-        array[1] = np.ma.masked
-        self.assertEqual(list(max_values(array, matching)), [(0, 0), (3, 3), (9, 9)])
-        array[0] = np.ma.masked
-        self.assertEqual(list(max_values(array, matching)), [(3, 3), (9, 9)])
+        self.assertEqual(list(array.max_values(arr, matching)), [(1, 1), (3, 3), (9, 9)])
+        arr[1] = np.ma.masked
+        self.assertEqual(list(array.max_values(arr, matching)), [(0, 0), (3, 3), (9, 9)])
+        arr[0] = np.ma.masked
+        self.assertEqual(list(array.max_values(arr, matching)), [(3, 3), (9, 9)])
 
 
 class TestNearestIdx(unittest.TestCase):
 
     def test_nearest_idx(self):
-        self.assertEqual(nearest_idx(np.empty(0, dtype=np.bool), 0), None)
-        self.assertEqual(nearest_idx(np.array([False], dtype=np.bool), 0), None)
-        self.assertEqual(nearest_idx(np.array([True], dtype=np.bool), 0), 0)
-        array = np.zeros(5, dtype=np.bool)
-        self.assertEqual(nearest_idx(array, 0), None)
-        self.assertEqual(nearest_idx(array, 3), None)
-        self.assertEqual(nearest_idx(array, -2), None)
-        self.assertEqual(nearest_idx(array, 5), None)
-        array = np.ones(5, dtype=np.bool)
-        self.assertEqual(nearest_idx(array, 0), 0)
-        self.assertEqual(nearest_idx(array, 3), 3)
-        self.assertEqual(nearest_idx(array, -2), 0)
-        self.assertEqual(nearest_idx(array, 5), 4)
-        self.assertEqual(nearest_idx(array, 0, start_idx=2), None)
-        self.assertEqual(nearest_idx(array, 4, start_idx=2), 4)
-        self.assertEqual(nearest_idx(array, 4, stop_idx=2), None)
-        self.assertEqual(nearest_idx(array, 1, stop_idx=2), 1)
-        self.assertEqual(nearest_idx(array, 1, start_idx=0, stop_idx=2), 1)
-        self.assertEqual(nearest_idx(array, 2, start_idx=0, stop_idx=2), None)
-        array = np.array([True, False, False, False, False])
-        self.assertEqual(nearest_idx(array, 3), 0)
-        array = np.array([False, False, False, False, True])
-        self.assertEqual(nearest_idx(array, 1), 4)
-        array = np.array([False, True, True, False, False])
-        self.assertEqual(nearest_idx(array, 3), 2)
+        self.assertEqual(array.nearest_idx(np.empty(0, dtype=np.bool), 0), None)
+        self.assertEqual(array.nearest_idx(np.array([False], dtype=np.bool), 0), None)
+        self.assertEqual(array.nearest_idx(np.array([True], dtype=np.bool), 0), 0)
+        data = np.zeros(5, dtype=np.bool)
+        self.assertEqual(array.nearest_idx(data, 0), None)
+        self.assertEqual(array.nearest_idx(data, 3), None)
+        self.assertEqual(array.nearest_idx(data, -2), None)
+        self.assertEqual(array.nearest_idx(data, 5), None)
+        data = np.ones(5, dtype=np.bool)
+        self.assertEqual(array.nearest_idx(data, 0), 0)
+        self.assertEqual(array.nearest_idx(data, 3), 3)
+        self.assertEqual(array.nearest_idx(data, -2), 0)
+        self.assertEqual(array.nearest_idx(data, 5), 4)
+        self.assertEqual(array.nearest_idx(data, 0, start_idx=2), None)
+        self.assertEqual(array.nearest_idx(data, 4, start_idx=2), 4)
+        self.assertEqual(array.nearest_idx(data, 4, stop_idx=2), None)
+        self.assertEqual(array.nearest_idx(data, 1, stop_idx=2), 1)
+        self.assertEqual(array.nearest_idx(data, 1, start_idx=0, stop_idx=2), 1)
+        self.assertEqual(array.nearest_idx(data, 2, start_idx=0, stop_idx=2), None)
+        data = np.array([True, False, False, False, False])
+        self.assertEqual(array.nearest_idx(data, 3), 0)
+        data = np.array([False, False, False, False, True])
+        self.assertEqual(array.nearest_idx(data, 1), 4)
+        data = np.array([False, True, True, False, False])
+        self.assertEqual(array.nearest_idx(data, 3), 2)
 
 
 class TestNearestSlice(unittest.TestCase):
 
     def test_nearest_slice(self):
-        self.assertEqual(nearest_slice(np.empty(0, dtype=np.bool), 1), None)
-        array = np.zeros(5, dtype=np.bool)
-        self.assertEqual(nearest_slice(array, 2), None)
-        self.assertEqual(nearest_slice(array, -1), None)
-        self.assertEqual(nearest_slice(array, 8), None)
-        array = np.array([False, False, False, False, True])
-        self.assertEqual(nearest_slice(array, 2), slice(4, 5))
-        self.assertEqual(nearest_slice(array, 5), slice(4, 5))
-        self.assertEqual(nearest_slice(array, 8), slice(4, 5))
-        self.assertEqual(nearest_slice(array, -2), slice(4, 5))
-        array = np.array([True, True, False, False, False])
-        self.assertEqual(nearest_slice(array, 0), slice(0, 2))
-        self.assertEqual(nearest_slice(array, 2), slice(0, 2))
-        self.assertEqual(nearest_slice(array, 5), slice(0, 2))
-        self.assertEqual(nearest_slice(array, 8), slice(0, 2))
-        self.assertEqual(nearest_slice(array, -2), slice(0, 2))
-        array = np.array([False, True, True, False, False, True, False, False])
+        self.assertEqual(array.nearest_slice(np.empty(0, dtype=np.bool), 1), None)
+        data = np.zeros(5, dtype=np.bool)
+        self.assertEqual(array.nearest_slice(data, 2), None)
+        self.assertEqual(array.nearest_slice(data, -1), None)
+        self.assertEqual(array.nearest_slice(data, 8), None)
+        data = np.array([False, False, False, False, True])
+        self.assertEqual(array.nearest_slice(data, 2), slice(4, 5))
+        self.assertEqual(array.nearest_slice(data, 5), slice(4, 5))
+        self.assertEqual(array.nearest_slice(data, 8), slice(4, 5))
+        self.assertEqual(array.nearest_slice(data, -2), slice(4, 5))
+        data = np.array([True, True, False, False, False])
+        self.assertEqual(array.nearest_slice(data, 0), slice(0, 2))
+        self.assertEqual(array.nearest_slice(data, 2), slice(0, 2))
+        self.assertEqual(array.nearest_slice(data, 5), slice(0, 2))
+        self.assertEqual(array.nearest_slice(data, 8), slice(0, 2))
+        self.assertEqual(array.nearest_slice(data, -2), slice(0, 2))
+        data = np.array([False, True, True, False, False, True, False, False])
         for idx, sl in [(0, slice(1, 3)), (1, slice(1, 3)), (2, slice(1, 3)), (3, slice(1, 3)),
                         (4, slice(5, 6)), (5, slice(5, 6)), (6, slice(5, 6)), (7, slice(5, 6))]:
-            self.assertEqual(nearest_slice(array, idx), sl)
+            self.assertEqual(array.nearest_slice(data, idx), sl)
 
 
 class TestRepairMask(unittest.TestCase):
@@ -449,77 +515,75 @@ class TestRepairMask(unittest.TestCase):
             mask=[1,1,0,1,1,0,0,0,0,1,1])
 
     def test_repair_mask_basic_fill_start(self):
-        self.assertEqual(repair_mask(self.basic_data,
-                                     method='fill_start').tolist(),
+        self.assertEqual(array.repair_mask(self.basic_data,
+                                           method='fill_start').tolist(),
                          [None, None, 10, 10, 10, 20, 23, 26, 30, 30, 30])
-        self.assertEqual(repair_mask(self.basic_data, extrapolate=True,
-                                     method='fill_start').tolist(),
+        self.assertEqual(array.repair_mask(self.basic_data, extrapolate=True,
+                                           method='fill_start').tolist(),
                          [10, 10, 10, 10, 10, 20, 23, 26, 30, 30, 30])
 
     def test_repair_mask_basic_fill_stop(self):
-        self.assertEqual(repair_mask(self.basic_data,
-                                     method='fill_stop').tolist(),
+        self.assertEqual(array.repair_mask(self.basic_data, method='fill_stop').tolist(),
                          [10, 10, 10, 20, 20, 20, 23, 26, 30, None, None])
-        self.assertEqual(repair_mask(self.basic_data, extrapolate=True,
-                                     method='fill_stop').tolist(),
+        self.assertEqual(array.repair_mask(self.basic_data, extrapolate=True, method='fill_stop').tolist(),
                          [10, 10, 10, 20, 20, 20, 23, 26, 30, 30, 30])
 
     def test_repair_mask_basic_1(self):
-        array = np.ma.arange(10)
-        array[3] = np.ma.masked
-        self.assertTrue(np.ma.is_masked(array[3]))
-        array[6:8] = np.ma.masked
-        res = repair_mask(array)
+        data = np.ma.arange(10)
+        data[3] = np.ma.masked
+        self.assertTrue(np.ma.is_masked(data[3]))
+        data[6:8] = np.ma.masked
+        res = array.repair_mask(data)
         np.testing.assert_array_equal(res.data,range(10))
         # test mask is now unmasked
         self.assertFalse(np.any(res.mask[3:9]))
 
     def test_repair_mask_too_much_invalid(self):
-        array = np.ma.arange(20)
-        array[4:15] = np.ma.masked
-        ma_test.assert_masked_array_approx_equal(repair_mask(array), array)
+        data = np.ma.arange(20)
+        data[4:15] = np.ma.masked
+        ma_test.assert_masked_array_approx_equal(array.repair_mask(data), data)
 
     def test_repair_mask_not_at_start(self):
-        array = np.ma.arange(10)
-        array[0] = np.ma.masked
-        ma_test.assert_masked_array_approx_equal(repair_mask(array), array)
+        data = np.ma.arange(10)
+        data[0] = np.ma.masked
+        ma_test.assert_masked_array_approx_equal(array.repair_mask(data), data)
 
     def test_repair_mask_not_at_end(self):
-        array = np.ma.arange(10)
-        array[9] = np.ma.masked
-        ma_test.assert_masked_array_approx_equal(repair_mask(array), array)
+        data = np.ma.arange(10)
+        data[9] = np.ma.masked
+        ma_test.assert_masked_array_approx_equal(array.repair_mask(data), data)
 
     def test_repair_mask_short_sample(self):
         # Very short samples were at one time returned as None, but simply
         # applying the normal "rules" seems more consistent, so this is a
         # test to show that an old function no longer applies.
-        array = np.ma.arange(2)
-        array[1] = np.ma.masked
-        ma_test.assert_masked_array_approx_equal(repair_mask(array), array)
+        data = np.ma.arange(2)
+        data[1] = np.ma.masked
+        ma_test.assert_masked_array_approx_equal(array.repair_mask(data), data)
 
     def test_repair_mask_extrapolate(self):
-        array = np.ma.array([2,4,6,7,5,3,1],mask=[1,1,0,0,1,1,1])
-        res = repair_mask(array, extrapolate=True)
+        data = np.ma.array([2,4,6,7,5,3,1], mask=[1,1,0,0,1,1,1])
+        res = array.repair_mask(data, extrapolate=True)
         expected = np.ma.array([6,6,6,7,7,7,7], mask=False)
         assert_array_equal(res, expected)
 
     def test_repair_mask_fully_masked_array(self):
-        array = np.ma.array(np.arange(10), mask=[1]*10)
+        data = np.ma.array(np.arange(10), mask=[1]*10)
         # fully masked raises ValueError
-        self.assertRaises(ValueError, repair_mask, array)
+        self.assertRaises(ValueError, array.repair_mask, data)
         # fully masked returns a masked zero array
-        res = repair_mask(array, raise_entirely_masked=False)
-        assert_array_equal(res.data, array.data)
+        res = array.repair_mask(data, raise_entirely_masked=False)
+        assert_array_equal(res.data, data.data)
         assert_array_equal(res.mask, True)
 
     @unittest.skip('repair_above has not yet been carried over from analysis_engine.library version')
     def test_repair_mask_above(self):
-        array = np.ma.arange(10)
-        array[5] = np.ma.masked
-        array[7:9] = np.ma.masked
-        res = repair_mask(array, repair_above=5)
+        data = np.ma.arange(10)
+        data[5] = np.ma.masked
+        data[7:9] = np.ma.masked
+        res = array.repair_mask(data, repair_above=5)
         np.testing.assert_array_equal(res.data, range(10))
-        mask = np.ma.getmaskarray(array)
+        mask = np.ma.getmaskarray(data)
         # test only array[5] is still masked as is the first
         self.assertFalse(mask[4])
         self.assertTrue(mask[5])
@@ -529,7 +593,7 @@ class TestRepairMask(unittest.TestCase):
 class TestRemoveSmallRuns(unittest.TestCase):
     def test_remove_small_runs(self):
         def call(x, *args, **kwargs):
-            return remove_small_runs(np.array(x, dtype=np.bool), *args, **kwargs).tolist()
+            return array.remove_small_runs(np.array(x, dtype=np.bool), *args, **kwargs).tolist()
         T, F = True, False
         self.assertEqual(call([]), [])
         self.assertEqual(call([F,T,F], 0), [F,T,F])
@@ -543,25 +607,28 @@ class TestRemoveSmallRuns(unittest.TestCase):
         self.assertEqual(call([F,T,T,T,F,T,T], 2), [F,T,T,T,F,F,F])
         self.assertEqual(call([F,T,T,T,F,T,T,F], 2), [F,T,T,T,F,F,F,F])
         self.assertEqual(call([F,T,T,T,F,T,T,F], 2, 2), [F,F,F,F,F,F,F,F])
+        self.assertEqual(call([F,T,T,T,F,T,T,F], 1.5, 2), [F,F,F,F,F,F,F,F])
+        self.assertEqual(call([F,T,T,T,F,T,T,F], 1.4, 2), [F,T,T,T,F,F,F,F])
+        self.assertEqual(call([F,T,T,T,F,T,T,F], 1.4, 2.2), [F,F,F,F,F,F,F,F])
 
 
 class TestRunsOfOnes(unittest.TestCase):
     def test_runs_of_ones(self):
-        array = np.ma.array(
+        data = np.ma.array(
             [0,0,1,0,1,1,1,1,1,0,0,1,1,1,0,1,1,1],
             mask=np.concatenate([np.zeros(14, dtype=np.bool), np.ones(4, dtype=np.bool)]),
             dtype=np.bool,
         )
-        self.assertEqual(list(runs_of_ones(array)), [slice(2, 3), slice(4, 9), slice(11, 14), slice(15, 18)])
-        self.assertEqual(list(runs_of_ones(array, min_samples=2)), [slice(4, 9), slice(11, 14), slice(15, 18)])
-        self.assertEqual(list(runs_of_ones(array, min_samples=3)), [slice(4, 9)])
+        self.assertEqual(list(array.runs_of_ones(data)), [slice(2, 3), slice(4, 9), slice(11, 14), slice(15, 18)])
+        self.assertEqual(list(array.runs_of_ones(data, min_samples=2)), [slice(4, 9), slice(11, 14), slice(15, 18)])
+        self.assertEqual(list(array.runs_of_ones(data, min_samples=3)), [slice(4, 9)])
 
 
 class TestSectionOverlap(unittest.TestCase):
     def test_section_overlap(self):
         def call(x, y):
-            return section_overlap(np.array(x, dtype=np.bool),
-                                      np.array(y, dtype=np.bool)).tolist()
+            return array.section_overlap(np.array(x, dtype=np.bool),
+                                         np.array(y, dtype=np.bool)).tolist()
         T, F = True, False
         self.assertEqual(call([], []), [])
         self.assertEqual(call([F], [F]), [F])
@@ -590,17 +657,17 @@ class TestSectionOverlap(unittest.TestCase):
 
 class TestSlicesToArray(unittest.TestCase):
     def test_slices_to_array(self):
-        self.assertEqual(slices_to_array(0, []).tolist(), [])
-        self.assertEqual(slices_to_array(0, [slice(0, 1)]).tolist(), [])
-        self.assertEqual(slices_to_array(1, []).tolist(), [False])
-        self.assertEqual(slices_to_array(1, [slice(0, 1)]).tolist(), [True])
-        self.assertEqual(slices_to_array(5, []).tolist(), [False] * 5)
-        self.assertEqual(slices_to_array(5, [slice(None, None)]).tolist(), [True] * 5)
-        self.assertEqual(slices_to_array(5, [slice(-1, 6)]).tolist(), [True] * 5)
-        self.assertEqual(slices_to_array(5, [slice(None, 3)]).tolist(), [1, 1, 1, 0, 0])
-        self.assertEqual(slices_to_array(5, [slice(3, None)]).tolist(), [0, 0, 0, 1, 1])
-        self.assertEqual(slices_to_array(5, [slice(4, 3)]).tolist(), [False] * 5)
-        self.assertEqual(slices_to_array(5, [slice(1, 2), slice(3, 5)]).tolist(), [0, 1, 0, 1, 1])
+        self.assertEqual(array.slices_to_array(0, []).tolist(), [])
+        self.assertEqual(array.slices_to_array(0, [slice(0, 1)]).tolist(), [])
+        self.assertEqual(array.slices_to_array(1, []).tolist(), [False])
+        self.assertEqual(array.slices_to_array(1, [slice(0, 1)]).tolist(), [True])
+        self.assertEqual(array.slices_to_array(5, []).tolist(), [False] * 5)
+        self.assertEqual(array.slices_to_array(5, [slice(None, None)]).tolist(), [True] * 5)
+        self.assertEqual(array.slices_to_array(5, [slice(-1, 6)]).tolist(), [True] * 5)
+        self.assertEqual(array.slices_to_array(5, [slice(None, 3)]).tolist(), [1, 1, 1, 0, 0])
+        self.assertEqual(array.slices_to_array(5, [slice(3, None)]).tolist(), [0, 0, 0, 1, 1])
+        self.assertEqual(array.slices_to_array(5, [slice(4, 3)]).tolist(), [False] * 5)
+        self.assertEqual(array.slices_to_array(5, [slice(1, 2), slice(3, 5)]).tolist(), [0, 1, 0, 1, 1])
 
 
 class TestKeyValue(unittest.TestCase):
@@ -608,66 +675,73 @@ class TestKeyValue(unittest.TestCase):
         data = np.fromstring(b'***\x0ATAILNUM=G-FDSL\x0ASERIALNUM=10344\x0A***', dtype=np.uint8)
         delimiter = b'='
         separator = b'\x0A'
-        self.assertEqual(key_value(data, 'TAILNUM', delimiter, separator), b'G-FDSL')
-        self.assertEqual(key_value(data, 'SERIALNUM', delimiter, separator), b'10344')
+        self.assertEqual(array.key_value(data, 'TAILNUM', delimiter, separator), b'G-FDSL')
+        self.assertEqual(array.key_value(data, 'SERIALNUM', delimiter, separator), b'10344')
 
 
 class TestSwapBytes(unittest.TestCase):
     def test_swap_bytes(self):
         arr = np.ones(0, dtype=np.uint16)
-        self.assertEqual(len(swap_bytes(arr)), 0)
+        self.assertEqual(len(array.swap_bytes(arr)), 0)
         data = b'\xAF'
         arr = np.fromstring(data, dtype=np.uint8)
-        self.assertEqual(swap_bytes(arr).tostring(), data)
+        self.assertEqual(array.swap_bytes(arr).tostring(), data)
         data = b'\x12\xAB\xCD\xEF'
         arr = np.fromstring(data, dtype=np.uint8)
-        self.assertEqual(swap_bytes(arr).tostring(), data)
+        self.assertEqual(array.swap_bytes(arr).tostring(), data)
         arr = np.fromstring(data, dtype=np.uint16)
-        self.assertEqual(swap_bytes(arr).tostring(), b'\xAB\x12\xEF\xCD')
+        self.assertEqual(array.swap_bytes(arr).tostring(), b'\xAB\x12\xEF\xCD')
 
 
 class TestPack(unittest.TestCase):
     def test_pack(self):
         self.assertEqual(
-            pack(np.fromstring(b'\x47\x02\xAB\x0C', dtype=np.uint8)).tostring(),
+            array.pack(np.fromstring(b'\x47\x02\xAB\x0C', dtype=np.uint8)).tostring(),
             np.fromstring(b'\x47\xB2\xCA', dtype=np.uint8).tostring())
 
 
 class TestUnpack(unittest.TestCase):
     def test_unpack(self):
         self.assertEqual(
-            unpack(np.fromstring(b'\x47\xB2\xCA', dtype=np.uint8)).tostring(),
+            array.unpack(np.fromstring(b'\x47\xB2\xCA', dtype=np.uint8)).tostring(),
             np.fromstring(b'\x47\x02\xAB\x0C', dtype=np.uint8).tostring())
+
+
+class TestUnpackLittleEndian(unittest.TestCase):
+    def test_unpack_little_endian(self):
+        data = np.frombuffer(b'\x24\x70\x5C\x12\x34\x56', dtype=np.uint8).copy()
+        self.assertEqual(hexlify(np.asarray(array.unpack_little_endian(data)).tostring()), b'47025c0023015604')
 
 
 class TestArrayIndexUint16(unittest.TestCase):
     def test_array_index_uint16(self):
-        self.assertEqual(array_index_uint16(10, np.empty(0, dtype=np.uint16)), -1)
-        self.assertEqual(array_index_uint16(10, np.array([2,4,6,8], dtype=np.uint16)), -1)
-        self.assertEqual(array_index_uint16(10, np.array([10], dtype=np.uint16)), 0)
-        self.assertEqual(array_index_uint16(10, np.array([2,4,6,8,10], dtype=np.uint16)), 4)
+        self.assertEqual(array.array_index_uint16(10, np.empty(0, dtype=np.uint16)), -1)
+        self.assertEqual(array.array_index_uint16(10, np.array([2,4,6,8], dtype=np.uint16)), -1)
+        self.assertEqual(array.array_index_uint16(10, np.array([10], dtype=np.uint16)), 0)
+        self.assertEqual(array.array_index_uint16(10, np.array([2,4,6,8,10], dtype=np.uint16)), 4)
 
 
 class TestIndexOfSubarray(unittest.TestCase):
     def test_index_of_subarray(self):
-        array = np.zeros(16, dtype=np.uint8)
-        subarray = np.array([1, 2, 3, 4], dtype=np.uint8)
-        self.assertEqual(index_of_subarray_uint8(array, subarray), -1)
-        self.assertEqual(index_of_subarray_uint8(array, subarray, start=5), -1)
-        array[0] = 1
-        array[1] = 2
-        array[2] = 3
-        array[3] = 4
-        self.assertEqual(index_of_subarray_uint8(array, subarray), 0)
-        self.assertEqual(index_of_subarray_uint8(array, subarray, start=1), -1)
-        array[1] = 5
-        self.assertEqual(index_of_subarray_uint8(array, subarray), -1)
-        array[12] = 1
-        array[13] = 2
-        array[14] = 3
-        array[15] = 4
-        self.assertEqual(index_of_subarray_uint8(array, subarray), 12)
-        self.assertEqual(index_of_subarray_uint8(array, subarray, start=10), 12)
-        self.assertEqual(index_of_subarray_uint8(array, subarray, start=14), -1)
-        self.assertEqual(index_of_subarray_uint8(subarray, array), -1)
-        self.assertEqual(index_of_subarray_uint8(subarray, array, start=10000), -1)
+        arr = np.zeros(16, dtype=np.uint8)
+        subarr = np.arange(1, 5, dtype=np.uint8)
+        self.assertEqual(array.index_of_subarray_uint8(arr, subarr), -1)
+        self.assertEqual(array.index_of_subarray_uint8(arr, subarr, start=5), -1)
+        arr[0] = 1
+        arr[1] = 2
+        arr[2] = 3
+        arr[3] = 4
+        self.assertEqual(array.index_of_subarray_uint8(arr, subarr), 0)
+        self.assertEqual(array.index_of_subarray_uint8(arr, subarr, start=1), -1)
+        arr[1] = 5
+        self.assertEqual(array.index_of_subarray_uint8(arr, subarr), -1)
+        arr[12] = 1
+        arr[13] = 2
+        arr[14] = 3
+        arr[15] = 4
+        self.assertEqual(array.index_of_subarray_uint8(arr, subarr), 12)
+        self.assertEqual(array.index_of_subarray_uint8(arr, subarr, start=10), 12)
+        self.assertEqual(array.index_of_subarray_uint8(arr, subarr, start=14), -1)
+        self.assertEqual(array.index_of_subarray_uint8(subarr, arr), -1)
+        self.assertEqual(array.index_of_subarray_uint8(subarr, arr, start=10000), -1)
+
