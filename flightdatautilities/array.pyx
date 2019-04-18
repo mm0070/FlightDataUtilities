@@ -105,6 +105,42 @@ cdef:
 Value = namedtuple('Value', 'index value')
 
 
+cpdef bint any_array(array):
+    cdef:
+        Py_ssize_t idx
+        unsigned char[:] data = array.view(np.uint8)
+    for idx in range(data.shape[0]):
+        if data[idx]:
+            return True
+    return False
+
+
+cpdef bint all_array(array):
+    '''
+    '''
+    cdef:
+        Py_ssize_t idx
+        unsigned char[:] data = array.view(np.uint8)
+    for idx in range(data.shape[0]):
+        if not data[idx]:
+            return False
+    return True
+
+
+cpdef bint entirely_masked(array):
+    '''
+    Worst case is 2x faster than np.ma.count, best case (first sample unmasked) is 500x faster on large array.
+    '''
+    return array.mask if np.isscalar(array.mask) else all_array(array.mask)
+
+
+cpdef bint entirely_unmasked(array):
+    '''
+    Worst case is 2x faster than np.ma.count, best case (first sample masked) is 500x faster on large array.
+    '''
+    return not array.mask if np.isscalar(array.mask) else not any_array(array.mask)
+
+
 cdef object idx_none(Py_ssize_t idx):
     return None if idx == -1 else idx
 
@@ -142,11 +178,8 @@ cdef Py_ssize_t cython_nearest_idx(unsigned char[:] array, Py_ssize_t idx, bint 
 
 
 def nearest_idx(array, long idx, bint match=True, start_idx=None, stop_idx=None):
-    return idx_none(cython_nearest_idx(
-        array.view(np.uint8), idx, match=match,
-        start_idx=none_idx(start_idx),
-        stop_idx=none_idx(stop_idx),
-    ))
+    return idx_none(cython_nearest_idx(array.view(np.uint8), idx, match=match,
+                    start_idx=none_idx(start_idx), stop_idx=none_idx(stop_idx)))
 
 
 def nearest_slice(array, Py_ssize_t idx, bint match=True):
@@ -238,12 +271,11 @@ def repair_mask(array, method='interpolate', repair_duration=10, frequency=1, bi
     '''
     cdef Py_ssize_t length, repair_samples, unmasked_samples
 
-    unmasked_samples = np.ma.count(array)
-    if unmasked_samples == 0:
+    if array.mask.all():  # XXX: calling all and any is faster than calling np.ma.count once
         if raise_entirely_masked:
             raise ValueError('Array cannot be repaired as it is entirely masked')
         return array
-    elif len(array) == unmasked_samples:
+    elif not array.mask.any():
         return array
 
     dtype = array.dtype
@@ -421,7 +453,7 @@ def section_overlap(a, b):
     return np.asarray(out).view(np.uint8)
 
 
-def remove_small_runs(array, Py_ssize_t seconds=10, float hz=1):  # TODO: floating point hz
+def remove_small_runs(array, float seconds=10, float hz=1):  # TODO: floating point hz
     '''
     Optimised version of slices_remove_small_slices (330 times faster):
 >>> from analysis_engine.library import runs_of_ones, slices_remove_small_gaps
@@ -1079,6 +1111,26 @@ def unpack(array):
     return unpacked
 
 
+cpdef unsigned short[:] unpack_little_endian(unsigned char[:] data):
+    '''
+    b'24705c' -> b'47025c00'
+    '''
+    if data.shape[0] % 3 != 0:
+        raise ValueError('data length must be a multiple of 3')
+
+    cdef:
+        unsigned short[:] output = np.zeros(<Py_ssize_t>(data.shape[0] // 1.5), dtype=np.uint16)
+        Py_ssize_t data_idx = 0, output_idx = 0
+
+    while data_idx < data.shape[0]:  # cython range with step is slow
+        output[output_idx] = ((data[data_idx] & 0b11110000) << 4) | ((data[data_idx] & 0b1111) << 4) | (data[data_idx + 1] >> 4)
+        output[output_idx + 1] = ((data[data_idx + 1] & 0b1111) << 8) | data[data_idx + 2]
+        data_idx += 3
+        output_idx += 2
+
+    return output
+
+
 def pack(array):
     '''
     Pack 'unpacked' flight data into packed format.
@@ -1160,6 +1212,29 @@ cpdef Py_ssize_t array_index_uint16(unsigned short value, unsigned short[:] arra
     return -1
 
 
+def extrap1d(interpolator):
+    '''
+    Extends scipy.interp1d which extrapolates values outside of the interpolation points.
+    http://stackoverflow.com/questions/2745329/how-to-make-scipy-interpolate-give-a-an-extrapolated-result-beyond-the-input-ran
+    Optimised interpolation with extrapolation has been implemented in Interpolator.
+    '''
+    xs = interpolator.x
+    ys = interpolator.y
+
+    def pointwise(x):
+        if x < xs[0]:
+            return ys[0] + (x - xs[0]) * (ys[1] - ys[0]) / (xs[1] - xs[0])
+        elif x > xs[-1]:
+            return ys[-1] + (x - xs[-1]) * (ys[-1] - ys[-2]) / (xs[-1] - xs[-2])
+        else:
+            return interpolator(x)
+
+    def ufunclike(xs):
+        return scipy.array(map(pointwise, scipy.array(xs)))
+
+    return ufunclike
+
+
 def merge_masks(masks):
     '''
     ORs multiple masks together. Could this be done in one step with numpy?
@@ -1216,7 +1291,7 @@ def downsample_arrays(arrays):
     Return arrays downsampled to the size of the smallest.
 
     :param arrays: Arrays to downsample.
-    :type arrays: iterable of np.ma.masked_array
+    :type arrays: iterable of np.ndarray or np.ma.masked_array
     :returns: Arrays downsampled to the size of the smallest.
     :rtype: iterable of np.ma.masked_array
     '''
@@ -1276,17 +1351,16 @@ def align_arrays(slave_array, master_array):
     Very basic aligning using repeat to upsample and skipping over samples to
     downsample the slave array to the master frequency
 
-    >>> align(np.arange(10), np.arange(20,30))  # equal length
+    >>> align_arrays(np.arange(10), np.arange(20,30))  # equal length
     array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
-    >>> align(np.arange(40,80), np.arange(20,40))  # downsample every other
-    array([40, 42, 44, 46, 48, 50, 52, 54, 56, 58, 60, 62, 64, 66, 68, 70, 72,
-           74, 76, 78])
-    >>> align(np.arange(40,80), np.arange(30,40))  # downsample every 4th
+    >>> align_arrays(np.arange(40,80), np.arange(20,40))  # downsample every other
+    array([40, 42, 44, 46, 48, 50, 52, 54, 56, 58, 60, 62, 64, 66, 68, 70, 72, 74, 76, 78])
+    >>> align_arrays(np.arange(40,80), np.arange(30,40))  # downsample every 4th
     array([40, 44, 48, 52, 56, 60, 64, 68, 72, 76])
-    >>> align(np.arange(10), np.arange(20,40))  # upsample
+    >>> align_arrays(np.arange(10), np.arange(20,40))  # upsample
     array([0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9])
     '''
-    ratio = len(master_array) / float(len(slave_array))
+    ratio = len(master_array) / len(slave_array)
     if ratio == 1:
         # nothing to do
         return slave_array
@@ -1359,13 +1433,25 @@ cpdef bint is_power2(number):
 
 cpdef is_power2_fraction(number):
     '''
-    TODO: Tests
+    Whether or not a number is a power of two or one divided by a power of two.
 
     :type number: int or float
     :returns: if the number is either a power of 2 or a fraction, e.g. 4, 2, 1, 0.5, 0.25
     :rtype: bool
     '''
-    if number < 1:
+    if 0 < number < 1:
         number = 1 / number
     return is_power2(number)
+
+
+cpdef np.ndarray twos_complement(np.ndarray array_in, int bit_length, bint copy=False):
+    '''
+    Convert the values from "sign bit" notation to "two's complement".
+    '''
+    array_out = array_in.copy() if copy else array_in
+    cdef:
+        int saturated_value = (2 ** bit_length) - 1
+        int max_positive_value = 2 ** (bit_length - 1) - 1
+    array_out[array_out > max_positive_value] -= saturated_value + 1
+    return array_out
 

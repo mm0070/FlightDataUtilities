@@ -1,4 +1,7 @@
 # cython: language_level=3, boundscheck=False
+import numpy as np
+cimport numpy as np
+
 cdef enum RepairMethod:
     FILL_START, FILL_STOP, INTERPOLATE
 
@@ -52,6 +55,7 @@ cdef class ByteAligner:
 
 
 cpdef unsigned short[:] sync_words_from_modes(modes)
+cpdef np.ndarray twos_complement(np.ndarray array_in, int bit_length, bint copy=?)
 
 
 """
