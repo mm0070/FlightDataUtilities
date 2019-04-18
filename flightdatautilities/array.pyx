@@ -74,7 +74,6 @@ slices_to_array(length, slices)
 ## mask_outside_slices()
 
 ~slices_to_array(length, slices)
-
 '''
 
 
@@ -89,12 +88,16 @@ import numpy as np
 cimport numpy as np
 
 from libc.math cimport fabs
-from libc.stdio cimport printf
+
+from collections import namedtuple
 
 
 cdef:
     #int FILL_START = 0, FILL_STOP = 1, INTERPOLATE = 2
     int MAX_VALUE = 0, MIN_VALUE = 1, MAX_ABS_VALUE = 2, MIN_ABS_VALUE = 3
+
+
+Value = namedtuple('Value', 'index value')
 
 
 cdef object idx_none(long idx):
@@ -482,47 +485,55 @@ def contract_runs(array, unsigned long size):
     return np.asarray(data).view(np.bool)
 
 
-def runs_of_ones(array):
+def runs_of_ones(array, min_samples=None):
     '''
-    Create slices where data is True. Optimised generator version of analysis_engine.library.runs_of_ones.
+    Create slices where data evaluates to True. Optimised generator version of analysis_engine.library.runs_of_ones.
     ~12x faster for array of 10000 elements.
+
+    :param array: array with 8-bit datatype, e.g. np.bool or np.uint8
+    :type array: np.ndarray
+    :param min_samples: minimum size of slice (stop - start > min_samples)
+    :type min_samples: int or None
+    :yields: slices where data evaluates to True
+    :ytype: slice
     '''
     cdef:
         unsigned char[:] view = array.view(np.uint8)
-        long idx, start_idx = -1
+        long idx, min_samples_long = none_idx(min_samples), start_idx = -1
 
     for idx in range(view.shape[0]):
         if view[idx] and start_idx == -1:
             start_idx = idx
         elif not view[idx] and start_idx != -1:
-            yield slice(start_idx, idx)
+            if min_samples_long == -1 or idx - start_idx > min_samples_long:
+                yield slice(start_idx, idx)
             start_idx = -1
 
-    if start_idx != -1:
+    if start_idx != -1 and (min_samples_long == -1 or view.shape[0] - start_idx > min_samples_long):
         yield slice(start_idx, view.shape[0])
 
 
-# TODO
-def overlap_merge(x, y, unsigned long extend_start=0, unsigned long extend_stop=0):
+## TODO
+#def overlap_merge(x, y, unsigned long extend_start=0, unsigned long extend_stop=0):
 
-    cdef:
-        unsigned char[:] xv = x.view(np.uint8), yv = y.view(np.uint8)
-        long y_start_idx = -1
+    #cdef:
+        #unsigned char[:] xv = x.view(np.uint8), yv = y.view(np.uint8)
+        #long y_start_idx = -1
 
-    for idx in range(xv.shape[0]):
-        if xv[idx] and x_start_idx == -1:
-            x_start_idx = idx
+    #for idx in range(xv.shape[0]):
+        #if xv[idx] and x_start_idx == -1:
+            #x_start_idx = idx
 
-        if yv[idx] and y_start_idx == -1:
-            y_start_idx = idx
-        elif not yv[idx] and yv_start_idx != -1:
-            y_start_idx = -1
+        #if yv[idx] and y_start_idx == -1:
+            #y_start_idx = idx
+        #elif not yv[idx] and yv_start_idx != -1:
+            #y_start_idx = -1
 
-        if xv[idx] and start_idx == -1:
-            start_idx = idx
-        elif not a[idx] and start_idx != -1:
-            # TODO: expand current range from y
-            start_idx = -1
+        #if xv[idx] and start_idx == -1:
+            #start_idx = idx
+        #elif not a[idx] and start_idx != -1:
+            ## TODO: expand current range from y
+            #start_idx = -1
 
 
 ################################################################################
@@ -541,10 +552,9 @@ def is_constant(data):
     elif data.dtype == np.uint16:
         return is_constant_uint16(data)
     else:
-        return (arr == arr[0]).all()  # type-inspecific fallback (slower)
+        return (data == data[0]).all()  # type-inspecific fallback (slower)
 
 
-@cython.boundscheck(False)
 cpdef bint is_constant_uint8(unsigned char[:] data) nogil:
     '''
     Optimised is_constant check for uint8 datatype.
@@ -564,7 +574,6 @@ cpdef bint is_constant_uint8(unsigned char[:] data) nogil:
     return True
 
 
-@cython.boundscheck(False)
 cpdef bint is_constant_uint16(unsigned short[:] data) nogil:
     '''
     Optimised is_constant check for uint16 datatype.
@@ -583,3 +592,44 @@ cpdef bint is_constant_uint16(unsigned short[:] data) nogil:
             return False
     return True
 
+
+def first_valid_sample(array, long start_idx=0):
+    '''
+    Returns the first valid sample of data from a point in an array.
+    '''
+    cdef:
+        unsigned char[:] mask = np.ma.getmaskarray(array).view(np.uint8)
+        long idx
+
+    if start_idx < 0:
+        start_idx += mask.shape[0]
+
+    for idx in range(start_idx, mask.shape[0]):
+        if not mask[idx]:
+            return Value(idx, array[idx])
+
+    return Value(None, None)
+
+
+def last_valid_sample(array, end_idx=None):
+    '''
+    Returns the last valid sample of data before a point in an array.
+    '''
+    cdef:
+        unsigned char[:] mask = np.ma.getmaskarray(array).view(np.uint8)
+        long end_idx_long, idx
+
+    if end_idx is None:
+        end_idx_long = mask.shape[0] - 1
+    else:
+        end_idx_long = end_idx
+        if end_idx_long < 0:
+            end_idx_long = end_idx_long + mask.shape[0]
+    if end_idx_long >= mask.shape[0]:
+        end_idx_long = mask.shape[0] - 1
+
+    for idx in range(end_idx_long, -1, -1):
+        if not mask[idx]:
+            return Value(idx, array[idx])
+
+    return Value(None, None)
