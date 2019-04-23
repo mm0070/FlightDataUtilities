@@ -7,6 +7,7 @@ from numpy.ma.testutils import assert_array_equal
 from flightdatautilities.array import (
     contract_runs,
     first_valid_sample,
+    Interpolator,
     is_constant,
     is_constant_uint8,
     is_constant_uint16,
@@ -51,15 +52,58 @@ class TestFirstValidSample(unittest.TestCase):
         self.assertEqual(first_valid_sample(np.ma.array(data, mask=[1,0,1,0]), -2), (3, 14))
 
 
-class TestLastValidSample(unittest.TestCase):
-    def test_last_valid_sample(self):
-        data = np.arange(11, 15)
-        self.assertEqual(last_valid_sample(np.ma.array(data, mask=[1,0,1,0])), (3, 14))
-        self.assertEqual(last_valid_sample(np.ma.array(data, mask=True)), (None, None))
-        self.assertEqual(last_valid_sample(np.ma.array(data, mask=[1,0,1,0]), -2), (1, 12))
-        self.assertEqual(last_valid_sample(np.ma.array(data, mask=[1,0,1,0]), -3), (1, 12))
-        self.assertEqual(last_valid_sample(np.ma.array(data, mask=[1,0,1,0]), 9), (3, 14))
-        self.assertEqual(last_valid_sample(np.ma.array(data, mask=[0,0,0,1])), (2, 13))
+class TestInterpolator(unittest.TestCase):
+    def test_interpolator(self):
+        def interpolate(points, array, copy=True):
+            if not isinstance(array, np.ndarray):
+                array = np.array(array, dtype=np.float64)
+            return np.asarray(Interpolator(points).interpolate(array, copy=copy)).tolist()
+
+        # Must be at least two points.
+        self.assertRaises(ValueError, Interpolator, [])
+        self.assertRaises(ValueError, Interpolator, [(0, 1)])
+        points = [(0, 1), (1, 2)]
+        self.assertEqual(interpolate(points, [0, 1]), [1, 2])
+        points = [(0, 1), (1, 2), (2, 3)]
+        self.assertEqual(interpolate(points, [0]), [1])
+        self.assertEqual(interpolate(points, [2]), [3])
+        self.assertEqual(interpolate(points, [0, 1, 2]), [1, 2, 3])
+        self.assertEqual(interpolate(points, [1.5]), [2.5])
+        self.assertEqual(interpolate(points, [-1, 0, 1, 2, 3]), [0, 1, 2, 3, 4])
+        self.assertEqual(interpolate(points, [131.3]), [132.3])
+        points = [
+            (204.8, 0.5),
+            (362.496, 0.9),
+            (495.616, 5),
+            (626.688, 15),
+            (759.808, 20),
+            (890.88, 25.2),
+            (1024, 30),
+        ]
+        array = [101.2, 203.5, 312.4, 442.1, 582.4, 632.12, 785.2, 890.21, 904.64, 1000, 1024, 1200]
+        # output exactly matches array_operations.extrap1d implementation.
+        expected = [
+            0.23721590909090898,
+            0.4967025162337662,
+            0.7729301948051948,
+            3.351745793269232,
+            11.62109375,
+            15.204026442307693,
+            21.007373046875003,
+            25.173419189453124,
+            25.696153846153845,
+            29.134615384615383,
+            30.0,
+            36.34615384615385,
+        ]
+        for x, y in zip(interpolate(points, array), expected):
+            self.assertAlmostEqual(x, y, places=8)
+        points = [(0, 10), (1, 20), (1.5, 40), (2.0, 400)]
+        array = [0, 1, 1.5, 2.0]
+        expected = [10, 20, 40, 400]
+        self.assertEqual(interpolate(points, array), expected)
+        # check results are the same with copy=False
+        self.assertEqual(interpolate(points, array, copy=False), expected)
 
 
 class TestIsConstant(unittest.TestCase):
@@ -87,6 +131,17 @@ class TestIsConstantUint8(unittest.TestCase):
         self.assertTrue(is_constant_uint8(np.zeros(10, dtype=np.uint8)))
         self.assertTrue(is_constant_uint8(np.ones(10, dtype=np.uint8)))
         self.assertFalse(is_constant_uint8(np.arange(10, dtype=np.uint8)))
+
+
+class TestLastValidSample(unittest.TestCase):
+    def test_last_valid_sample(self):
+        data = np.arange(11, 15)
+        self.assertEqual(last_valid_sample(np.ma.array(data, mask=[1,0,1,0])), (3, 14))
+        self.assertEqual(last_valid_sample(np.ma.array(data, mask=True)), (None, None))
+        self.assertEqual(last_valid_sample(np.ma.array(data, mask=[1,0,1,0]), -2), (1, 12))
+        self.assertEqual(last_valid_sample(np.ma.array(data, mask=[1,0,1,0]), -3), (1, 12))
+        self.assertEqual(last_valid_sample(np.ma.array(data, mask=[1,0,1,0]), 9), (3, 14))
+        self.assertEqual(last_valid_sample(np.ma.array(data, mask=[0,0,0,1])), (2, 13))
 
 
 class TestMaxValues(unittest.TestCase):
@@ -238,6 +293,7 @@ class TestRepairMask(unittest.TestCase):
         assert_array_equal(res.data, array.data)
         assert_array_equal(res.mask, True)
 
+    @unittest.skip('repair_above has not yet been carried over from analysis_engine.library version')
     def test_repair_mask_above(self):
         array = np.ma.arange(10)
         array[5] = np.ma.masked
