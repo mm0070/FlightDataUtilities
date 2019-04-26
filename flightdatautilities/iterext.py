@@ -285,3 +285,13 @@ def tolist(array):
     '''
     return [a.tolist() if hasattr(a, 'tolist') else tolist(a) for a in array]
 
+
+def is_empty(iterable):
+    it = iter(iterable)
+    try:
+        first = next(it)
+    except StopIteration:
+        return iterable, True
+    else:
+        return chain([first], it), False
+
