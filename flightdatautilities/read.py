@@ -185,6 +185,44 @@ class file_reader(abstract_reader):
         return data
 
 
+#class stream_wrapper(object):
+    #def __init__(self, data_iter):
+        #self._data_iter = data_iter
+        #self._chunks = []
+        #self.closed = False
+
+    #@property
+    #def size(self):
+        #return sum(len(c) for c in self._chunks)
+
+    #def __next__(self):
+        #if len(self._chunks):
+
+        #read_count = min((self.stop - self.pos) // self.itemsize, self.count) if self.stop else self.count
+        #if read_count is not None and read_count <= 0:
+            #raise StopIteration
+
+        #data = self.next_data(read_count)
+
+        #if not len(data):
+            #raise StopIteration
+
+        #self.pos += len(data) * self.itemsize
+        #if self.callback and self.pos != self.prev_pos:  # TODO: callback progress
+            #self.callback(self.pos)
+        #self.prev_pos = self.pos
+        #return data
+
+    #def _grow(self, count):
+
+
+    #def read(self, count):
+        #self.grow(count)
+
+    #def close(self):
+        #pass
+
+
 def reader(obj, *args, **kwargs):
     '''
     reader factory which creates a reader based on the type of obj.
@@ -202,4 +240,12 @@ def reader(obj, *args, **kwargs):
     else:
         cls = file_reader  # filepath or fileobj
     return cls(obj, *args, **kwargs)
+
+
+def read(data):
+    '''
+    Helper generator which enters and exits reader as a context manager (required for opening and closing files).
+    '''
+    with reader(data) as r:
+        yield from r
 
