@@ -250,16 +250,17 @@ def iter_data_stop_idx(data_gen, stop, byte=False):
         pos = next_pos
 
 
-def iter_dtype(data_gen, dtype=None, skip_incompatible=False):
+def iter_dtype(data_gen, dtype=None, copy=False, skip_incompatible=False):
     '''
     Iterate over an iterable while converting to dtype.
 
     :type data_gen: iterable
+    :type skip_incompatible: bool
     :rtype: iterable
     '''
     for data in data_gen:
         try:
-            yield as_dtype(data, dtype)
+            yield as_dtype(data, dtype, copy=copy)
         except ValueError:
             if skip_incompatible:
                 continue

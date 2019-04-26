@@ -10,11 +10,13 @@ MEMORYVIEW_TYPES = {'memoryview', '_memoryviewslice'}
 ARRAY_LIKE_TYPES = ARRAY_TYPES | MEMORYVIEW_TYPES
 
 
-def as_dtype(obj, dtype=None):
+def as_dtype(obj, dtype=None, copy=False):
     '''
     Returns str or array as str or array with specified dtype.
 
     :type obj: str or np.array
+    :type dtype: np.dtype or str or None
+    :type copy: bool
     :rtype: str or np.array
     '''
     if dtype is None and is_array_like(obj):
@@ -24,7 +26,7 @@ def as_dtype(obj, dtype=None):
             obj = np.fromstring(obj, dtype=dtype)
         else:
             if is_memoryview(obj):
-                obj = np.asarray(obj)
+                obj = np.asarray(obj, copy=copy)
             if obj.dtype != dtype:
                 obj = obj.view(dtype)
     return obj
