@@ -8,10 +8,13 @@ space.
 
 import gzip
 import logging
+import lzma
 import os
 import shutil
 import sys
 import tempfile
+import zipfile
+import zlib
 
 if sys.version_info[0] == 2:
     FileExistsError = FileNotFoundError = OSError
@@ -32,6 +35,20 @@ COMPRESSION_FORMATS = {
     'gz': gzip.GzipFile,
     'bz2': bz2.BZ2File,
 }
+# TODO: Add blosc
+FILE_CLASSES = {
+    'bz2': bz2.open,
+    'gz': gzip.open,
+    'xz': lzma.open,
+    'zip': zipfile.ZipFile,
+    None: open,
+}
+COMPRESSORS = {
+    'bz2': bz2.BZ2Compressor,
+    'gz': zlib.compressobj,
+    'xz': lzma.LZMACompressor,
+}
+DEFAULT_COMPRESSION = 'bz2'
 
 
 class CompressedFile(object):
@@ -261,6 +278,18 @@ class CachedCompressedFile(ReadOnlyCompressedFile):
         super(CachedCompressedFile, self).__init__(*args, **kwargs)
 
 
+def iter_compress(data_gen, compression):
+    '''
+    Compress a data generator with a compressor.
+    '''
+    compressor = COMPRESSORS[compression]()
+
+    for data in data_gen:
+        yield compressor.compress(data)
+
+    yield compressor.flush()
+
+
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
@@ -291,3 +320,4 @@ if __name__ == '__main__':
             parser.error('Unknown file extension')
         with open(output_path, 'w') as output_file:
             output_file.write(decompressor(args.input_file_path).read())
+

@@ -1,13 +1,19 @@
 import unittest
 
 import numpy as np
+import os
 
 from numpy.ma.testutils import assert_array_equal
 
+from flightdatautilities import masked_array_testutils as ma_test
 from flightdatautilities.array import (
+    ByteAligner,
+    array_index_uint16,
     contract_runs,
     first_valid_sample,
+    key_value,
     Interpolator,
+    index_of_subarray_uint8,
     is_constant,
     is_constant_uint8,
     is_constant_uint16,
@@ -15,13 +21,211 @@ from flightdatautilities.array import (
     max_values,
     nearest_idx,
     nearest_slice,
+    pack,
     remove_small_runs,
     repair_mask,
     runs_of_ones,
     section_overlap,
     slices_to_array,
+    swap_bytes,
+    unpack,
 )
-from flightdatautilities import masked_array_testutils as ma_test
+from flightdatautilities.read import reader
+
+
+class TestByteAligner(unittest.TestCase):
+    @unittest.skip('Test requires method gil enabled and cpdef')
+    def test__get_word(self):
+        byte_aligned = ByteAligner()
+        byte_aligned._buff = np.zeros(4, dtype=np.uint8)
+        self.assertEqual(byte_aligned._get_word(0), 0)
+        self.assertEqual(byte_aligned._get_word(1), 0)
+        self.assertEqual(byte_aligned._get_word(2), 0)
+        byte_aligned._buff[1] = 0x47
+        byte_aligned._buff[2] = 0x02
+        self.assertEqual(byte_aligned._get_word(1), 583)
+        byte_aligned._little_endian = False
+        self.assertEqual(byte_aligned._get_word(1), 18178)
+
+    @unittest.skip('Test requires method gil enabled and cpdef')
+    def test__sync_word_idx(self):
+        byte_aligned = ByteAligner()
+        byte_aligned._buff = np.zeros(4, dtype=np.uint8)
+        self.assertEqual(byte_aligned._sync_word_idx(0), -1)
+        self.assertEqual(byte_aligned._sync_word_idx(1), -1)
+        self.assertEqual(byte_aligned._sync_word_idx(2), -1)
+        byte_aligned._buff = np.array([0xab, 0xB8, 0x05, 0xcd], dtype=np.uint8)
+        self.assertEqual(byte_aligned._sync_word_idx(0), -1)
+        self.assertEqual(byte_aligned._sync_word_idx(1), 5)
+        self.assertEqual(byte_aligned._sync_word_idx(2), -1)
+        byte_aligned._buff = np.array([0xab, 0x01, 0xDB, 0xcd], dtype=np.uint8)
+
+    @unittest.skip('Test requires method gil enabled and cpdef')
+    def test__frame_wps(self):
+        byte_aligned = ByteAligner()
+        path = os.path.join(TDWGL_DATA_PATH, '07', 'raw.dat')
+        with reader(path, dtype=np.uint8) as data_gen:
+            byte_aligned._buff = next(data_gen)
+            self.assertEqual(byte_aligned._frame_wps(0), -1)
+            self.assertEqual(byte_aligned._frame_wps(0x300), 128)
+
+    @unittest.skip('Test requires method gil enabled and cpdef')
+    def test__next_frame_idx(self):
+        byte_aligned = ByteAligner()
+        path = os.path.join(TDWGL_DATA_PATH, '07', 'raw.dat')
+        with reader(path, dtype=np.uint8) as data_gen:
+            byte_aligned._buff = next(data_gen)
+            self.assertEqual(byte_aligned._next_frame_idx(0), 0x300)
+            self.assertEqual(byte_aligned._wps, 128)
+            self.assertEqual(byte_aligned._next_frame_idx(0x700), 0x700)
+            self.assertEqual(byte_aligned._wps, 128)
+            self.assertEqual(byte_aligned._next_frame_idx(0xB00), 0xB00)
+            self.assertEqual(byte_aligned._wps, 128)
+            self.assertEqual(byte_aligned._next_frame_idx(0xF00), -1)
+
+    def test__loop(self):
+        byte_aligned = ByteAligner()
+        path = os.path.join(TDWGL_DATA_PATH, '07', 'raw.dat')
+        def func(idx):
+            return idx
+        with reader(path, dtype=np.uint8) as data_gen:
+            self.assertEqual(list(byte_aligned._loop(data_gen, func)),
+                             [0x300, 0x700, 0xB00])
+
+    def test_identify_1(self):
+        byte_aligned = ByteAligner()
+        path = os.path.join(TDWGL_DATA_PATH, '07', 'raw.dat')
+        with reader(path, dtype=np.uint8) as data_gen:
+            self.assertEqual(list(byte_aligned.identify(data_gen)),
+                             [(0x300, 128, '717'), (0x700, 128, '717'), (0xB00, 128, '717')])
+        # minimum data
+        byte_aligned.reset()
+        with reader(path, dtype=np.uint8, stop=0x700) as data_gen:
+            self.assertEqual(next(byte_aligned.identify(data_gen)), (0x300, 128, '717'))
+
+    def test_identify_2(self):
+        byte_aligned = ByteAligner()
+        path = os.path.join(TDQAR_DATA_PATH, '09', 'DAR.DAT')
+        with reader(path, dtype=np.uint8) as data_gen:
+            self.assertEqual(list(byte_aligned.identify(data_gen)),
+                             [(0, 128, '717'), (1024, 128, '717'), (2048, 128, '717'), (3072, 128, '717')])
+
+    def test_identify_3(self):
+        byte_aligned = ByteAligner()
+        path = os.path.join(TDQAR_DATA_PATH, '09', 'QAR.DAT')
+        with reader(path, dtype=np.uint8) as data_gen:
+            self.assertEqual(list(byte_aligned.identify(data_gen)),
+                             [(0, 128, '717'), (1024, 128, '717'), (2048, 128, '717'), (3072, 128, '717')])
+
+    def test_identify_4(self):
+        byte_aligned = ByteAligner()
+        path = os.path.join(TDWGL_DATA_PATH, '03', 'raw.dat')
+        with reader(path, dtype=np.uint8) as data_gen:
+            self.assertEqual(list(byte_aligned.identify(data_gen)),
+                             [(0x300, 128, '717'), (0x700, 128, '717'), (0xB00, 128, '717')])
+
+    def test_identify_5(self):
+        byte_aligned = ByteAligner()
+        path = os.path.join(TDWGL_DATA_PATH, '05', 'raw.dat')
+        with reader(path, dtype=np.uint8) as data_gen:
+            self.assertEqual(list(byte_aligned.identify(data_gen)),
+                             [(1024, 128, '717'), (2048, 128, '717'), (3072, 128, '717')])
+
+    def test_identify_6(self):
+        byte_aligned = ByteAligner()
+        path = os.path.join(TDWGL_DATA_PATH, '06', 'raw.dat')
+        with reader(path, dtype=np.uint8) as data_gen:
+            self.assertEqual(list(byte_aligned.identify(data_gen)),
+                             [(1024, 128, '717'), (2048, 128, '717'), (3072, 128, '717'), (4096, 128, '717'),
+                              (5120, 128, '717'), (6144, 128, '717'), (7168, 128, '717')])
+
+    def test_identify_7(self):
+        byte_aligned = ByteAligner()
+        path = os.path.join(TDWGL_DATA_PATH, '07', 'raw.dat')
+        with reader(path, dtype=np.uint8) as data_gen:
+            self.assertEqual(list(byte_aligned.identify(data_gen)),
+                             [(0x300, 128, '717'), (0x700, 128, '717'), (0xB00, 128, '717')])
+
+    def test_process_1(self):
+        byte_aligned = ByteAligner()
+        path = os.path.join(TDWGL_DATA_PATH, '07', 'raw.dat')
+        expected = reader(path, dtype=np.uint8, start=0x300, stop=0xF00).first()
+        with reader(path, dtype=np.uint8) as data_gen:
+            output = np.concatenate(list(byte_aligned.process(data_gen)))
+        self.assertTrue(np.all(output == expected))
+
+    def test_process_2(self):
+        byte_aligned = ByteAligner()
+        path = os.path.join(BYTE_ALIGNED_DATA_PATH, 'all_sync.dat')
+        array = reader(path, dtype=np.uint8).first()
+        data = array.tostring()
+        self.assertEqual(data, next(byte_aligned.process(array)).tostring())
+        # split into 2 equal parts
+        byte_aligned.reset()
+        data_gen = byte_aligned.process(iter(np.split(array, 2)))
+        self.assertEqual(data, np.concatenate(list(data_gen)).tostring())
+        # split into 4 equal parts
+        byte_aligned.reset()
+        data_gen = byte_aligned.process(iter(np.split(array, 4)))
+        self.assertEqual(data, np.concatenate(list(data_gen)).tostring())
+        # split into 3 unequal parts
+        byte_aligned.reset()
+        data_gen = byte_aligned.process(iter(np.array_split(array, 3)))
+        self.assertEqual(data, np.concatenate(list(data_gen)).tostring())
+
+    def test_process_3(self):
+        byte_aligned = ByteAligner()
+        path = os.path.join(BYTE_ALIGNED_DATA_PATH, 'all_sync.dat')
+        data = reader(path).first()
+        offset_data = b'\xFF' * 20 + data + b'\x47\x02' + b'\xFF' * 50
+        array = np.fromstring(offset_data, dtype=np.uint8)
+        self.assertEqual(data, next(byte_aligned.process(array)).tostring())
+        # odd offset
+        byte_aligned.reset()
+        offset_data = b'\x47' * 21 + data + b'\x47\x02' + b'\xB8' * 57
+        array = np.fromstring(offset_data, dtype=np.uint8)
+        self.assertEqual(data, next(byte_aligned.process(array)).tostring())
+        # split into 10 unequal parts
+        byte_aligned.reset()
+        data_gen = iter(np.array_split(array, 4))
+        self.assertEqual(data, np.concatenate(list(byte_aligned.process(data_gen))).tostring())
+        # 2 sections of data
+        byte_aligned.reset()
+        offset_data = b'\xFF' * 537 + data + b'\x47\x02' + b'\x00' * 258 + data + b'\x47\x02' + b'\xFF' * 210
+        data_gen = byte_aligned.process(np.fromstring(offset_data, dtype=np.uint8))
+        self.assertEqual(data * 2, np.concatenate(list(data_gen)).tostring())
+
+    def test_process_start_and_stop(self):
+        byte_aligned = ByteAligner()
+        path = os.path.join(BYTE_ALIGNED_DATA_PATH, 'all_sync.dat')
+        data = reader(path).first()
+        array = np.fromstring(data, dtype=np.uint8)
+        def call(expected, array, *args, **kwargs):
+            result = list(byte_aligned.process(array, *args, **kwargs))
+            if result:
+                result = np.concatenate(result).tostring()
+            self.assertEqual(result, expected)
+            byte_aligned.reset()
+            # also test split array buffering
+            result = list(byte_aligned.process(iter(np.split(array, 4)), *args, **kwargs))
+            if result:
+                result = np.concatenate(result).tostring()
+            self.assertEqual(result, expected)
+            byte_aligned.reset()
+        call(data, array, stop=100)
+        call([], array, start=100)
+        call(data[:512], array, stop=4)
+        call(data[:512], array, stop=2)
+        call(data[:1024], array, stop=6)
+        call(data[:1024], array, start=2, stop=7)
+        call(data[512:1024], array, start=4, stop=8)
+        call(data[512:1536], array, start=6, stop=10)
+        call(data[3584:4096], array, start=28)
+        self.assertRaises(ValueError, list, byte_aligned.process(array, 10, 10))
+        self.assertRaises(ValueError, list, byte_aligned.process(array, 10, 5))
+        self.assertRaises(ValueError, list, byte_aligned.process(array, None, 0))
+        self.assertRaises(ValueError, list, byte_aligned.process(array, None, -1))
+        self.assertRaises(ValueError, list, byte_aligned.process(array, -1, None))
 
 
 class TestContractRuns(unittest.TestCase):
@@ -383,3 +587,72 @@ class TestSlicesToArray(unittest.TestCase):
         self.assertEqual(slices_to_array(5, [slice(4, 3)]).tolist(), [False] * 5)
         self.assertEqual(slices_to_array(5, [slice(1, 2), slice(3, 5)]).tolist(), [0, 1, 0, 1, 1])
 
+
+class TestKeyValue(unittest.TestCase):
+    def test_key_value(self):
+        data = np.fromstring(b'***\x0ATAILNUM=G-FDSL\x0ASERIALNUM=10344\x0A***', dtype=np.uint8)
+        delimiter = b'='
+        separator = b'\x0A'
+        self.assertEqual(key_value(data, 'TAILNUM', delimiter, separator), b'G-FDSL')
+        self.assertEqual(key_value(data, 'SERIALNUM', delimiter, separator), b'10344')
+
+
+class TestSwapBytes(unittest.TestCase):
+    def test_swap_bytes(self):
+        arr = np.ones(0, dtype=np.uint16)
+        self.assertEqual(len(swap_bytes(arr)), 0)
+        data = b'\xAF'
+        arr = np.fromstring(data, dtype=np.uint8)
+        self.assertEqual(swap_bytes(arr).tostring(), data)
+        data = b'\x12\xAB\xCD\xEF'
+        arr = np.fromstring(data, dtype=np.uint8)
+        self.assertEqual(swap_bytes(arr).tostring(), data)
+        arr = np.fromstring(data, dtype=np.uint16)
+        self.assertEqual(swap_bytes(arr).tostring(), b'\xAB\x12\xEF\xCD')
+
+
+class TestPack(unittest.TestCase):
+    def test_pack(self):
+        self.assertEqual(
+            pack(np.fromstring(b'\x47\x02\xAB\x0C', dtype=np.uint8)).tostring(),
+            np.fromstring(b'\x47\xB2\xCA', dtype=np.uint8).tostring())
+
+
+class TestUnpack(unittest.TestCase):
+    def test_unpack(self):
+        self.assertEqual(
+            unpack(np.fromstring(b'\x47\xB2\xCA', dtype=np.uint8)).tostring(),
+            np.fromstring(b'\x47\x02\xAB\x0C', dtype=np.uint8).tostring())
+
+
+class TestArrayIndexUint16(unittest.TestCase):
+    def test_array_index_uint16(self):
+        self.assertEqual(array_index_uint16(10, np.empty(0, dtype=np.uint16)), -1)
+        self.assertEqual(array_index_uint16(10, np.array([2,4,6,8], dtype=np.uint16)), -1)
+        self.assertEqual(array_index_uint16(10, np.array([10], dtype=np.uint16)), 0)
+        self.assertEqual(array_index_uint16(10, np.array([2,4,6,8,10], dtype=np.uint16)), 4)
+
+
+class TestIndexOfSubarray(unittest.TestCase):
+    def test_index_of_subarray(self):
+        array = np.zeros(16, dtype=np.uint8)
+        subarray = np.array([1, 2, 3, 4], dtype=np.uint8)
+        self.assertEqual(index_of_subarray_uint8(array, subarray), -1)
+        self.assertEqual(index_of_subarray_uint8(array, subarray, start=5), -1)
+        array[0] = 1
+        array[1] = 2
+        array[2] = 3
+        array[3] = 4
+        self.assertEqual(index_of_subarray_uint8(array, subarray), 0)
+        self.assertEqual(index_of_subarray_uint8(array, subarray, start=1), -1)
+        array[1] = 5
+        self.assertEqual(index_of_subarray_uint8(array, subarray), -1)
+        array[12] = 1
+        array[13] = 2
+        array[14] = 3
+        array[15] = 4
+        self.assertEqual(index_of_subarray_uint8(array, subarray), 12)
+        self.assertEqual(index_of_subarray_uint8(array, subarray, start=10), 12)
+        self.assertEqual(index_of_subarray_uint8(array, subarray, start=14), -1)
+        self.assertEqual(index_of_subarray_uint8(subarray, array), -1)
+        self.assertEqual(index_of_subarray_uint8(subarray, array, start=10000), -1)

@@ -10,16 +10,20 @@ Flight Data Utilities: Iter Extensions
 # Imports
 
 
+import numpy as np
+
 from builtins import map, zip
-from itertools import count, groupby, islice, takewhile, tee
+from itertools import chain, count, groupby, islice, takewhile, tee
 from operator import itemgetter
+
+from flightdatautilities.type import as_dtype, byte_size, is_array_like, is_data
 
 
 ##############################################################################
 # Exports
 
 
-__all__ = ['batch', 'droplast', 'nested_groupby']
+__all__ = ['batch', 'droplast', 'iter_islast', 'nested_groupby']
 
 
 ##############################################################################
@@ -50,6 +54,55 @@ def batch(start, stop, step):
         yield (last, stop)
 
 
+def chunk(data_gen, size, slices=None, flush=False):
+    '''
+    Split the data into even size chunks. Optionally slice within the data. Convenient, but not efficient.
+
+    TODO: Possibly create a Chunk generator class which stores the args and kwargs as attributes to avoid re-chunking and unnecessary copying.
+
+    :param data_gen: Generator yielding data.
+    :type data_gen: generator or iterable
+    :param size: Size to chunk the data into.
+    :type size: int
+    :param slices: Slices to apply to each chunk, e.g. header and footer data.
+    :type slices: iterable or slice or None
+    :param flush: Flush remaining data. Will result in incomplete slices.
+    :type flush: bool
+    :yields: List of sliced data chunks if slices else entire data chunks based on size.
+    '''
+    if slices is None:
+        # return data unchanged
+        output = lambda x: x
+    elif isinstance(slices, slice):
+        # return slice
+        output = lambda x: x[slices]
+    else:
+        # return list of slices
+        output = lambda x: [x[s] for s in slices]
+
+    prev_data = None
+    for data in data_gen:
+
+        if prev_data is not None:
+            data = join((prev_data, data))
+
+        if len(data) < size:
+            prev_data = data
+            continue
+
+        for idx in range(0, len(data), size):
+            if (len(data) - idx) < size:
+                prev_data = data[idx:]
+                break
+
+            yield output(data[idx:idx + size])
+        else:
+            prev_data = None
+
+    if flush and prev_data is not None:
+        yield output(prev_data)
+
+
 def droplast(n, iterable):
     '''
     Drops the last n items from the provided iterable.
@@ -58,6 +111,19 @@ def droplast(n, iterable):
     '''
     t1, t2 = tee(iterable)
     return map(itemgetter(0), zip(t1, islice(t2, n, None)))
+
+
+def join(chunks):
+    '''
+    Join chunks of the same type of data together.
+
+    :param chunks: Chunks of data to join together.
+    :type chunks: iterable of str or array
+    :returns: Chunks of data joined into a single object.
+    :rtype: str or np.ndarray
+    '''
+    chunks = tuple(iter_data(chunks))
+    return np.concatenate(chunks) if chunks and is_array_like(chunks[0]) else b''.join(chunks)
 
 
 def nested_groupby(iterable, function_list, manipulate=None, output=list):
@@ -79,3 +145,142 @@ def nested_groupby(iterable, function_list, manipulate=None, output=list):
         return manipulate(iterable) if manipulate else list(iterable)
     return output((k, nested_groupby(v, function_list[1:], manipulate, output))
                   for k, v in groupby(iterable, function_list[0]))
+
+
+def iter_data(data_gen):
+    '''
+    Iterate over an iterable and yield only data.
+
+    :type data_gen: iterable
+    :rtype: iterable
+    '''
+    return (d for d in data_gen if is_data(d))
+
+
+def iter_data_start_idx(data_gen, start, count=None, byte=False):
+    '''
+    Start a generator at a index into the data it is yielding.
+
+    :type data_gen: generator
+    :type start: int
+    :rtype: generator
+    '''
+    if start == 0:
+        return chunk(data_gen, count, flush=True) if count else data_gen
+
+    size = byte_size if byte else len
+    pos = 0
+    for data in data_gen:
+        if not is_data(data):
+            continue
+        next_pos = pos + size(data)
+        if next_pos == start:
+            break
+        elif next_pos > start:
+            dtype = getattr(data, 'dtype', None)
+            itemsize = 1 if dtype is None else dtype.itemsize
+            convert = byte and itemsize != 1
+            if convert:
+                # since data may be split at an arbitrary byte location within a chunk, we can't
+                # automatically cast data back to the original dtype as it may not be at an
+                # itemsize boundary
+                data = data.view(np.uint8)
+
+            data = data[start - pos:]
+
+            if convert:
+                if len(data) % itemsize:
+                    if not count:
+                        raise ValueError('invalid chunk remainder size %d for dtype %s conversion in generator_data_start' %
+                                         (len(data), itemsize))
+                    data_gen = iter_dtype(data_gen, np.uint8)
+                else:
+                    data = data.view(dtype)
+                    convert = False
+
+            start_gen = chain([data], data_gen)
+
+            if count:
+                start_gen = chunk(start_gen, (count * itemsize) if convert else count, flush=True)
+
+            if convert:  # convert back into original dtype
+                start_gen = iter_dtype(start_gen, dtype, skip_incompatible=True)
+
+            return start_gen
+        pos = next_pos
+    return data_gen
+
+
+def iter_data_stop_idx(data_gen, stop, byte=False):
+    '''
+    Stop a generator at an index into the data it is yielding.
+
+    :type data_gen: generator
+    :type stop: int
+    :yields: data from data_gen until stop
+    '''
+    if stop == 0:
+        return
+    size = byte_size if byte else len
+    pos = 0
+    for data in data_gen:
+        if not is_data(data):
+            yield data
+        next_pos = pos + size(data)
+        if next_pos > stop:
+            if byte:
+                dtype = getattr(data, 'dtype', None)
+                itemsize = 1 if dtype is None else dtype.itemsize
+                convert = itemsize != 1
+            else:
+                convert = False
+
+            if convert:
+                data = data.view(np.uint8)
+
+            data = data[:stop - pos]
+
+            if convert:
+                data = data[:len(data) // itemsize * itemsize].view(dtype)
+            yield data
+            return
+        yield data
+        if next_pos == stop:
+            return
+        pos = next_pos
+
+
+def iter_dtype(data_gen, dtype=None, skip_incompatible=False):
+    '''
+    Iterate over an iterable while converting to dtype.
+
+    :type data_gen: iterable
+    :rtype: iterable
+    '''
+    for data in data_gen:
+        try:
+            yield as_dtype(data, dtype)
+        except ValueError:
+            if skip_incompatible:
+                continue
+            else:
+                raise
+
+
+def iter_islast(iterable):
+    '''
+    Based on http://code.activestate.com/recipes/392015-finding-the-last-item-in-a-loop/
+    '''
+    it = iter(iterable)
+    prev = next(it)
+    for item in it:
+        yield prev, False
+        prev = item
+    yield prev, True
+
+
+def tolist(array):
+    '''
+    '''
+    return [a.tolist() if hasattr(a, 'tolist') else tolist(a) for a in array]
+

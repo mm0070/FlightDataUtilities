@@ -9,8 +9,6 @@ Multi-state Parameter State Value Mappings
 # Import
 
 
-import re
-
 from flightdatautilities.patterns import wildcard_match
 
 
