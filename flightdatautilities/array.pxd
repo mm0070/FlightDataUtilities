@@ -5,6 +5,8 @@ cdef enum RepairMethod:
 cdef enum Aggregate:
     MAX, MIN, MAX_ABS, MIN_ABS
 
+cpdef long index_of_subarray_uint8(unsigned char[:] array, unsigned char[:] subarray, unsigned long start=*) nogil
+cpdef long array_index_uint16(unsigned short value, unsigned short[:] sync_words) nogil
 cdef object idx_none(long idx)
 cdef long none_idx(idx)
 cdef long cython_nearest_idx(unsigned char[:] array, long idx, bint match=?, long start_idx=?, long stop_idx=?) nogil
@@ -12,6 +14,8 @@ cdef void cython_ma_fill_range_float64(double[:] data, unsigned char[:] mask, do
 cdef void cython_ma_interpolate_float64(double[:] data, unsigned char[:] mask, long start, long stop) nogil
 cpdef void cython_repair_mask_float64(double[:] data, unsigned char[:] mask, RepairMethod method, long max_samples, bint extrapolate=?) nogil
 cdef long longest_zeros_uint8(unsigned char[:] mask) nogil
+cpdef bint is_constant_uint8(unsigned char[:] data) nogil
+cpdef bint is_constant_uint16(unsigned short[:] data) nogil
 
 
 cdef class Interpolator:
