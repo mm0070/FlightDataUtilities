@@ -200,7 +200,7 @@ def load_compressed(path):
     '''
     Load either a MappedArray, np.ma.MaskedArray or np.ndarray from a compressed archive.
     '''
-    array_dict = np.load(path)
+    array_dict = np.load(path, allow_pickle=True)
     array_count = len(array_dict.keys())
     if array_count == 3:
         from hdfaccess.parameter import MappedArray
