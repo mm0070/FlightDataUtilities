@@ -6,7 +6,7 @@ import re
 
 from io import StringIO
 from functools import reduce
-from six.moves import zip_longest
+from itertools import zip_longest
 
 
 # http://code.activestate.com/recipes/267662/

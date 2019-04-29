@@ -1,6 +1,5 @@
 import numpy as np
 import os
-import six
 
 from io import BufferedWriter
 
@@ -36,7 +35,7 @@ def open_writable_file(filepath, compression=DEFAULT_COMPRESSION):
     '''
     if compression:
         filepath += '.' + compression
-    return filepath, FILE_CLASSES[compression](filepath, ('wb' if six.PY2 else 'xb'))
+    return filepath, FILE_CLASSES[compression](filepath, 'xb')
 
 
 def decompressed_filepath(filepath):
@@ -55,7 +54,7 @@ def write_data(fileobj, data):
             data.tofile(fileobj)
         else:
             fileobj.write(data.tostring())
-    elif isinstance(data, six.binary_type):
+    elif isinstance(data, bytes):
         fileobj.write(data)
     else:
         raise NotImplementedError('Cannot write object: %s' % data)
@@ -90,7 +89,7 @@ def file_writer(filelike, data_gen, compression=DEFAULT_COMPRESSION):
     '''
     Write data iterable to filepath or file-like object (ignores splits).
     '''
-    if isinstance(filelike, six.string_types):
+    if isinstance(filelike, str):
         filepath = decompressed_filepath(filelike)
         filepath, fileobj = open_writable_file(filepath, compression=compression)
         for data in iter_data(data_gen):

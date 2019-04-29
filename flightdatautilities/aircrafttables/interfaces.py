@@ -15,7 +15,6 @@ import logging
 import numbers
 import numpy as np
 import scipy.interpolate
-import six
 
 from abc import ABCMeta
 
@@ -106,7 +105,7 @@ class VelocitySpeed(object):
                 weight = np.ma.array(data=[0.0], dtype=np.double, mask=True)
 
             # Attempt to coerce the detent value if it isn't a string:
-            if not isinstance(detent, six.string_types):
+            if not isinstance(detent, str):
                 msg = "Non-string detent provided - %r - coercing..."
                 logger.warning(msg, detent)
                 if isinstance(detent, float) and detent.is_integer():

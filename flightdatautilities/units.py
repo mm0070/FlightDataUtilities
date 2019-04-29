@@ -19,7 +19,6 @@ from __future__ import unicode_literals
 
 import decimal
 import math
-import six
 
 
 ##############################################################################
@@ -1191,7 +1190,7 @@ def available(values=True):
     module = sys.modules[__name__]
     x = dir(module)
     x = list(filter(lambda v: v.isupper() and not v.startswith('_') and not v.endswith('_PROFILE'), x))
-    x = list(filter(lambda v: isinstance(getattr(module, v), six.string_types), x))
+    x = list(filter(lambda v: isinstance(getattr(module, v), str), x))
     if values:
         return map(lambda c: getattr(module, c), x)
     else:

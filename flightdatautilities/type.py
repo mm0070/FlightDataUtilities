@@ -1,5 +1,4 @@
 import numpy as np
-import six
 
 from collections import Sequence
 
@@ -123,7 +122,7 @@ def is_data_iterable(obj):
     '''
     Whether or not object is an iterable of data chunks.
     '''
-    return not isinstance(obj, six.string_types + (six.binary_type,)) and (isinstance(obj, Sequence) or is_generator(obj))
+    return not isinstance(obj, (bytes, str)) and (isinstance(obj, Sequence) or is_generator(obj))
 
 
 def is_memoryview(obj):

@@ -7,7 +7,6 @@
 ##############################################################################
 # Imports
 
-import six
 import unittest
 
 from decimal import Decimal
@@ -29,7 +28,7 @@ class TestUnitsModule(unittest.TestCase):
         # Check we have no redefinitions of units:
         self.assertEqual(len(values), len(constants), 'Unit redefinition!')
         # Check we have a category for every unit constant:
-        x = list(chain.from_iterable(six.itervalues(UNIT_CATEGORIES)))
+        x = list(chain.from_iterable(UNIT_CATEGORIES.values()))
         self.assertEqual(len(x), len(set(x)), 'Unit in multiple categories!')
         self.assertEqual(set(x), values)
         # Check we have a description for every unit constant:

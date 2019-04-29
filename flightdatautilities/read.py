@@ -1,7 +1,8 @@
 import numpy as np
 import os
-import six
 import zipfile
+
+from collections import Iterator
 
 from flightdatautilities.compression import FILE_CLASSES
 from flightdatautilities.iterext import (
@@ -18,7 +19,7 @@ from flightdatautilities.type import (
 )
 
 
-class abstract_reader(six.Iterator):  # TODO: abc abstract class
+class abstract_reader(Iterator):  # TODO: abc abstract class
     '''
     reader abstract base class.
     '''
@@ -153,7 +154,7 @@ class file_reader(abstract_reader):
 
     def __enter__(self):
         # TODO: Handle '-' as stdin, e.g. getattr(sys.stdin, 'buffer', sys.stdin)?
-        if isinstance(self.path, six.string_types):
+        if isinstance(self.path, str):
             extension = os.path.splitext(self.path)[1].lstrip('.')
             file_cls = FILE_CLASSES.get(extension, open)
             self.fileobj = file_cls(self.path, 'rb')
