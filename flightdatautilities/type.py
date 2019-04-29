@@ -17,6 +17,7 @@ def as_dtype(obj, dtype=None, copy=False, cast=False):
     :type obj: str or np.array
     :type dtype: np.dtype or str or None
     :type copy: bool
+    :type cast: bool
     :rtype: str or np.array
     '''
     if dtype is None and is_array_like(obj):
@@ -63,6 +64,9 @@ def as_sequence(obj):
 def byte_size(data):
     '''
     Size in bytes of data.
+
+    :type data: bytes or np.ndarray
+    :rtype: int
     '''
     length = len(data)
     if is_array_like(data):
