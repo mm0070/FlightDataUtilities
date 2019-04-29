@@ -87,6 +87,20 @@ class TestDropLast(unittest.TestCase):
         self.assertEqual(list(iterext.droplast(20, range(10))), [])
 
 
+class TestJoin(unittest.TestCase):
+
+    def test_join(self):
+        self.assertEqual(iterext.join([]), b'')
+        joined = iterext.join([], dtype=np.uint8)
+        self.assertEqual(joined.tolist(), [])
+        self.assertEqual(joined.dtype, np.uint8)
+        self.assertEqual(iterext.join([b'abc', b'def']), b'abcdef')
+        self.assertEqual(iterext.join([np.array([1, 2]), np.array([3, 4])]).tolist(), [1, 2, 3, 4])
+        joined = iterext.join([np.array([1, 2]), np.array([3, 4])], dtype=np.uint8)
+        self.assertEqual(joined.tolist(), [1, 2, 3, 4])
+        self.assertEqual(joined.dtype, np.uint8)
+
+
 class TestIterDataStartIdx(unittest.TestCase):
     def test_iter_data_start_idx(self):
         data = []
@@ -150,3 +164,40 @@ class TestNestedGroupby(unittest.TestCase):
     @unittest.skip('Not implemented.')
     def test_nested_groupby(self):
         pass
+
+
+class TestIterData(unittest.TestCase):
+    def test_iter_data(self):
+        data_gen = []
+        self.assertEqual(list(iterext.iter_data(data_gen)), data_gen)
+        data_gen = [b'abc']
+        self.assertEqual(list(iterext.iter_data(data_gen)), data_gen)
+        data_gen = [b'a', b'', b'c']
+        self.assertEqual(list(iterext.iter_data(data_gen)), data_gen)
+        data_gen = [b'a', None, b'c']
+        self.assertEqual(list(iterext.iter_data(data_gen)), [b'a', b'c'])
+        array1 = np.arange(4)
+        array2 = np.arange(4, 8)
+        data_gen = [array1, None, array2]
+        self.assertEqual(list(iterext.iter_data(data_gen)), [array1, array2])
+
+
+class TestIterDtype(unittest.TestCase):
+    def test_iter_dtype(self):
+        for iterable in [[], [b'abc'], [b'a', b'b', b'c']]:
+            self.assertEqual(list(iterext.iter_dtype(iterable)), iterable)
+        array = np.arange(3)
+        self.assertEqual(list(iterext.iter_dtype([array])), [array.tostring()])
+        self.assertEqual(list(iterext.iter_dtype([array], dtype=None)), [array.tostring()])
+        dtype = np.uint8
+        result = list(iterext.iter_dtype([array], dtype=dtype))
+        self.assertEqual(len(result), 1)
+        self.assertTrue(np.all(result[0] == array.view(dtype)))
+        result = list(iterext.iter_dtype([array], dtype=dtype, cast=True))
+        self.assertEqual(len(result), 1)
+        self.assertTrue(np.all(result[0] == array.astype(dtype)))
+        data = b'abc'
+        result = list(iterext.iter_dtype([data], dtype=dtype))
+        self.assertEqual(len(result), 1)
+        self.assertTrue(np.all(result[0] == np.fromstring(data, dtype=dtype)))
+

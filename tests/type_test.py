@@ -1,7 +1,6 @@
 import numpy as np
 import unittest
 
-from flightdatautilities.iterext import iter_data, iter_dtype
 from flightdatautilities.type import (
     as_dtype,
     as_int,
@@ -23,6 +22,7 @@ class TestAsDtype(unittest.TestCase):
         self.assertEqual(as_dtype(data), data.tostring())
         self.assertEqual(as_dtype(data, dtype=None), data.tostring())
         self.assertTrue(np.all(as_dtype(data, dtype=dtype) == data.view(dtype)))
+        self.assertTrue(np.all(as_dtype(data, dtype=dtype, cast=True) == data.astype(dtype)))
 
 
 class TestAsInt(unittest.TestCase):
@@ -77,37 +77,4 @@ class TestIsDataIterable(unittest.TestCase):
         self.assertTrue(is_data_iterable([np.arange(10)]))
         self.assertTrue(is_data_iterable(tuple(np.arange(10),)))
         self.assertTrue(is_data_iterable(d for d in [b'abc']))
-
-
-class TestIterData(unittest.TestCase):
-    def test_iter_data(self):
-        data_gen = []
-        self.assertEqual(list(iter_data(data_gen)), data_gen)
-        data_gen = [b'abc']
-        self.assertEqual(list(iter_data(data_gen)), data_gen)
-        data_gen = [b'a', b'', b'c']
-        self.assertEqual(list(iter_data(data_gen)), data_gen)
-        data_gen = [b'a', None, b'c']
-        self.assertEqual(list(iter_data(data_gen)), [b'a', b'c'])
-        array1 = np.arange(4)
-        array2 = np.arange(4, 8)
-        data_gen = [array1, None, array2]
-        self.assertEqual(list(iter_data(data_gen)), [array1, array2])
-
-
-class TestIterDtype(unittest.TestCase):
-    def test_iter_dtype(self):
-        for iterable in [[], [b'abc'], [b'a', b'b', b'c']]:
-            self.assertEqual(list(iter_dtype(iterable)), iterable)
-        array = np.arange(3)
-        self.assertEqual(list(iter_dtype([array])), [array.tostring()])
-        self.assertEqual(list(iter_dtype([array], dtype=None)), [array.tostring()])
-        dtype = np.uint8
-        result = list(iter_dtype([array], dtype=dtype))
-        self.assertEqual(len(result), 1)
-        self.assertTrue(np.all(result[0] == array.view(dtype)))
-        data = b'abc'
-        result = list(iter_dtype([data], dtype=dtype))
-        self.assertEqual(len(result), 1)
-        self.assertTrue(np.all(result[0] == np.fromstring(data, dtype=dtype)))
 

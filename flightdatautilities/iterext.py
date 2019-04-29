@@ -113,17 +113,23 @@ def droplast(n, iterable):
     return map(itemgetter(0), zip(t1, islice(t2, n, None)))
 
 
-def join(chunks):
+def join(chunks, dtype=None):
     '''
     Join chunks of the same type of data together.
 
     :param chunks: Chunks of data to join together.
     :type chunks: iterable of str or array
+    :param dtype: dtype of data within chunks when
+    :type dtype: np.dtype or None
     :returns: Chunks of data joined into a single object.
     :rtype: str or np.ndarray
     '''
     chunks = tuple(iter_data(chunks))
-    return np.concatenate(chunks) if chunks and is_array_like(chunks[0]) else b''.join(chunks)
+    if chunks:
+        joined = np.concatenate(chunks) if is_array_like(chunks[0]) else b''.join(chunks)
+        return as_dtype(joined, dtype, cast=True) if dtype else joined
+    else:
+        return np.empty(0, dtype=dtype) if dtype else b''
 
 
 def nested_groupby(iterable, function_list, manipulate=None, output=list):
@@ -250,7 +256,7 @@ def iter_data_stop_idx(data_gen, stop, byte=False):
         pos = next_pos
 
 
-def iter_dtype(data_gen, dtype=None, copy=False, skip_incompatible=False):
+def iter_dtype(data_gen, dtype=None, copy=False, cast=False, skip_incompatible=False):
     '''
     Iterate over an iterable while converting to dtype.
 
@@ -260,7 +266,7 @@ def iter_dtype(data_gen, dtype=None, copy=False, skip_incompatible=False):
     '''
     for data in data_gen:
         try:
-            yield as_dtype(data, dtype, copy=copy)
+            yield as_dtype(data, dtype, copy=copy, cast=cast)
         except ValueError:
             if skip_incompatible:
                 continue
