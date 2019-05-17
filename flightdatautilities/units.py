@@ -46,6 +46,7 @@ G = 'g'  # [2]
 FPS2 = 'ft/s/s'
 MPS2 = 'm/s/s'
 DEGREE_S2 = 'deg/s/s'
+KT_S = 'kt/s'
 
 # Angles:
 DEGREE = 'deg'  # [1]
@@ -584,6 +585,9 @@ UNIT_CORRECTIONS = {
     'ft/sec/sec': FPS2,
     'm/s²': MPS2,
     b'm/s\xc2\xb2': MPS2,
+    'kt/sec': KT_S,
+    'kts/sec': KT_S,
+    'kts/s': KT_S,
     'deg/s^2': DEGREE_S2,
     'deg/s2': DEGREE_S2,
     'deg/sec/sec': DEGREE_S2,
@@ -993,7 +997,7 @@ UNIT_CORRECTIONS = {
 
 
 UNIT_CATEGORIES = {
-    'Acceleration': (G, FPS2, MPS2, DEGREE_S2),
+    'Acceleration': (G, FPS2, MPS2, DEGREE_S2, KT_S),
     'Angles': (DEGREE, RADIAN, DEGREE_S),
     'Density': (KG_LITER, LB_GALLON),
     'Electricity': (AMP, VOLT, KVA, OHM, MILLIVOLT, MICROAMP, MILLIAMP),
@@ -1020,6 +1024,7 @@ UNIT_DESCRIPTIONS = {
     FPS2: 'feet per second squared',
     MPS2: 'meters per second squared',
     DEGREE_S2: 'degrees per second squared',
+    KT_S: 'knots per second',
     # Angles:
     DEGREE: 'degrees',
     RADIAN: 'radians',
