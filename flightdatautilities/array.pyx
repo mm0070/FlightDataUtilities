@@ -87,10 +87,11 @@ def masked_array_fill_start(array, max_samples=None):
 import numpy as np
 cimport numpy as np
 
+import scipy
+
 from libc.math cimport ceil, fabs
 
 from collections import namedtuple
-
 
 from flightdatautilities.type import is_array
 from flightdatautilities.byte_aligned import MODES, STANDARD_MODES, SYNC_PATTERNS, WPS  # TODO: move to flightdatautilities
@@ -104,15 +105,15 @@ cdef:
 Value = namedtuple('Value', 'index value')
 
 
-cdef object idx_none(long idx):
+cdef object idx_none(Py_ssize_t idx):
     return None if idx == -1 else idx
 
 
-cdef long none_idx(idx):
+cdef Py_ssize_t none_idx(idx):
     return -1 if idx is None else idx
 
 
-cdef long cython_nearest_idx(unsigned char[:] array, long idx, bint match=True, long start_idx=-1, long stop_idx=-1) nogil:
+cdef Py_ssize_t cython_nearest_idx(unsigned char[:] array, Py_ssize_t idx, bint match=True, Py_ssize_t start_idx=-1, Py_ssize_t stop_idx=-1) nogil:
     if start_idx == -1:
         start_idx = 0
     if stop_idx == -1:
@@ -130,7 +131,7 @@ cdef long cython_nearest_idx(unsigned char[:] array, long idx, bint match=True, 
         return idx
 
     cdef:
-        long fwd_range = stop_idx - idx, rev_range = idx - start_idx, shift
+        Py_ssize_t fwd_range = stop_idx - idx, rev_range = idx - start_idx, shift
 
     for shift in range(1, (fwd_range if fwd_range >= rev_range else rev_range) + 1):
         if shift < fwd_range and array[idx + shift] == match:
@@ -148,9 +149,9 @@ def nearest_idx(array, long idx, bint match=True, start_idx=None, stop_idx=None)
     ))
 
 
-def nearest_slice(array, long idx, bint match=True):
+def nearest_slice(array, Py_ssize_t idx, bint match=True):
     cdef unsigned char[:] data = array.view(np.uint8)
-    cdef long start_idx, stop_idx, nearest_idx = cython_nearest_idx(data, idx, match=match)
+    cdef Py_ssize_t start_idx, stop_idx, nearest_idx = cython_nearest_idx(data, idx, match=match)
 
     if nearest_idx == -1:
         return None
@@ -190,25 +191,25 @@ def nearest_slice(array, long idx, bint match=True):
     return slice(start_idx, stop_idx)
 
 
-cdef void cython_ma_fill_range_float64(double[:] data, unsigned char[:] mask, double value, long start, long stop) nogil:
-    cdef long idx
+cdef void cython_ma_fill_range_float64(double[:] data, unsigned char[:] mask, double value, Py_ssize_t start, Py_ssize_t stop) nogil:
+    cdef Py_ssize_t idx
     for idx in range(start, stop):
         data[idx] = value
         mask[idx] = 0
 
 
-cdef void cython_ma_interpolate_float64(double[:] data, unsigned char[:] mask, long start, long stop) nogil:
+cdef void cython_ma_interpolate_float64(double[:] data, unsigned char[:] mask, Py_ssize_t start, Py_ssize_t stop) nogil:
     cdef:
         double gradient = (data[stop] - data[start]) / (stop - start)
-        long idx
+        Py_ssize_t idx
     for idx in range(start + 1, stop):
         data[idx] = data[start] + ((idx - start) * gradient)
         mask[idx] = 0
 
 
-cpdef void cython_repair_mask_float64(double[:] data, unsigned char[:] mask, RepairMethod method, long max_samples, bint extrapolate=False) nogil:
+cpdef void cython_repair_mask_float64(double[:] data, unsigned char[:] mask, RepairMethod method, Py_ssize_t max_samples, bint extrapolate=False) nogil:
     cdef:
-        long idx, last_valid_idx = -1
+        Py_ssize_t idx, last_valid_idx = -1
 
     for idx in range(data.shape[0]):
         if not mask[idx]:
@@ -235,7 +236,7 @@ def repair_mask(array, method='interpolate', repair_duration=10, frequency=1, bi
     '''
     TODO: find better solution for repair_above kwarg from original.
     '''
-    cdef long length, repair_samples, unmasked_samples
+    cdef Py_ssize_t length, repair_samples, unmasked_samples
 
     unmasked_samples = np.ma.count(array)
     if unmasked_samples == 0:
@@ -271,8 +272,8 @@ def repair_mask(array, method='interpolate', repair_duration=10, frequency=1, bi
     return array.astype(dtype)
 
 
-cdef long longest_zeros_uint8(unsigned char[:] mask) nogil:
-    cdef long idx, current_samples = 0, max_samples = 0
+cdef Py_ssize_t longest_zeros_uint8(unsigned char[:] mask) nogil:
+    cdef Py_ssize_t idx, current_samples = 0, max_samples = 0
     for idx in range(mask.shape[0]):
         if mask[idx]:
             if current_samples > max_samples:
@@ -288,7 +289,7 @@ def aggregate_values(Aggregate mode, double[:] data, const unsigned char[:] mask
         raise ValueError('array lengths do not match')
 
     cdef:
-        long idx, value_idx = -1
+        Py_ssize_t idx, value_idx = -1
         double value
         bint matching_section = False, update_value = False
 
@@ -351,10 +352,10 @@ def min_abs_values(array, matching):
     return _aggregate_values(Aggregate.MIN_ABS, array, matching)
 
 
-def slices_to_array(long size, slices):
+def slices_to_array(Py_ssize_t size, slices):
     cdef:
         unsigned char[:] array = np.zeros(size, dtype=np.uint8)
-        long start, stop, idx
+        Py_ssize_t start, stop, idx
     for s in slices:
         start = 0 if s.start is None else s.start
         stop = array.shape[0] if s.stop is None else s.stop
@@ -394,7 +395,7 @@ def section_overlap(a, b):
 
     cdef:
         unsigned char[:] out = np.zeros(x.shape[0], dtype=np.uint8)
-        long long idx, rev_idx, last_idx = -1
+        Py_ssize_t idx, rev_idx, last_idx = -1
         bint both_true, last_both_true = True, fill_either = False
 
     for idx in range(x.shape[0]):
@@ -420,7 +421,7 @@ def section_overlap(a, b):
     return np.asarray(out).view(np.uint8)
 
 
-def remove_small_runs(array, unsigned long seconds=10, unsigned long hz=1):
+def remove_small_runs(array, Py_ssize_t seconds=10, unsigned long hz=1):  # TODO: floating point hz
     '''
     Optimised version of slices_remove_small_slices (330 times faster):
 >>> from analysis_engine.library import runs_of_ones, slices_remove_small_gaps
@@ -442,7 +443,7 @@ def remove_small_runs(array, unsigned long seconds=10, unsigned long hz=1):
 
     cdef:
         unsigned char[:] data = array.view(np.uint8)
-        long long idx, fill_idx, samples = 0
+        Py_ssize_t idx, fill_idx, samples = 0
 
     for idx in range(data.shape[0]):
         if data[idx]:
@@ -460,7 +461,7 @@ def remove_small_runs(array, unsigned long seconds=10, unsigned long hz=1):
     return np.asarray(data).view(np.bool)
 
 
-def contract_runs(array, unsigned long size):
+def contract_runs(array, Py_ssize_t size):
     '''
     Contract runs of True values within arrays, e.g.
     contract_runs([False, True, True, True], 1) == [False, False, True, False]
@@ -470,7 +471,7 @@ def contract_runs(array, unsigned long size):
 
     cdef:
         unsigned char[:] data = array.view(np.uint8)
-        long long idx, fill_idx, contracted = 0
+        Py_ssize_t idx, fill_idx, contracted = 0
 
     for idx in range(data.shape[0]):
         if data[idx]:
@@ -503,7 +504,7 @@ def runs_of_ones(array, min_samples=None):
     '''
     cdef:
         unsigned char[:] view = array.view(np.uint8)
-        long idx, min_samples_long = none_idx(min_samples), start_idx = -1
+        Py_ssize_t idx, min_samples_long = none_idx(min_samples), start_idx = -1
 
     for idx in range(view.shape[0]):
         if view[idx] and start_idx == -1:
@@ -569,7 +570,7 @@ cpdef bint is_constant_uint8(unsigned char[:] data) nogil:
         return True
 
     cdef:
-        unsigned int idx
+        Py_ssize_t idx
         unsigned char first_value = data[0]
 
     for idx in range(1, data.shape[0]):
@@ -588,7 +589,7 @@ cpdef bint is_constant_uint16(unsigned short[:] data) nogil:
         return True
 
     cdef:
-        unsigned int idx
+        Py_ssize_t idx
         np.uint16_t first_value = data[0]
 
     for idx in range(1, data.shape[0]):
@@ -603,7 +604,7 @@ def first_valid_sample(array, long start_idx=0):
     '''
     cdef:
         unsigned char[:] mask = np.ma.getmaskarray(array).view(np.uint8)
-        long idx
+        Py_ssize_t idx
 
     if start_idx < 0:
         start_idx += mask.shape[0]
@@ -621,7 +622,7 @@ def last_valid_sample(array, end_idx=None):
     '''
     cdef:
         unsigned char[:] mask = np.ma.getmaskarray(array).view(np.uint8)
-        long end_idx_long, idx
+        Py_ssize_t end_idx_long, idx
 
     if end_idx is None:
         end_idx_long = mask.shape[0] - 1
@@ -662,7 +663,7 @@ cdef class Interpolator:
         :type points: [(int, int), ...]
         '''
         cdef:
-            unsigned int idx, size = len(points)
+            Py_ssize_t idx, size = len(points)
 
         if size < 2:
             raise ValueError('At least 2 interpolation points are required.')
@@ -693,7 +694,7 @@ cdef class Interpolator:
         :rtype: double
         '''
         cdef:
-            unsigned int idx
+            Py_ssize_t idx
 
         for idx in range(1, self._size):
             if value <= self._xs[idx]:
@@ -719,7 +720,7 @@ cdef class Interpolator:
         :rtype: np.float[:] (memoryview)
         '''
         cdef:
-            unsigned int idx
+            Py_ssize_t idx
             double value
             double[:] output
 
@@ -752,7 +753,7 @@ cdef class ByteAligner:
     #       - Automatically add one to each value of WPS.
     #       - Add support for stripping the rose word.
     #       - Perform some sort of check on the value of the rose word.
-    def __init__(self, modes=None, wps=None, bint little_endian=True, int output_buffer=16777216, bint frames_only=False):
+    def __init__(self, modes=None, wps=None, bint little_endian=True, Py_ssize_t output_buffer=16777216, bint frames_only=False):
         '''
         :param modes: Sync pattern modes as defined within SYNC_PATTERNS. Default is all, running with a limited set is an optimisation.
         :type modes: iterable of str or None
@@ -784,7 +785,7 @@ cdef class ByteAligner:
         self._frame_count = 0
         self._output_arrays = []
 
-    cdef unsigned short _get_word(self, long long idx) nogil:
+    cdef unsigned short _get_word(self, Py_ssize_t idx) nogil:
         '''
         Get the word value at specified byte index from the buffer.
 
@@ -801,7 +802,7 @@ cdef class ByteAligner:
         # Mask out the unused nibble which is populated by HFDAMS:
         return ((first_byte << 8) + second_byte) & 0xfff
 
-    cdef int _sync_word_idx(self, long long idx) nogil:
+    cdef Py_ssize_t _sync_word_idx(self, Py_ssize_t idx) nogil:
         '''
         Find the sync word index of the word within the buffer at specified byte index.
 
@@ -809,7 +810,7 @@ cdef class ByteAligner:
         :returns: sync word index if the word is a sync word, otherwise -1
         '''
         cdef:
-            int sync_word_idx
+            Py_ssize_t sync_word_idx
             unsigned short value = self._get_word(idx)
         for sync_word_idx in range(self.sync_words.shape[0]):
             if self._frames_only and (sync_word_idx % 4) != 0:
@@ -821,21 +822,20 @@ cdef class ByteAligner:
             return -1
         return sync_word_idx
 
-    cdef short _frame_wps(self, long long idx) nogil:
+    cdef short _frame_wps(self, Py_ssize_t idx) nogil:
         '''
         Find the wps of a frame starting at idx.
 
         :param idx: start index of potential frame to find wps for
         :returns: words per second if frame matches, otherwise -1
         '''
-        cdef int first_sync_word_idx = self._sync_word_idx(idx)
+        cdef Py_ssize_t first_sync_word_idx = self._sync_word_idx(idx)
 
         if first_sync_word_idx == -1:
             return -1
 
         cdef:
-            int next_sync_word_idx, offset, wps_array_idx
-            long long frame_idx
+            Py_ssize_t frame_idx, next_sync_word_idx, offset, wps_array_idx
             unsigned short wps
         for wps_array_idx in range(self._wps_array.shape[0]):
             wps = self._wps_array[wps_array_idx]
@@ -852,7 +852,7 @@ cdef class ByteAligner:
                 return wps
         return -1
 
-    cdef long long _next_frame_idx(self, long long idx) nogil:
+    cdef Py_ssize_t _next_frame_idx(self, Py_ssize_t idx) nogil:
         '''
         Find next frame start index within self._buff starting at idx.
 
@@ -878,7 +878,7 @@ cdef class ByteAligner:
         '''
         if is_array(data_gen):
             data_gen = (data_gen,)
-        cdef long long idx, next_frame_idx, remainder_idx
+        cdef Py_ssize_t idx, next_frame_idx, remainder_idx
         for data in data_gen:
             self._buff = np.concatenate((self._buff, data))
             idx = 0
@@ -925,10 +925,9 @@ cdef class ByteAligner:
         if is_array(data_gen):
             data_gen = (data_gen,)
 
-        cdef long long frame_start_idx = -1, frame_stop_idx = -1, idx = 0, next_frame_idx, remainder_idx
-
-        cdef int frame_start = -1 if start is None else start // 4, \
-            frame_stop = -1 if stop is None else <int>ceil(stop / 4.)
+        cdef:
+            Py_ssize_t frame_start_idx = -1, frame_stop_idx = -1, idx = 0, next_frame_idx, remainder_idx
+            Py_ssize_t frame_start = -1 if start is None else start // 4, frame_stop = -1 if stop is None else <int>ceil(stop / 4.)
 
         for data in data_gen:
             self._buff = np.concatenate((self._buff, data))
@@ -993,8 +992,8 @@ cdef class ByteAligner:
         if start is not None and stop is not None and stop <= start:
             raise ValueError('stop must be greater than start')
         cdef:
-            int frame_start = -1 if start is None else start // 4
-            int frame_stop = -1 if stop is None else <int>ceil(stop / 4.)
+            Py_ssize_t frame_start = -1 if start is None else start // 4
+            Py_ssize_t frame_stop = -1 if stop is None else <int>ceil(stop / 4.)
         def get_data(idx):
             if idx is None:
                 return np.concatenate(self._output_arrays) if self._output_arrays else None
@@ -1040,7 +1039,7 @@ cpdef unsigned short[:] sync_words_from_modes(modes):
     '''
     cdef:
         unsigned short[:] sync_words = np.empty(len(modes) * 4, dtype=np.uint16)
-        unsigned int sync_word_idx = 0
+        Py_ssize_t sync_word_idx = 0
     for mode in modes:
         for sync_word in SYNC_PATTERNS[mode]:
             sync_words[sync_word_idx] = sync_word
@@ -1121,14 +1120,14 @@ def key_value(array, key, delimiter, separator, start=0):
     return array[start_idx:stop_idx].tostring().strip()
 
 
-cpdef long index_of_subarray_uint8(unsigned char[:] array, unsigned char[:] subarray, unsigned long start=0) nogil:
+cpdef Py_ssize_t index_of_subarray_uint8(unsigned char[:] array, unsigned char[:] subarray, Py_ssize_t start=0) nogil:
     '''
     Find the first index of a subarray within an array of dtype uint8.
 
     :param start: start index to search within array (positive integer or 0)
     :returns:
     '''
-    cdef long array_idx, subarray_idx
+    cdef Py_ssize_t array_idx, subarray_idx
 
     if subarray.shape[0] > array.shape[0]:
         # This case is not automatically handled by range on Ubuntu 10.04 32-bit.
@@ -1143,7 +1142,7 @@ cpdef long index_of_subarray_uint8(unsigned char[:] array, unsigned char[:] suba
     return -1
 
 
-cpdef long array_index_uint16(unsigned short value, unsigned short[:] array) nogil:
+cpdef Py_ssize_t array_index_uint16(unsigned short value, unsigned short[:] array) nogil:
     '''
     Can be much faster than numpy operations which check the entire array.
 
@@ -1154,14 +1153,11 @@ cpdef long array_index_uint16(unsigned short value, unsigned short[:] array) nog
     >>> %timeit array_index_uint16(1, x) != -1
     10000 loops, best of 3: 64.2 µs per loop
     '''
-    cdef long idx
+    cdef Py_ssize_t idx
     for idx in range(array.shape[0]):
         if value == array[idx]:
             return idx
     return -1
-
-
-import scipy
 
 
 def extrap1d(interpolator):
@@ -1259,9 +1255,7 @@ def downsample_arrays(arrays):
 
     for length in lengths:
         if length % shortest:
-            raise ValueError(
-                "Arrays lengths '%s' should be multiples of the shortest."
-                % lengths)
+            raise ValueError("Arrays lengths '%s' should be multiples of the shortest." % lengths)
     downsampled_arrays = []
     for array in arrays:
         step = len(array) // shortest

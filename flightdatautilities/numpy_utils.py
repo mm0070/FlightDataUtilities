@@ -1,7 +1,7 @@
 '''
 Upgrading from Python 2.7 to Python 3.7 and using numpy versions past 1.10.x
 requires helper methods to help maintain consistent behaviour from an existing
-codebase. 
+codebase.
 '''
 
 
