@@ -4,6 +4,7 @@ include LICENSE
 include README.rst
 include TODO
 include *.py
+include *.pxd
 include requirements*.txt
 recursive-include doc *
 prune doc/build
