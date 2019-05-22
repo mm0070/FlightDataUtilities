@@ -15,6 +15,7 @@ from flightdatautilities.iterext import (
 from flightdatautilities.type import (
     as_dtype,
     is_array_like,
+    is_data,
     is_data_iterable,
 )
 
@@ -170,7 +171,7 @@ class file_reader(abstract_reader):
         return self
 
     def __exit__(self, *exc_info):
-        if not self.fileobj.closed:
+        if not getattr(self.fileobj, 'closed', True):
             self.fileobj.close()
 
     def next_data(self, read_count):
@@ -189,7 +190,7 @@ class file_reader(abstract_reader):
         return data
 
 
-def reader(obj, data=False, *args, **kwargs):
+def reader(obj, *args, **kwargs):
     '''
     reader factory which creates a reader based on the type of obj.
 
@@ -199,7 +200,7 @@ def reader(obj, data=False, *args, **kwargs):
     if isinstance(obj, abstract_reader):
         abstract_reader.__init__(obj, *args, **kwargs)  # update obj with constructor
         return obj
-    elif data or is_array_like(obj):
+    elif is_data(obj):
         cls = data_reader
     elif is_data_iterable(obj):
         cls = generator_reader

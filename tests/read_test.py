@@ -88,10 +88,6 @@ class TestReader(unittest.TestCase):
     def test_reader_data(self):
         data = b'data'
         r = reader(data)
-        # assumes filepath by default
-        self.assertTrue(isinstance(r, file_reader))
-        self.assertEqual(r.path, data)
-        r = reader(data, data=True)
         self.assertTrue(isinstance(r, data_reader))
         self.assertEqual(r.data, data)
 
@@ -109,7 +105,7 @@ class TestReader(unittest.TestCase):
 
     def test_reader_reader(self):
         data = b'data'
-        reader_input = reader(data, data=True)
+        reader_input = reader(data)
         reader_output = reader(reader_input)
         self.assertEqual(reader_input.data, reader_output.data)
         stop = 10
