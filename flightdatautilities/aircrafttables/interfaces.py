@@ -9,8 +9,6 @@
 # Imports
 
 
-from __future__ import unicode_literals
-
 import logging
 import numbers
 import numpy as np
