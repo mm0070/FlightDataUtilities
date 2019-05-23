@@ -1371,3 +1371,29 @@ def load_compressed(path):
         raise NotImplementedError('Unknown array type with %d components.' % array_count)
     return array
 
+
+cpdef bint is_power2(number):
+    """
+    Whether or not a number is a power of two. Forces floats to int.
+    Ref: http://code.activestate.com/recipes/577514-chek-if-a-number-is-a-power-of-two/
+
+    ~4x faster than pure python version
+    """
+    if number % 1:
+        return False
+    cdef int num = <int>number
+    return num > 0 and ((num & (num - 1)) == 0)
+
+
+cpdef is_power2_fraction(number):
+    '''
+    TODO: Tests
+
+    :type number: int or float
+    :returns: if the number is either a power of 2 or a fraction, e.g. 4, 2, 1, 0.5, 0.25
+    :rtype: bool
+    '''
+    if number < 1:
+        number = 1 / number
+    return is_power2(number)
+

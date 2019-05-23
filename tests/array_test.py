@@ -17,6 +17,7 @@ from flightdatautilities.array import (
     is_constant,
     is_constant_uint8,
     is_constant_uint16,
+    is_power2,
     last_valid_sample,
     max_values,
     nearest_idx,
@@ -335,6 +336,14 @@ class TestIsConstantUint8(unittest.TestCase):
         self.assertTrue(is_constant_uint8(np.zeros(10, dtype=np.uint8)))
         self.assertTrue(is_constant_uint8(np.ones(10, dtype=np.uint8)))
         self.assertFalse(is_constant_uint8(np.arange(10, dtype=np.uint8)))
+
+
+class TestIsPower2(unittest.TestCase):
+    def test_is_power2(self):
+        self.assertEqual([i for i in range(2000) if is_power2(i)],
+                         [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024])
+        self.assertFalse(is_power2(-2))
+        self.assertFalse(is_power2(2.2))
 
 
 class TestLastValidSample(unittest.TestCase):
