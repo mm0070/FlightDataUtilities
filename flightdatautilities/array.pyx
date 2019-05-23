@@ -421,7 +421,7 @@ def section_overlap(a, b):
     return np.asarray(out).view(np.uint8)
 
 
-def remove_small_runs(array, Py_ssize_t seconds=10, unsigned long hz=1):  # TODO: floating point hz
+def remove_small_runs(array, Py_ssize_t seconds=10, float hz=1):  # TODO: floating point hz
     '''
     Optimised version of slices_remove_small_slices (330 times faster):
 >>> from analysis_engine.library import runs_of_ones, slices_remove_small_gaps
@@ -437,7 +437,7 @@ def remove_small_runs(array, Py_ssize_t seconds=10, unsigned long hz=1):  # TODO
 >>> %timeit section_overlap(x, y)
 1000 loops, best of 3: 954 µs per loop
     '''
-    cdef unsigned long size = seconds * hz
+    cdef Py_ssize_t size = <Py_ssize_t>(seconds * hz)
     if not size:
         return array
 
