@@ -19,8 +19,7 @@ def extrap1d(interpolator):
         if x < xs[0]:
             return ys[0] + (x - xs[0]) * (ys[1] - ys[0]) / (xs[1] - xs[0])
         elif x > xs[-1]:
-            return (ys[-1] + (x - xs[-1]) * (ys[-1] - ys[-2])
-                    / (xs[-1] - xs[-2]))
+            return ys[-1] + (x - xs[-1]) * (ys[-1] - ys[-2]) / (xs[-1] - xs[-2])
         else:
             return interpolator(x)
 
@@ -129,7 +128,7 @@ def upsample_arrays(arrays):
             raise ValueError(
                 "The largest array length should be a multiple of all others "
                 "'%s'." % lengths)
-    
+
     upsampled_arrays = []
     for array, length in zip(arrays, lengths):
         # XXX: Hack to fix MappedArray values mapping being stripped by repeat.

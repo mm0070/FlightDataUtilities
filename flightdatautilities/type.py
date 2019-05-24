@@ -49,15 +49,19 @@ def as_int(obj):
             raise ValueError('single value is required')
 
 
-def as_sequence(obj):
+def as_sequence(obj, ignore={}):
     '''
-    Returns obj wrapped in a list if not already a sequence.
+    Returns obj wrapped in a tuple if not already a sequence and not None.
+
+    XXX: creating a tuple for a single element is 10x faster than list
 
     :type obj: None, int, float or list
+    :param ignore: sequence types to ignore and wrap in tuple, e.g. str or bytes
+    :type ignore: iterable
     :returns: obj unchanged if obj is sequence or None else obj wrapped in a list
     :rtype: collections.Sequence or None
     '''
-    return obj if isinstance(obj, Sequence) or obj is None else [obj]
+    return (obj,) if (ignore and type(obj) in ignore) or (not isinstance(obj, Sequence) and obj is not None) else obj
 
 
 def byte_size(data):

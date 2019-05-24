@@ -39,14 +39,18 @@ class TestAsInt(unittest.TestCase):
 class TestAsSequence(unittest.TestCase):
     def test_as_sequence(self):
         self.assertEqual(as_sequence(None), None)
-        self.assertEqual(as_sequence(3), [3])
-        self.assertEqual(as_sequence(2.4), [2.4])
+        self.assertEqual(as_sequence(3), (3,))
+        self.assertEqual(as_sequence(2.4), (2.4,))
         self.assertEqual(as_sequence([]), [])
         self.assertEqual(as_sequence([5]), [5])
         self.assertEqual(as_sequence([7, 9]), [7, 9])
         self.assertEqual(as_sequence(tuple()), tuple())
         self.assertEqual(as_sequence((1,)), (1,))
         self.assertEqual(as_sequence((1, 2, 3)), (1, 2, 3))
+        self.assertEqual(as_sequence('abc', ignore={str}), ('abc',))
+        self.assertEqual(as_sequence(b'abc', ignore={bytes}), (b'abc',))
+        self.assertEqual(as_sequence(['abc'], ignore={list}), (['abc'],))
+        self.assertEqual(as_sequence('abc', ignore={bytes}), 'abc')
 
 
 class TestIsArray(unittest.TestCase):
