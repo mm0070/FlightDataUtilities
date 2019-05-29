@@ -9,15 +9,11 @@
 # Imports
 
 
+import bz2
 import hashlib
 import os
 import shutil
 import zipfile
-
-try:
-    import bz2file as bz2  # support for multiple streams.
-except ImportError:
-    import bz2  # fallback to standard library implementation.
 
 
 ##############################################################################
