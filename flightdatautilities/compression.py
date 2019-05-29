@@ -6,25 +6,15 @@ support compressed files. The files are stored compress to reduce storage
 space.
 '''
 
+import bz2
 import gzip
 import logging
 import lzma
 import os
 import shutil
-import sys
 import tempfile
 import zipfile
 import zlib
-
-if sys.version_info[0] == 2:
-    FileExistsError = FileNotFoundError = OSError
-else:
-    from builtins import FileExistsError, FileNotFoundError
-
-try:
-    import bz2file as bz2  # support for multiple streams.
-except ImportError:
-    import bz2  # fallback to standard library implementation.
 
 
 logger = logging.getLogger(name=__name__)
