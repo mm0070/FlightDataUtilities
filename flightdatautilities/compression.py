@@ -268,13 +268,13 @@ class CachedCompressedFile(ReadOnlyCompressedFile):
         super(CachedCompressedFile, self).__init__(*args, **kwargs)
 
 
-def iter_compress(data_gen, compression):
+def iter_compress(data_iter, compression):
     '''
-    Compress a data generator with a compressor.
+    Compress a data iterable with a compressor.
     '''
     compressor = COMPRESSORS[compression]()
 
-    for data in data_gen:
+    for data in data_iter:
         yield compressor.compress(data)
 
     yield compressor.flush()
