@@ -296,7 +296,7 @@ def iter_decompress(data_iter, compression):
 
 def open_compressed(filepath, mode='rb'):
     '''
-    Open the input file which may be compressed or within an archive. Returns a file object and can therefore be used as a context manager.
+    Open filepath for reading which may be compressed or within an archive. Returns a file object and can therefore be used as a context manager.
 
     :param mode: either 'r' or 'rb', mode 'r' will always be in text mode, 'rb' in binary mode.
     :type mode: str
