@@ -4,7 +4,7 @@ import zipfile
 
 from collections import Iterator
 
-from flightdatautilities.compression import FILE_CLASSES
+from flightdatautilities.compression import open_compressed
 from flightdatautilities.iterext import (
     chunk,
     join,
@@ -155,12 +155,7 @@ class file_reader(abstract_reader):
 
     def __enter__(self):
         # TODO: Handle '-' as stdin, e.g. getattr(sys.stdin, 'buffer', sys.stdin)?
-        if isinstance(self.path, str):
-            extension = os.path.splitext(self.path)[1].lstrip('.')
-            file_cls = FILE_CLASSES.get(extension, open)
-            self.fileobj = file_cls(self.path, 'rb')
-        else:
-            self.fileobj = self.path
+        self.fileobj = open_compressed(self.path) if isinstance(self.path, str) else self.path
 
         if self.pos:
             try:
@@ -205,6 +200,6 @@ def reader(obj, *args, **kwargs):
     elif is_data_iterable(obj):
         cls = generator_reader
     else:
-        cls = file_reader  # file path or file obj
+        cls = file_reader  # filepath or fileobj
     return cls(obj, *args, **kwargs)
 

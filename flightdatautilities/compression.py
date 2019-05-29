@@ -8,6 +8,7 @@ space.
 
 import bz2
 import gzip
+import io
 import logging
 import lzma
 import os
@@ -20,19 +21,18 @@ import zlib
 logger = logging.getLogger(name=__name__)
 
 
-COMPRESSION_LEVEL = 6
-COMPRESSION_FORMATS = {
-    'gz': gzip.GzipFile,
-    'bz2': bz2.BZ2File,
-}
 # TODO: Add blosc
-FILE_CLASSES = {
+COMPRESSION_CLASSES = {
     'bz2': bz2.open,
     'gz': gzip.open,
     'xz': lzma.open,
-    'zip': zipfile.ZipFile,
     None: open,
 }
+ARCHIVE_CLASSES = {
+    'sac': zipfile.ZipFile,  # AGS
+    'zip': zipfile.ZipFile,
+}
+FILE_CLASSES = dict(COMPRESSION_CLASSES, **ARCHIVE_CLASSES)
 COMPRESSORS = {
     'bz2': bz2.BZ2Compressor,
     'gz': zlib.compressobj,
@@ -54,8 +54,7 @@ class CompressedFile(object):
     On exit the resulting file is compressed back to the original place.
     '''
     def __init__(self, compressed_path, uncompressed_path=None, format=None, mode='a', cache=False,
-                 output_dir=None, temp_dir=None, create=False,
-                 compression_level=COMPRESSION_LEVEL, buffer_size=4096):
+                 output_dir=None, temp_dir=None, create=False, compression_level=6, buffer_size=4096):
         '''
         :param compressed_path: Path to the compressed file.
         :type compressed_path: str
@@ -82,8 +81,8 @@ class CompressedFile(object):
             __, extension = os.path.splitext(compressed_path)
             format = extension.strip('.')
 
-        if format in COMPRESSION_FORMATS:
-            self.compressor = COMPRESSION_FORMATS[format]
+        if format in COMPRESSION_CLASSES:
+            self.compressor = COMPRESSION_CLASSES[format]
             logger.debug('Using compressor `%s` for format `%s`', self.compressor, format)
         else:
             logger.debug(
@@ -201,7 +200,7 @@ class CompressedFile(object):
         logger.debug('Recompressing file `%s` from temporary location `%s`',
                      self.compressed_path, self.uncompressed_path)
 
-        with self.compressor(self.compressed_path, 'wb', **{'compresslevel': self.compression_level} if self.format else {}) as compressed_file:
+        with self.compressor(self.compressed_path, 'wb', **{'compresslevel': self.compression_level} if self.format in {'bz2', 'gz'} else {}) as compressed_file:
             with open(self.uncompressed_path, 'rb') as uncompressed_file:
                 if self.buffer_size is None:
                     compressed_file.write(uncompressed_file.read())
@@ -280,6 +279,58 @@ def iter_compress(data_iter, compression):
     yield compressor.flush()
 
 
+# FIXME: Convert into a context manager to ensure data file is closed properly?
+def open_raw_data(filepath, binary=True):
+    '''
+    Open the input file which may be compressed.
+
+    :param filepath: Path of raw data file which can either be zip, bz2 or uncompressed.
+    :type filepath: str
+
+    :returns: An opened file object.
+    :rtype: file
+    '''
+    extension = os.path.splitext(filepath)[1].lower()
+
+    if extension in {'.sac', '.zip'}:
+        zf = zipfile.ZipFile(filepath, 'r')
+        filenames = zf.namelist()
+        if len(filenames) != 1:
+            raise IOError('Zip files must contain only a single data file.')
+        return zf.open(filenames[0])
+
+    if extension in {'.bz2'}:
+        return bz2.BZ2File(filepath, 'r')
+
+    return open(filepath, 'rb' if binary else 'r')
+
+
+def open_compressed(filepath, mode='rb'):
+    '''
+    Open the input file which may be compressed or within an archive. Returns a file object and can therefore be used as a context manager.
+
+    :param mode: either 'r' or 'rb', mode 'r' will always be in text mode, 'rb' in binary mode.
+    :type mode: str
+    '''
+    if mode not in {'r', 'rb'}:
+        raise ValueError('unsupported mode: %s' % mode)
+    extension = os.path.splitext(filepath)[1].lstrip('.')
+    archive_cls = ARCHIVE_CLASSES.get(extension)
+    if archive_cls:
+        archive = archive_cls(filepath)  # archive is closed automatically when fileobj within archive is closed
+        filenames = archive.namelist()
+        if len(filenames) != 1:
+            raise IOError('Archives must contain a single file.')
+
+        fileobj = archive.open(filenames[0], 'r')  # opens in binary mode
+        if mode == 'r':
+            fileobj = io.TextIOWrapper(fileobj)
+    else:
+        fileobj = COMPRESSION_CLASSES.get(extension, open)(filepath, 'rt' if mode == 'r' else mode)
+
+    return fileobj
+
+
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
@@ -295,13 +346,13 @@ if __name__ == '__main__':
     output_path = args.output_file_path
 
     if args.command == 'compress':
-        compressor = COMPRESSION_FORMATS[args.compressor]
+        compressor = COMPRESSION_CLASSES[args.compressor]
         if not output_path:
             output_path = args.input_file_path + '.%s' % args.compressor
         with compressor(output_path, 'w') as output_file, open(args.input_file_path) as input_file:
             output_file.write(input_file.read())
     elif args.command == 'decompress':
-        for extension, decompressor in COMPRESSION_FORMATS.items():
+        for extension, decompressor in COMPRESSION_CLASSES.items():
             if args.input_file_path.endswith(extension):
                 if not output_path:
                     output_path = args.input_file_path[:-(len(extension) + 1)]

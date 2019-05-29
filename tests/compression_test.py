@@ -7,7 +7,7 @@ import tempfile
 import unittest
 
 from flightdatautilities.compression import (
-    COMPRESSION_FORMATS,
+    COMPRESSION_CLASSES,
     CompressedFile,
     ReadOnlyCompressedFile,
     CachedCompressedFile,
@@ -20,7 +20,7 @@ class TestCompression(unittest.TestCase):
     '''
     def setUp(self):
         self.filenames = []
-        for compression_format in COMPRESSION_FORMATS.keys():
+        for compression_format in COMPRESSION_CLASSES.keys():
             suffix = '.%s' % compression_format
             self.filenames.append(tempfile.mktemp(suffix=suffix))
 
@@ -179,7 +179,7 @@ class TestCompressionFromFile(unittest.TestCase):
         self.filenames = {}
         self.uncompressed_filenames = {}
 
-        for compression_format in COMPRESSION_FORMATS.keys():
+        for compression_format in COMPRESSION_CLASSES.keys():
             filename = tempfile.mktemp(suffix='.gz')
             uncompressed_filename = tempfile.mktemp()
 
@@ -205,7 +205,7 @@ class TestCompressionFromFile(unittest.TestCase):
         Create the compressed file from an existing one and compare the
         contents of the compressed version.
         '''
-        for compression_format in COMPRESSION_FORMATS.keys():
+        for compression_format in COMPRESSION_CLASSES.keys():
             filename = self.filenames[compression_format]
             uncompressed_filename = self.uncompressed_filenames[compression_format]
             # Create the compressed version first
