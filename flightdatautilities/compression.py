@@ -38,6 +38,11 @@ COMPRESSORS = {
     'gz': zlib.compressobj,
     'xz': lzma.LZMACompressor,
 }
+DECOMPRESSORS = {
+    'bz2': bz2.BZ2Decompressor,
+    'gz': zlib.decompressobj,
+    'xz': lzma.LZMADecompressor,
+}
 DEFAULT_COMPRESSION = 'bz2'
 
 
@@ -279,30 +284,14 @@ def iter_compress(data_iter, compression):
     yield compressor.flush()
 
 
-# FIXME: Convert into a context manager to ensure data file is closed properly?
-def open_raw_data(filepath, binary=True):
+def iter_decompress(data_iter, compression):
     '''
-    Open the input file which may be compressed.
-
-    :param filepath: Path of raw data file which can either be zip, bz2 or uncompressed.
-    :type filepath: str
-
-    :returns: An opened file object.
-    :rtype: file
+    Decompress a data iterable with a decompressor.
     '''
-    extension = os.path.splitext(filepath)[1].lower()
+    decompressor = DECOMPRESSORS[compression]()
 
-    if extension in {'.sac', '.zip'}:
-        zf = zipfile.ZipFile(filepath, 'r')
-        filenames = zf.namelist()
-        if len(filenames) != 1:
-            raise IOError('Zip files must contain only a single data file.')
-        return zf.open(filenames[0])
-
-    if extension in {'.bz2'}:
-        return bz2.BZ2File(filepath, 'r')
-
-    return open(filepath, 'rb' if binary else 'r')
+    for data in data_iter:
+        yield decompressor.decompress(data)
 
 
 def open_compressed(filepath, mode='rb'):
