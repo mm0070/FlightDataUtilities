@@ -34,6 +34,12 @@ from flightdatautilities.array import (
 from flightdatautilities.read import reader
 
 
+FLIGHT_DATA_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'test_data', 'flight_data')
+BYTE_ALIGNED_DATA_PATH = os.path.join(FLIGHT_DATA_PATH, 'byte_aligned')
+TDQAR_DATA_PATH = os.path.join(FLIGHT_DATA_PATH, 'tdqar')
+TDWGL_DATA_PATH = os.path.join(FLIGHT_DATA_PATH, 'tdwgl')
+
+
 class TestByteAligner(unittest.TestCase):
     @unittest.skip('Test requires method gil enabled and cpdef')
     def test__get_word(self):
@@ -73,7 +79,7 @@ class TestByteAligner(unittest.TestCase):
     @unittest.skip('Test requires method gil enabled and cpdef')
     def test__next_frame_idx(self):
         byte_aligned = ByteAligner()
-        path = os.path.join(TDWGL_DATA_PATH, '07', 'raw.dat')
+        path = os.path.join(TDWGL_DATA_PATH, '01', 'raw.dat')
         with reader(path, dtype=np.uint8) as data_gen:
             byte_aligned._buff = next(data_gen)
             self.assertEqual(byte_aligned._next_frame_idx(0), 0x300)
@@ -86,7 +92,7 @@ class TestByteAligner(unittest.TestCase):
 
     def test__loop(self):
         byte_aligned = ByteAligner()
-        path = os.path.join(TDWGL_DATA_PATH, '07', 'raw.dat')
+        path = os.path.join(TDWGL_DATA_PATH, '01', 'raw.dat')
         def func(idx):
             return idx
         with reader(path, dtype=np.uint8) as data_gen:
@@ -95,7 +101,7 @@ class TestByteAligner(unittest.TestCase):
 
     def test_identify_1(self):
         byte_aligned = ByteAligner()
-        path = os.path.join(TDWGL_DATA_PATH, '07', 'raw.dat')
+        path = os.path.join(TDWGL_DATA_PATH, '01', 'raw.dat')
         with reader(path, dtype=np.uint8) as data_gen:
             self.assertEqual(list(byte_aligned.identify(data_gen)),
                              [(0x300, 128, '717'), (0x700, 128, '717'), (0xB00, 128, '717')])
@@ -106,35 +112,35 @@ class TestByteAligner(unittest.TestCase):
 
     def test_identify_2(self):
         byte_aligned = ByteAligner()
-        path = os.path.join(TDQAR_DATA_PATH, '09', 'DAR.DAT')
+        path = os.path.join(TDQAR_DATA_PATH, '01', 'DAR.DAT')
         with reader(path, dtype=np.uint8) as data_gen:
             self.assertEqual(list(byte_aligned.identify(data_gen)),
                              [(0, 128, '717'), (1024, 128, '717'), (2048, 128, '717'), (3072, 128, '717')])
 
     def test_identify_3(self):
         byte_aligned = ByteAligner()
-        path = os.path.join(TDQAR_DATA_PATH, '09', 'QAR.DAT')
+        path = os.path.join(TDQAR_DATA_PATH, '01', 'QAR.DAT')
         with reader(path, dtype=np.uint8) as data_gen:
             self.assertEqual(list(byte_aligned.identify(data_gen)),
                              [(0, 128, '717'), (1024, 128, '717'), (2048, 128, '717'), (3072, 128, '717')])
 
     def test_identify_4(self):
         byte_aligned = ByteAligner()
-        path = os.path.join(TDWGL_DATA_PATH, '03', 'raw.dat')
+        path = os.path.join(TDWGL_DATA_PATH, '02', 'raw.dat')
         with reader(path, dtype=np.uint8) as data_gen:
             self.assertEqual(list(byte_aligned.identify(data_gen)),
                              [(0x300, 128, '717'), (0x700, 128, '717'), (0xB00, 128, '717')])
 
     def test_identify_5(self):
         byte_aligned = ByteAligner()
-        path = os.path.join(TDWGL_DATA_PATH, '05', 'raw.dat')
+        path = os.path.join(TDWGL_DATA_PATH, '03', 'raw.dat')
         with reader(path, dtype=np.uint8) as data_gen:
             self.assertEqual(list(byte_aligned.identify(data_gen)),
                              [(1024, 128, '717'), (2048, 128, '717'), (3072, 128, '717')])
 
     def test_identify_6(self):
         byte_aligned = ByteAligner()
-        path = os.path.join(TDWGL_DATA_PATH, '06', 'raw.dat')
+        path = os.path.join(TDWGL_DATA_PATH, '04', 'raw.dat')
         with reader(path, dtype=np.uint8) as data_gen:
             self.assertEqual(list(byte_aligned.identify(data_gen)),
                              [(1024, 128, '717'), (2048, 128, '717'), (3072, 128, '717'), (4096, 128, '717'),
@@ -142,14 +148,14 @@ class TestByteAligner(unittest.TestCase):
 
     def test_identify_7(self):
         byte_aligned = ByteAligner()
-        path = os.path.join(TDWGL_DATA_PATH, '07', 'raw.dat')
+        path = os.path.join(TDWGL_DATA_PATH, '01', 'raw.dat')
         with reader(path, dtype=np.uint8) as data_gen:
             self.assertEqual(list(byte_aligned.identify(data_gen)),
                              [(0x300, 128, '717'), (0x700, 128, '717'), (0xB00, 128, '717')])
 
     def test_process_1(self):
         byte_aligned = ByteAligner()
-        path = os.path.join(TDWGL_DATA_PATH, '07', 'raw.dat')
+        path = os.path.join(TDWGL_DATA_PATH, '01', 'raw.dat')
         expected = reader(path, dtype=np.uint8, start=0x300, stop=0xF00).first()
         with reader(path, dtype=np.uint8) as data_gen:
             output = np.concatenate(list(byte_aligned.process(data_gen)))
@@ -157,7 +163,7 @@ class TestByteAligner(unittest.TestCase):
 
     def test_process_2(self):
         byte_aligned = ByteAligner()
-        path = os.path.join(BYTE_ALIGNED_DATA_PATH, 'all_sync.dat')
+        path = os.path.join(BYTE_ALIGNED_DATA_PATH, '01', 'all_sync.dat')
         array = reader(path, dtype=np.uint8).first()
         data = array.tostring()
         self.assertEqual(data, next(byte_aligned.process(array)).tostring())
@@ -176,7 +182,7 @@ class TestByteAligner(unittest.TestCase):
 
     def test_process_3(self):
         byte_aligned = ByteAligner()
-        path = os.path.join(BYTE_ALIGNED_DATA_PATH, 'all_sync.dat')
+        path = os.path.join(BYTE_ALIGNED_DATA_PATH, '01', 'all_sync.dat')
         data = reader(path).first()
         offset_data = b'\xFF' * 20 + data + b'\x47\x02' + b'\xFF' * 50
         array = np.fromstring(offset_data, dtype=np.uint8)
@@ -198,7 +204,7 @@ class TestByteAligner(unittest.TestCase):
 
     def test_process_start_and_stop(self):
         byte_aligned = ByteAligner()
-        path = os.path.join(BYTE_ALIGNED_DATA_PATH, 'all_sync.dat')
+        path = os.path.join(BYTE_ALIGNED_DATA_PATH, '01', 'all_sync.dat')
         data = reader(path).first()
         array = np.fromstring(data, dtype=np.uint8)
         def call(expected, array, *args, **kwargs):

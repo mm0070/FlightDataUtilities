@@ -19,10 +19,7 @@ class TestCompression(unittest.TestCase):
     We use real file I/O here in temporary directory.
     '''
     def setUp(self):
-        self.filenames = []
-        for compression_format in COMPRESSION_CLASSES.keys():
-            suffix = '.%s' % compression_format
-            self.filenames.append(tempfile.mktemp(suffix=suffix))
+        self.filenames = [tempfile.mktemp(suffix='.%s' % s) for s in COMPRESSION_CLASSES.keys() if s]
 
     def tearDown(self):
         for filename in self.filenames:
@@ -80,12 +77,9 @@ class TestCompression(unittest.TestCase):
                     f.write(text)
 
             # The content of the file should be as created in the setUp()
-            expected = [
-                ' 1. This is the first line of content\n',
-            ]
             with ReadOnlyCompressedFile(filename) as uncompressed:
                 with open(uncompressed) as f:
-                    self.assertListEqual(f.readlines(), expected)
+                    self.assertListEqual(f.readlines(), [' 1. This is the first line of content\n'])
 
     def test_cache(self):
         '''
@@ -99,22 +93,18 @@ class TestCompression(unittest.TestCase):
             # Create contents of the file
             self.generateContent(filename)
             # Now let's open it in cache mode:
-            with CachedCompressedFile(filename, output_dir=cache_dir) \
-                    as uncompressed:
+            with CachedCompressedFile(filename, output_dir=cache_dir) as uncompressed:
                 with open(uncompressed, 'a') as f:
-                    text = ' 2. This is the second line of content, ' \
-                        'only available in the cached copy!\n'
+                    text = ' 2. This is the second line of content, only available in the cached copy!\n'
                     f.write(text)
 
             # Let's open it in cache mode again, the file will be found, so it will
             # not be uncompressed again:
             expected = [
                 ' 1. This is the first line of content\n',
-                ' 2. This is the second line of content, '
-                'only available in the cached copy!\n'
+                ' 2. This is the second line of content, only available in the cached copy!\n'
             ]
-            with CachedCompressedFile(filename, output_dir=cache_dir) \
-                    as uncompressed:
+            with CachedCompressedFile(filename, output_dir=cache_dir) as uncompressed:
                 # The contents of the cached file will be changed
                 # read-only
                 with open(uncompressed) as f:
@@ -129,13 +119,9 @@ class TestCompression(unittest.TestCase):
             # Let's open it in cache mode again, the file will be found, but older
             # than the original, so the cache will be refreshed. The extra content
             # will disappear.
-            expected = [
-                ' 1. This is the first line of content\n',
-            ]
-            with CachedCompressedFile(filename, output_dir=cache_dir) \
-                    as uncompressed:
+            with CachedCompressedFile(filename, output_dir=cache_dir) as uncompressed:
                 with open(uncompressed) as f:
-                    self.assertListEqual(f.readlines(), expected)
+                    self.assertListEqual(f.readlines(), expected[:1])
 
             os.unlink(uncompressed)
 
@@ -147,8 +133,7 @@ class TestCompression(unittest.TestCase):
         def _raiseValueError(filename):
             with CompressedFile(filename, create=True) as uncompressed:
                 with open(uncompressed, 'w+') as f:
-                    text = ' This is a failed content, ' \
-                        'it should not appear in the compressed file\n'
+                    text = ' This is a failed content, it should not appear in the compressed file\n'
                     f.write(text)
                 raise ValueError
 
@@ -163,12 +148,9 @@ class TestCompression(unittest.TestCase):
             # File should still exist
             self.assertTrue(os.path.exists(filename))
             # The content of the file should not have changed
-            expected = [
-                ' 1. This is the first line of content\n',
-            ]
             with ReadOnlyCompressedFile(filename) as uncompressed:
                 with open(uncompressed) as f:
-                    self.assertListEqual(f.readlines(), expected)
+                    self.assertListEqual(f.readlines(), [' 1. This is the first line of content\n'])
 
 
 class TestCompressionFromFile(unittest.TestCase):
