@@ -1160,29 +1160,6 @@ cpdef Py_ssize_t array_index_uint16(unsigned short value, unsigned short[:] arra
     return -1
 
 
-def extrap1d(interpolator):
-    '''
-    Extends scipy.interp1d which extrapolates values outside of the interpolation points.
-    http://stackoverflow.com/questions/2745329/how-to-make-scipy-interpolate-give-a-an-extrapolated-result-beyond-the-input-ran
-    Optimised interpolation with extrapolation has been implemented in Interpolator.
-    '''
-    xs = interpolator.x
-    ys = interpolator.y
-
-    def pointwise(x):
-        if x < xs[0]:
-            return ys[0] + (x - xs[0]) * (ys[1] - ys[0]) / (xs[1] - xs[0])
-        elif x > xs[-1]:
-            return ys[-1] + (x - xs[-1]) * (ys[-1] - ys[-2]) / (xs[-1] - xs[-2])
-        else:
-            return interpolator(x)
-
-    def ufunclike(xs):
-        return scipy.array(map(pointwise, scipy.array(xs)))
-
-    return ufunclike
-
-
 def merge_masks(masks):
     '''
     ORs multiple masks together. Could this be done in one step with numpy?
