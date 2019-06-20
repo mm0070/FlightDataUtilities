@@ -73,6 +73,7 @@ MJ = 'MJ'
 # Flow (Mass):
 LB_H = 'lb/h'
 LB_MIN = 'lb/min'
+KG_S = 'kg/s'
 KG_H = 'kg/h'
 TONNE_H = 't/h'
 
