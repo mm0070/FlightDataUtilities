@@ -133,6 +133,7 @@ IPS = 'ips'
 METER_S = 'm/s'
 MACH = 'Mach'  # [0]
 RPM = 'rpm'
+RPM_S = 'rpm/s'
 
 # Temperature:
 CELSIUS = 'C'  # [1][2]
