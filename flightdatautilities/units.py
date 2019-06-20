@@ -71,6 +71,7 @@ KJ = 'kJ'
 MJ = 'MJ'
 
 # Flow (Mass):
+LB_S = 'lb/s'
 LB_H = 'lb/h'
 LB_MIN = 'lb/min'
 KG_S = 'kg/s'
