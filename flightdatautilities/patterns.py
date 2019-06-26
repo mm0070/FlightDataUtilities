@@ -20,7 +20,7 @@ WILDCARD_ESCAPE = re.escape(' (*)')
 OPTIONS_GROUP = '(?: \\((?:%s)+\\))' % '|'.join(o.strip('()') for o in OPTIONS)
 
 
-def pattern_regex(pattern, missing=True):
+def pattern_regex(pattern, missing=True, prefix=False):
     '''
     Create a regex which matches the pattern.
     
@@ -28,14 +28,16 @@ def pattern_regex(pattern, missing=True):
     :type pattern: String
     :param missing: Whether or not to match variations of the pattern where wildcard options are missing.
     :type missing: bool
+    :param prefix: Whether to allow strings that start with the pattern to match.
+    :type prefix: bool
     :returns: keys which match pattern
     :rtype: list
     '''
     return re.escape(pattern).replace(
-        WILDCARD_ESCAPE, '%s%s' % (OPTIONS_GROUP, '?' if missing else '')) + '\Z(?ms)'
+        WILDCARD_ESCAPE, '%s%s' % (OPTIONS_GROUP, '?' if missing else '')) + ('' if prefix else '\Z(?ms)')
 
 
-def wildcard_match(pattern, keys, missing=True):
+def wildcard_match(pattern, keys, missing=True, prefix=False):
     '''
     Return subset of keys where wildcard (*) pattern matches.
     Also matches keys where " (*)" is not in the string.
@@ -49,9 +51,13 @@ def wildcard_match(pattern, keys, missing=True):
     :returns: keys which match pattern
     :rtype: list
     '''
-    if WILDCARD not in pattern:
+    if WILDCARD in pattern:
+        pass
+    elif prefix:
+        return sorted({key for key in keys if key.startswith(pattern)})
+    else:
         return [pattern] if pattern in keys else []
-    re_obj = re.compile(pattern_regex(pattern, missing=missing))
+    re_obj = re.compile(pattern_regex(pattern, missing=missing, prefix=prefix))
     return sorted({key for key in keys if re_obj.match(key)})
 
 
