@@ -51,6 +51,8 @@ def wildcard_match(pattern, keys, missing=True, prefix=False):
     :returns: keys which match pattern
     :rtype: list
     '''
+    if not isinstance(keys, (list, tuple, set)):
+        raise TypeError('Expected a non-string iterable.')
     if WILDCARD in pattern:
         pass
     elif prefix:
