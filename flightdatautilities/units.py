@@ -50,7 +50,9 @@ DEGREE_S2 = 'deg/s/s'
 # Angles:
 DEGREE = 'deg'  # [1]
 RADIAN = 'rad'
-DEGREE_S = 'deg/s'  # [1]
+
+# Angular Acceleration
+RPM_S = 'rpm/s'
 
 # Density:
 KG_LITER = 'kg/l'
@@ -79,6 +81,7 @@ KG_H = 'kg/h'
 TONNE_H = 't/h'
 
 # Flow (Volume):
+CFM = 'cfm'
 PINT_H = 'pt/h'  # [3]
 QUART_H = 'qt/h'  # [3]
 GALLON_H = 'gal/h'  # [3]
@@ -92,7 +95,7 @@ NEWTON = 'N'
 
 # Frequency:
 HZ = 'Hz'
-KHZ = 'KHz'
+KHZ = 'kHz'
 MHZ = 'MHz'
 GHZ = 'GHz'
 
@@ -111,6 +114,9 @@ LB = 'lb'
 KG = 'kg'
 TONNE = 't'
 SLUG = 'slug'
+
+#Power:
+KW = 'kW'
 
 # Pressure:
 INHG = 'inHg'
@@ -134,7 +140,7 @@ IPS = 'ips'
 METER_S = 'm/s'
 MACH = 'Mach'  # [0]
 RPM = 'rpm'
-RPM_S = 'rpm/s'
+DEGREE_S = 'deg/s'  # [1]
 
 # Temperature:
 CELSIUS = 'C'  # [1][2]
@@ -981,15 +987,17 @@ UNIT_CORRECTIONS = {
 UNIT_CATEGORIES = {
     'Acceleration': (G, FPS2, MPS2, DEGREE_S2),
     'Angles': (DEGREE, RADIAN, DEGREE_S),
+    'Angular Acceleration': (RPM_S),
     'Density': (KG_LITER, LB_GALLON),
     'Electricity': (AMP, VOLT, KVA, OHM, MILLIVOLT, MICROAMP, MILLIAMP),
     'Energy': (JOULE, KJ, MJ),
-    'Flow (Mass)': (LB_H, LB_MIN, KG_H, TONNE_H),
-    'Flow (Volume)': (PINT_H, QUART_H, GALLON_H, LITER_H),
+    'Flow (Mass)': (LB_H, LB_MIN, LB_S, KG_H, KG_S, TONNE_H),
+    'Flow (Volume)': (CFM, PINT_H, QUART_H, GALLON_H, LITER_H),
     'Force': (LBF, KGF, DECANEWTON, NEWTON),
     'Frequency': (HZ, KHZ, MHZ, GHZ),
     'Length': (FT, METER, KM, MILE, NM, INCH, MILLIMETER),
     'Mass': (LB, KG, SLUG, TONNE),
+    'Power': (KW),
     'Pressure': (INHG, PASCAL, HECTOPASCAL, BAR, MILLIBAR, PSI, PSIA, PSID, PSIG, PSI_MINUTE, LB_FT2),
     'Speed': (KT, MPH, FPM, FPS, IPS, METER_S, MACH, RPM),
     'Temperature': (CELSIUS, FAHRENHEIT, KELVIN, RANKINE),
@@ -1031,6 +1039,7 @@ UNIT_DESCRIPTIONS = {
     KG_H: 'pounds per kilogram',
     TONNE_H: 'tonnes per hour',
     # Flow (Volume):
+    CFM:'cubic feet per minute',
     PINT_H: 'pints per hour',
     QUART_H: 'quarts per hour',
     GALLON_H: 'gallons per hour',
