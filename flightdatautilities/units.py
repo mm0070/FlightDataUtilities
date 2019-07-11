@@ -558,6 +558,23 @@ STANDARD_CONVERSIONS = {
 }
 
 
+UNIT_DISPLAY = {
+    CELSIUS: '°C',
+    FAHRENHEIT: '°F',
+    RANKINE: '°R',
+    # DEGREE: '°',
+    # DEGREE_S: '°/s',
+    DEGREE_S2: 'deg/s²',  # '°/s²'
+    FT_LB: 'ft·lb',
+    IN_LB: 'in·lb',
+    IN_OZ: 'in·oz',
+    MICROAMP: 'μA',
+    OHM: 'Ω',
+    FPS2: 'ft/s²',
+    LB_FT2: 'lb/ft²',
+}
+
+
 UNIT_CORRECTIONS = {
     # Acceleration:
     'G': G,
