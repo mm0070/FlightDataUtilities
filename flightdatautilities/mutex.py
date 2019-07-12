@@ -17,7 +17,7 @@ class Mutex:
 
         import sys
 
-        from utilities.mutex import Mutex, MutexException
+        from flightdatautilities.mutex import Mutex, MutexException
 
         def main():
 
