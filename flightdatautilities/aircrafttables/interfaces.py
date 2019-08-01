@@ -12,7 +12,9 @@
 from __future__ import unicode_literals
 
 import logging
+import numbers
 import numpy as np
+import scipy.interpolate
 import six
 
 from abc import ABCMeta
@@ -183,6 +185,58 @@ class VelocitySpeed(object):
             array = array.round().astype(np.int)
             return array[0] if scalar else array
 
+        if name == 'vls_clean':
+            try:
+                lookup = self.tables[name]
+            except KeyError:
+                lookup = None
+                msg = "Velocity speed table '%s' has no '%s' entry."
+                logger.error(msg, self.__class__.__name__, name)
+
+            weight = kwargs['weight']
+            altitude = kwargs['altitude']
+
+            if weight is None or altitude is None:
+                lookup = None
+                msg = "Velocity speed table '%s' received None for weight or altitude keyword argument."
+                logger.error(msg, self.__class__.__name__)
+
+            # Check if weight or altitude is a scalar (not an array)
+            scalar_weight = isinstance(weight, numbers.Real)
+            scalar_altitude = isinstance(altitude, numbers.Real)
+            scalar = scalar_weight and scalar_altitude
+
+            if weight is not None and weight is not np.ma.masked:
+                weight = np.ma.array(weight, copy=True, dtype=np.double, ndmin=1)
+            else:
+                weight = np.ma.array(data=[0.0], dtype=np.double, mask=True)
+
+
+            if lookup is None:
+                # Generate an array of velocity speed values for given parameters:
+                array = self._build_array(weight, mask=True)
+            else:
+                # Build interpolation grid
+                x = sorted(lookup['weight'].keys())
+                y = lookup['altitude']
+                z = np.array([lookup['weight'][xi] for xi in x], dtype=np.float)
+                interp = scipy.interpolate.RegularGridInterpolator(
+                    (x, y), z,
+                    bounds_error=False,
+                    fill_value=np.nan,
+                )
+                # Convert the aircraft weight to match the lookup table:
+                if not self.weight_unit == ut.KG:
+                    weight *= ut.multiplier(ut.KG, self.weight_unit)
+                # Interpolate the given wieghts and altitudes
+                array = interp((weight, altitude))
+                # Mask values outside the table lookup
+                array = np.ma.masked_invalid(array)
+                # Round to the nearest int
+                array = array.round().astype(np.int)
+
+            return array[0] if scalar else array
+
         if name in ('vmo', 'mmo'):
             altitude = kwargs['altitude']
             scalar = isinstance(altitude, (int, float))
@@ -309,6 +363,26 @@ class VelocitySpeed(object):
         :raises: ValueError -- when weight units cannot be converted.
         '''
         return self._determine_vspeed('vls', detent=detent, weight=weight, cg=cg)
+
+    def vls_clean(self, weight, altitude):
+        '''
+        Look up values from tables for VLS clean.
+
+        Will use interpolation and convert units if necessary.
+
+        A masked array or value will be returned if provided parameter arrays
+        are outside of ranges defined within the lookup tables.
+
+        :param weight: weight of the aircraft.
+        :type weight: float or np.ma.array
+        :param altitude: altitude of the aircraft.
+        :type altitude: float or np.ma.array
+        :returns: one or more values of VLS.
+        :rtype: int or np.ma.array
+        :raises: KeyError -- when table is not found.
+        :raises: ValueError -- when weight units cannot be converted.
+        '''
+        return self._determine_vspeed('vls_clean', weight=weight, altitude=altitude)
 
     def vmo(self, altitude):
         '''

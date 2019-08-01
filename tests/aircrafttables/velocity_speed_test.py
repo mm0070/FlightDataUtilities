@@ -220,6 +220,18 @@ class TestVelocitySpeed(unittest.TestCase):
                    'speed': (335,   335,   310,   310),
             },
             'mmo': 0.800,
+            'vls_clean': {
+                'altitude': (0  , 10000, 20000, 30000, 40000),
+                'weight': {
+                    240:    (209,   222,   237,   245, np.nan),
+                    220:    (200,   207,   226,   233, np.nan),
+                    200:    (190,   192,   214,   220,   243),
+                    180:    (181,   181,   200,   206,   221),
+                    160:    (170,   171,   182,   194,   203),
+                    140:    (159,   159,   163,   181,   187),
+                    120:    (148,   148,   148,   164,   171),
+                }
+        },
         }
         self.vs.fallback = {
             'v2': {'5': 122, '15': 117, '20': 113},
@@ -797,6 +809,44 @@ class TestVelocitySpeed(unittest.TestCase):
         mmo = np.ma.arange(860, 785, -15) / 1000.0
         mmo[2] = np.ma.masked
         ma_test.assert_masked_array_equal(self.vs.mmo(altitude), mmo)
+
+    def test__vls_clean__arrays(self):
+        altitude = np.ma.concatenate((np.ma.ones(5) * 10000, np.ma.ones(5) * 20000))
+        weight = np.ma.ones(10) * 160000
+        result = self.vs._determine_vspeed('vls_clean', weight=weight, altitude=altitude)
+        expected = np.ma.concatenate((np.ma.ones(5) * 171, np.ma.ones(5) * 182))
+        ma_test.assert_masked_array_equal(expected, result)
+
+    def test__vls_clean__scalar_values(self):
+        altitude = 10000
+        weight = 200000
+        result = self.vs._determine_vspeed('vls_clean', weight=weight, altitude=altitude)
+        expected = 192
+        self.assertEqual(expected, result)
+
+    def test__vls_clean__altitude_none(self):
+        altitude = None
+        weight = np.ma.ones(10) * 160000
+        result = self.vs._determine_vspeed('vls_clean', weight=weight, altitude=altitude)
+        expected = np.ma.ones(10)
+        expected.mask = True
+        ma_test.assert_masked_array_equal(expected, result)
+
+    def test__vls_clean__weight_none(self):
+        altitude = np.ma.concatenate((np.ma.ones(5) * 10000, np.ma.ones(5) * 20000))
+        weight = None
+        result = self.vs._determine_vspeed('vls_clean', weight=weight, altitude=altitude)
+        expected = np.ma.ones(1)
+        expected.mask = True
+        ma_test.assert_masked_array_equal(expected, result)
+
+    def test__vls_clean__values_outside_table(self):
+        altitude = np.ma.concatenate((np.ma.ones(5) * 31000, np.ma.ones(5) * 20000))
+        weight = np.ma.concatenate((np.ma.ones(5) * 220000, np.ma.ones(5) * 100000))
+        result = self.vs._determine_vspeed('vls_clean', weight=weight, altitude=altitude)
+        expected = np.ma.ones(10)
+        expected.mask = True
+        ma_test.assert_masked_array_equal(expected, result)
 
 
 @_generate_tests(_velocity_speed_tables_integrity_test_generator)
