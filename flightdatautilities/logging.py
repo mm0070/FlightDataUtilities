@@ -111,7 +111,7 @@ class ElasticsearchHandler(logging.Handler):
         self.format(record)
 
         ts = datetime.datetime.utcfromtimestamp(record.created)
-        ts = ts.replace(microsecond=round(ts.microsecond, -3), tzinfo=datetime.timezone.utc)
+        ts = ts.replace(microsecond=ts.microsecond // 1000 * 1000, tzinfo=datetime.timezone.utc)
 
         self._buffer.put({
             **self.extra_fields,
