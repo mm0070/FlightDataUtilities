@@ -72,6 +72,8 @@ class ElasticsearchHandler(logging.Handler):
             'name': 'log.name',
             'pathname': 'log.path',
             'stack_info': 'log.stack',
+            # Work around log record attribute shadowing prevention:
+            '_name': 'name',
         }
 
     @property
