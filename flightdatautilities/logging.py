@@ -69,7 +69,7 @@ class ConsoleFormatter(logging.Formatter):
         extra = {k: v for k, v in record.__dict__.items() if k not in self._exclude}
         if extra:
             extra = f'\x1b[2;3;37m{extra}\x1b[0m' if self._color else extra
-        return value + ' ' + extra if extra else value
+        return value + ' %s' % extra if extra else value
 
     def formatStack(self, value):
         value = super().formatStack(value)
