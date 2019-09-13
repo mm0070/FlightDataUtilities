@@ -58,8 +58,9 @@ class CompressedFile(object):
 
     On exit the resulting file is compressed back to the original place.
     '''
-    def __init__(self, compressed_path, uncompressed_path=None, format=None, mode='a', cache=False,
-                 output_dir=None, temp_dir=None, create=False, compression_level=6, buffer_size=4096):
+    def __init__(self, compressed_path, uncompressed_path=None, format=None,
+                 output_dir=None, temp_dir=None, create=False,
+                 compression_level=6, buffer_size=4096):
         '''
         :param compressed_path: Path to the compressed file.
         :type compressed_path: str
@@ -75,13 +76,6 @@ class CompressedFile(object):
         :param create: Create a new file instead of opening (will overwrite).
         :type create: bool
         '''
-        self.mode = mode[0] if mode else 'a'
-        if create:
-            # XXX: raise DeprecationWarning
-            self.mode = 'w'
-        if self.mode == 'r' and not os.path.exists(compressed_path):
-            raise FileNotFoundError('File does not exist')
-
         if format is None:
             __, extension = os.path.splitext(compressed_path)
             format = extension.strip('.')
@@ -89,33 +83,22 @@ class CompressedFile(object):
         if format in COMPRESSION_CLASSES:
             self.compressor = COMPRESSION_CLASSES[format]
             logger.debug('Using compressor `%s` for format `%s`', self.compressor, format)
-        else:
-            logger.debug(
-                'Format `%s` not recognised as compressed, passing the file %s '
-                'unchanged', format, compressed_path)
-            # We use bare file object, which will effectively copy the file to
-            # the temp location and back.
-            self.compressor = open
-            format = None
-
-        self.format = format
-        if self.format and self.mode == 'x' and os.path.exists(compressed_path):
-            raise FileExistsError('File already exists')
 
         self.compressed_path = compressed_path
         # Path to the uncompressed file
         self.uncompressed_path = uncompressed_path
         # Path where the uncompressed files will be stored
         self.output_dir = output_dir
+        self.format = format
         # Prefix for temporary directory (if None, the system default will be
         # used)
         self.temp_dir = temp_dir
         # Temporary path containing uncompressed file. This directory will be
         # deleted in self.cleanup()!
         self.temp_path = None
+        self.create = create
         self.compression_level = compression_level
         self.buffer_size = buffer_size
-        self.cache = cache
 
     def __repr__(self):
         args = [
@@ -124,29 +107,19 @@ class CompressedFile(object):
             self.format,
             self.output_dir,
             self.temp_dir,
-            self.mode,
+            self.create,
             self.compression_level,
         ]
         args = [self.__class__.__name__] + [
             "'%s'" % v if isinstance(v, str) else v for v in args]
         return "%s(%s, uncompressed_path=%s, format=%s, output_dir=%s, " \
-            "temp_dir=%s, mode=%s, compression_level=%s)" % tuple(args)
+            "temp_dir=%s, create=%s, compression_level=%s)" % tuple(args)
 
     def uncompress(self):
         '''
         Uncompress the file to temporary location.
         '''
-        if self.cache:
-            cache_found = (
-                os.path.exists(self.uncompressed_path)
-                and os.stat(self.uncompressed_path).st_mtime >= os.stat(self.compressed_path).st_mtime
-            )
-
-            if cache_found:
-                logger.debug('Found cached file `%s`, reuse it', self.uncompressed_path)
-                return
-            logger.debug('Cached file `%s` not found', self.uncompressed_path)
-
+        # Uncompress to temp file
         with open(self.uncompressed_path, 'w+b') as uncompressed_file:
             with self.compressor(self.compressed_path, 'rb') as compressed_file:
                 if self.buffer_size is None:
@@ -193,7 +166,7 @@ class CompressedFile(object):
 
         self.uncompressed_path = os.path.join(self.output_dir, basename)
 
-        if self.mode != 'w':
+        if not self.create:
             self.uncompress()
 
         return self.uncompressed_path
@@ -205,7 +178,7 @@ class CompressedFile(object):
         logger.debug('Recompressing file `%s` from temporary location `%s`',
                      self.compressed_path, self.uncompressed_path)
 
-        with self.compressor(self.compressed_path, 'wb', **{'compresslevel': self.compression_level} if self.format in {'bz2', 'gz'} else {}) as compressed_file:
+        with self.compressor(self.compressed_path, 'wb', **{'compresslevel': self.compression_level} if self.format else {}) as compressed_file:
             with open(self.uncompressed_path, 'rb') as uncompressed_file:
                 if self.buffer_size is None:
                     compressed_file.write(uncompressed_file.read())
@@ -228,9 +201,8 @@ class CompressedFile(object):
         '''
         Compress the file and delete the temporary path.
         '''
-        if self.format and not self.cache:
-            if self.mode != 'r':
-                self.compress()
+        if self.format:
+            self.compress()
             self.cleanup()
 
     def __enter__(self):
@@ -255,21 +227,53 @@ class CompressedFile(object):
 
 
 class ReadOnlyCompressedFile(CompressedFile):
-    """Deprecated: Compressed file wrapper for read-only access."""
+    '''
+    Compressed file wrapper with caching.
 
-    def __init__(self, *args, **kwargs):
-        kwargs = kwargs.copy()
-        kwargs['mode'] = 'r'
-        super(ReadOnlyCompressedFile, self).__init__(*args, **kwargs)
+    If the uncompressed file is found it will be reused instead of
+    uncompressing from source again.
+
+    This is a read-only solution: the changes to the uncompressed file are not
+    saved back to archive (``self.compress()`` does not do anything)!
+    '''
+    def save(self):
+        '''
+        Don't save, only clean up the temporary files.
+        '''
+        self.cleanup()
 
 
 class CachedCompressedFile(ReadOnlyCompressedFile):
-    """Deprecated: Compressed file wrapper with caching."""
+    '''
+    Compressed file wrapper with caching.
 
-    def __init__(self, *args, **kwargs):
-        kwargs = kwargs.copy()
-        kwargs['cache'] = True
-        super(CachedCompressedFile, self).__init__(*args, **kwargs)
+    If the uncompressed file is found it will be reused instead of
+    uncompressing from source again.
+
+    This is a read-only solution: the changes to the uncompressed file are not
+    saved back to archive (``self.compress()`` does not do anything)!
+    '''
+    def uncompress(self):
+        '''
+        Uncompress the file if not found in the temporary location or the
+        cached version is older than the compressed one.
+        '''
+        need_to_update = (
+            not os.path.exists(self.uncompressed_path)
+            or os.stat(self.uncompressed_path).st_mtime < os.stat(self.compressed_path).st_mtime
+        )
+
+        if need_to_update:
+            logger.debug('Cached file `%s` not found', self.uncompressed_path)
+            super(CachedCompressedFile, self).uncompress()
+        else:
+            logger.debug('Found cached file `%s`, reuse it', self.uncompressed_path)
+
+    def save(self):
+        '''
+        Do nothing: we leave the temporary file for later use.
+        '''
+        pass
 
 
 def iter_compress(data_iter, compression):
