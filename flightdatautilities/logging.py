@@ -115,7 +115,7 @@ class ElasticsearchHandler(logging.Handler):
 
         self._client = None
         self._buffer = Queue()
-        self._buffer_size = 1000
+        self._buffer_size = 200
         self._flush_freq = 1.0
         self._timer = None
         self._serializer = Serializer()
