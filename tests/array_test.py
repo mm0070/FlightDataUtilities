@@ -257,7 +257,7 @@ class TestContractRuns(unittest.TestCase):
         self.assertEqual(call([F,F,F,F], 0), [F,F,F,F])
         self.assertEqual(call([T,T,T,T], 0), [T,T,T,T])
         self.assertEqual(call([F,F,F,F], 1), [F,F,F,F])
-        self.assertEqual(call([F,F,F,T], 1), [F,F,F,F])
+        self.assertEqual(call([T,T,T,F], 1, match=False), [T,T,T,T])
         self.assertEqual(call([F,F,T,T], 1), [F,F,F,F])
         self.assertEqual(call([F,T,T,T], 1), [F,F,T,F])
         self.assertEqual(call([F,T,T,T], 2), [F,F,F,F])
@@ -598,6 +598,7 @@ class TestRemoveSmallRuns(unittest.TestCase):
         self.assertEqual(call([]), [])
         self.assertEqual(call([F,T,F], 0), [F,T,F])
         self.assertEqual(call([F,T,F], 1), [F,F,F])
+        self.assertEqual(call([T,F,T], 1, match=False), [T,T,T])
         self.assertEqual(call([T,T,F], 1), [T,T,F])
         self.assertEqual(call([T,T,F], 2), [F,F,F])
         self.assertEqual(call([T,T,F], 1, 2), [F,F,F])
@@ -744,4 +745,100 @@ class TestIndexOfSubarray(unittest.TestCase):
         self.assertEqual(array.index_of_subarray_uint8(arr, subarr, start=14), -1)
         self.assertEqual(array.index_of_subarray_uint8(subarr, arr), -1)
         self.assertEqual(array.index_of_subarray_uint8(subarr, arr, start=10000), -1)
+
+
+class TestNoneIdx(unittest.TestCase):
+    def test_none_idx(self):
+        self.assertEqual(array.none_idx(0), 0)
+        self.assertEqual(array.none_idx(2), 2)
+        self.assertEqual(array.none_idx(None), -1)
+
+
+class TestIdxNone(unittest.TestCase):
+    def test_idx_none(self):
+        self.assertEqual(array.idx_none(0), 0)
+        self.assertEqual(array.idx_none(2), 2)
+        self.assertEqual(array.idx_none(-1), None)
+
+
+class TestGetmaskarray(unittest.TestCase):
+    def test_getmaskarray(self):
+        data = np.ma.empty(3)
+        data[1] = np.ma.masked
+
+        mask = np.asarray(array.getmaskarray(data))
+        self.assertEqual(str(mask.dtype), 'uint8')
+        self.assertEqual(mask.tolist(), [0, 1, 0])
+
+
+class TestTwosComplement(unittest.TestCase):
+    def test_twos_complement(self):
+        self.assertEqual(array.twos_complement(np.arange(4), 2).tolist(), [0, 1, -2, -1])
+
+
+class TestReadUint(unittest.TestCase):
+    def test_read_uint16_le(self):
+        data = np.zeros(4, dtype=np.uint8)
+        self.assertEqual(array.read_uint16_le(data, 0), 0)
+        self.assertEqual(array.read_uint16_le(data, 1), 0)
+        self.assertEqual(array.read_uint16_le(data, 2), 0)
+        data = np.arange(1, 5, dtype=np.uint8)
+        self.assertEqual(array.read_uint16_le(data, 0), 513)
+        self.assertEqual(array.read_uint16_le(data, 1), 770)
+        self.assertEqual(array.read_uint16_le(data, 2), 1027)
+
+    def test_read_uint16_be(self):
+        data = np.zeros(4, dtype=np.uint8)
+        self.assertEqual(array.read_uint16_be(data, 0), 0)
+        self.assertEqual(array.read_uint16_be(data, 1), 0)
+        self.assertEqual(array.read_uint16_be(data, 2), 0)
+        data = np.arange(1, 5, dtype=np.uint8)
+        self.assertEqual(array.read_uint16_be(data, 0), 258)
+        self.assertEqual(array.read_uint16_be(data, 1), 515)
+        self.assertEqual(array.read_uint16_be(data, 2), 772)
+
+    def test_read_uint32_le(self):
+        data = np.zeros(6, dtype=np.uint8)
+        self.assertEqual(array.read_uint32_le(data, 0), 0)
+        self.assertEqual(array.read_uint32_le(data, 1), 0)
+        self.assertEqual(array.read_uint32_le(data, 2), 0)
+        data = np.arange(1, 7, dtype=np.uint8)
+        self.assertEqual(array.read_uint32_le(data, 0), 67305985)
+        self.assertEqual(array.read_uint32_le(data, 1), 84148994)
+        self.assertEqual(array.read_uint32_le(data, 2), 100992003)
+
+    def test_read_uint32_be(self):
+        data = np.zeros(6, dtype=np.uint8)
+        self.assertEqual(array.read_uint32_be(data, 0), 0)
+        self.assertEqual(array.read_uint32_be(data, 1), 0)
+        self.assertEqual(array.read_uint32_be(data, 2), 0)
+        data = np.arange(1, 7, dtype=np.uint8)
+        self.assertEqual(array.read_uint32_be(data, 0), 16909060)
+        self.assertEqual(array.read_uint32_be(data, 1), 33752069)
+        self.assertEqual(array.read_uint32_be(data, 2), 50595078)
+
+
+class TestLongestSectionUint8(unittest.TestCase):
+    def test_longest_section_uint8(self):
+        self.assertEqual(array.longest_section_uint8(np.empty(0, dtype=np.uint8)), 0)
+        data = np.zeros(10, dtype=np.uint8)
+        self.assertEqual(array.longest_section_uint8(data), 10)
+        self.assertEqual(array.longest_section_uint8(data, 0), 10)
+        self.assertEqual(array.longest_section_uint8(data, 1), 0)
+        data[0] = 1
+        self.assertEqual(array.longest_section_uint8(data), 9)
+        self.assertEqual(array.longest_section_uint8(data, 1), 1)
+        data[9] = 1
+        self.assertEqual(array.longest_section_uint8(data), 8)
+        self.assertEqual(array.longest_section_uint8(data, 1), 1)
+        data[2:4] = 2
+        self.assertEqual(array.longest_section_uint8(data), 5)
+        self.assertEqual(array.longest_section_uint8(data, 1), 1)
+        self.assertEqual(array.longest_section_uint8(data, 2), 2)
+        data[:] = 2
+        self.assertEqual(array.longest_section_uint8(data), 0)
+        self.assertEqual(array.longest_section_uint8(data, 1), 0)
+        self.assertEqual(array.longest_section_uint8(data, 2), 10)
+
+
 

@@ -74,6 +74,10 @@ slices_to_array(length, slices)
 ## mask_outside_slices()
 
 ~slices_to_array(length, slices)
+
+# Other replacements
+
+## closest_unmasked_value
 '''
 
 
@@ -97,18 +101,44 @@ from flightdatautilities.type import is_array
 from flightdatautilities.byte_aligned import MODES, STANDARD_MODES, SYNC_PATTERNS, WPS  # TODO: move to flightdatautilities
 
 
-cdef:
-    #int FILL_START = 0, FILL_STOP = 1, INTERPOLATE = 2
-    int MAX_VALUE = 0, MIN_VALUE = 1, MAX_ABS_VALUE = 2, MIN_ABS_VALUE = 3
-
-
 Value = namedtuple('Value', 'index value')
 
 
+cpdef np.uint16_t read_uint16_le(np.uint8_t[:] data, Py_ssize_t idx) nogil:
+    '''
+    Read a little-endian unsigned short from an unsigned byte array.
+    '''
+    return (data[idx + 1] << 8) + data[idx]
+
+
+cpdef np.uint16_t read_uint16_be(np.uint8_t[:] data, Py_ssize_t idx) nogil:
+    '''
+    Read a big-endian unsigned short from an unsigned byte array.
+    '''
+    return (data[idx] << 8) + data[idx + 1]
+
+
+cpdef np.uint32_t read_uint32_le(np.uint8_t[:] data, Py_ssize_t idx) nogil:
+    '''
+    Read a little-endian unsigned integer from an unsigned byte array.
+    '''
+    return (data[idx + 3] << 24) + (data[idx + 2] << 16) + (data[idx + 1] << 8) + data[idx]
+
+
+cpdef np.uint32_t read_uint32_be(np.uint8_t[:] data, Py_ssize_t idx) nogil:
+    '''
+    Read a big-endian unsigned integer from an unsigned byte array.
+    '''
+    return (data[idx] << 24) + (data[idx + 1] << 16) + (data[idx + 2] << 8) + data[idx + 3]
+
+
 cpdef bint any_array(array):
+    '''
+    Q: why do we need this when array.any() exists?
+    '''
     cdef:
         Py_ssize_t idx
-        unsigned char[:] data = array.view(np.uint8)
+        np.uint8_t[:] data = array.view(np.uint8)
     for idx in range(data.shape[0]):
         if data[idx]:
             return True
@@ -117,10 +147,11 @@ cpdef bint any_array(array):
 
 cpdef bint all_array(array):
     '''
+    Q: why do we need this when array.all() exists?
     '''
     cdef:
         Py_ssize_t idx
-        unsigned char[:] data = array.view(np.uint8)
+        np.uint8_t[:] data = array.view(np.uint8)
     for idx in range(data.shape[0]):
         if not data[idx]:
             return False
@@ -129,6 +160,8 @@ cpdef bint all_array(array):
 
 cpdef bint entirely_masked(array):
     '''
+    Q: Why do we need this when array.mask.all() exists?
+
     Worst case is 2x faster than np.ma.count, best case (first sample unmasked) is 500x faster on large array.
     '''
     return array.mask if np.isscalar(array.mask) else all_array(array.mask)
@@ -136,29 +169,44 @@ cpdef bint entirely_masked(array):
 
 cpdef bint entirely_unmasked(array):
     '''
+    Q: Why do we need this when not array.mask.any() exists?
+
     Worst case is 2x faster than np.ma.count, best case (first sample masked) is 500x faster on large array.
     '''
     return not array.mask if np.isscalar(array.mask) else not any_array(array.mask)
 
 
-cdef object idx_none(Py_ssize_t idx):
+cdef object array_idx_value(Py_ssize_t idx, object array):
+    return Value(None, None) if idx == -1 else Value(idx, array[idx])
+
+
+cpdef object idx_none(Py_ssize_t idx):
+    '''
+    Converts int idx to int or None where -1 is None for converting from Cython-optimised to Python types.
+    '''
     return None if idx == -1 else idx
 
 
-cdef Py_ssize_t none_idx(idx):
+cpdef Py_ssize_t none_idx(idx):
+    '''
+    Converts int or None idx to int idx where None is -1 for converting from Python to Cython-optimised types.
+    '''
     return -1 if idx is None else idx
 
 
-cdef Py_ssize_t cython_nearest_idx(unsigned char[:] array, Py_ssize_t idx, bint match=True, Py_ssize_t start_idx=-1, Py_ssize_t stop_idx=-1) nogil:
-    if start_idx == -1:
-        start_idx = 0
-    if stop_idx == -1:
+cpdef np.uint8_t[:] getmaskarray(array):
+    '''
+    Get the mask array from a np.ma.masked_array in a Cython-compatible dtype.
+    '''
+    return np.ma.getmaskarray(array).view(np.uint8)
+
+
+cdef Py_ssize_t cython_nearest_idx(np.uint8_t[:] array, Py_ssize_t idx, bint match=True, Py_ssize_t start_idx=0,
+                                   Py_ssize_t stop_idx=-1) nogil:
+    if stop_idx < 0:
         stop_idx = array.shape[0]
 
-    if idx < 0:
-        idx = 0
-    elif idx >= array.shape[0]:
-        idx = array.shape[0] - 1
+    idx = cython_array_idx(idx, array.shape[0])
 
     if not array.shape[0] or idx < start_idx or idx >= stop_idx:
         return -1
@@ -177,13 +225,83 @@ cdef Py_ssize_t cython_nearest_idx(unsigned char[:] array, Py_ssize_t idx, bint 
     return -1
 
 
-def nearest_idx(array, long idx, bint match=True, start_idx=None, stop_idx=None):
-    return idx_none(cython_nearest_idx(array.view(np.uint8), idx, match=match,
-                    start_idx=none_idx(start_idx), stop_idx=none_idx(stop_idx)))
+cdef Py_ssize_t cython_array_idx(Py_ssize_t idx, Py_ssize_t length) nogil:
+    if idx <= 0:
+        return 0
+    elif idx >= length:
+        return length - 1
+    else:
+        return idx
+
+
+cdef Py_ssize_t cython_array_stop_idx(Py_ssize_t stop_idx, Py_ssize_t length) nogil:
+    return length if stop_idx < 0 or stop_idx > length else stop_idx
+
+
+cdef Py_ssize_t cython_prev_idx(np.uint8_t[:] array, Py_ssize_t idx, bint match=True, Py_ssize_t start_idx=0) nogil:
+    idx = cython_array_idx(idx, array.shape[0])
+    start_idx = cython_array_idx(start_idx, array.shape[0])
+
+    cdef Py_ssize_t prev_idx
+
+    for prev_idx in range(idx - 1, start_idx - 1, -1):
+        if array[prev_idx] == match:
+            return prev_idx
+    return -1
+
+
+cdef Py_ssize_t cython_next_idx(np.uint8_t[:] array, Py_ssize_t idx, bint match=True, Py_ssize_t stop_idx=-1) nogil:
+    idx = cython_array_idx(idx, array.shape[0])
+    stop_idx = cython_array_stop_idx(stop_idx, array.shape[0])
+
+    cdef Py_ssize_t next_idx
+
+    for next_idx in range(idx, stop_idx):
+        if array[next_idx] == match:
+            return next_idx
+    return -1
+
+
+def nearest_idx(array, Py_ssize_t idx, bint match=True, Py_ssize_t start_idx=0, Py_ssize_t stop_idx=-1):
+    return idx_none(cython_nearest_idx(array.view(np.uint8), idx, match=match, start_idx=start_idx, stop_idx=stop_idx))
+
+
+def nearest_unmasked_value(array, Py_ssize_t idx, Py_ssize_t start_idx=0, Py_ssize_t stop_idx=-1):
+    cdef Py_ssize_t unmasked_idx = cython_nearest_idx(getmaskarray(array), idx, match=False, start_idx=start_idx,
+                                                      stop_idx=stop_idx)
+    return array_idx_value(array, unmasked_idx)
+
+
+def prev_unmasked_value(array, Py_ssize_t idx, Py_ssize_t start_idx=0):
+    cdef Py_ssize_t unmasked_idx = cython_prev_idx(getmaskarray(array), idx, match=False, start_idx=start_idx)
+    return array_idx_value(array, unmasked_idx)
+
+
+def next_unmasked_value(array, Py_ssize_t idx, Py_ssize_t stop_idx=-1):
+    cdef Py_ssize_t unmasked_idx = cython_next_idx(getmaskarray(array), idx, match=False, stop_idx=stop_idx)
+    return array_idx_value(array, unmasked_idx)
+
+
+def first_unmasked_value(array, Py_ssize_t start_idx=0):
+    return next_unmasked_value(array, start_idx)
+
+
+def last_unmasked_value(array, Py_ssize_t stop_idx=-1, Py_ssize_t min_samples=-1):
+    cdef np.uint8_t[:] mask = getmaskarray(array)
+    if min_samples > 0:
+        mask = cython_remove_small_runs(mask, <float>min_samples)
+    stop_idx = cython_array_stop_idx(stop_idx, mask.shape[0])
+
+    cdef Py_ssize_t idx
+
+    for idx in range(stop_idx, -1, -1):
+        if not mask[idx]:
+            return array[idx]
+    return None
 
 
 def nearest_slice(array, Py_ssize_t idx, bint match=True):
-    cdef unsigned char[:] data = array.view(np.uint8)
+    cdef np.uint8_t[:] data = array.view(np.uint8)
     cdef Py_ssize_t start_idx, stop_idx, nearest_idx = cython_nearest_idx(data, idx, match=match)
 
     if nearest_idx == -1:
@@ -224,14 +342,14 @@ def nearest_slice(array, Py_ssize_t idx, bint match=True):
     return slice(start_idx, stop_idx)
 
 
-cdef void cython_ma_fill_range_float64(double[:] data, unsigned char[:] mask, double value, Py_ssize_t start, Py_ssize_t stop) nogil:
+cdef void cython_ma_fill_range_float64(np.float64_t[:] data, np.uint8_t[:] mask, double value, Py_ssize_t start, Py_ssize_t stop) nogil:
     cdef Py_ssize_t idx
     for idx in range(start, stop):
         data[idx] = value
         mask[idx] = 0
 
 
-cdef void cython_ma_interpolate_float64(double[:] data, unsigned char[:] mask, Py_ssize_t start, Py_ssize_t stop) nogil:
+cdef void cython_ma_interpolate_float64(np.float64_t[:] data, np.uint8_t[:] mask, Py_ssize_t start, Py_ssize_t stop) nogil:
     cdef:
         double gradient = (data[stop] - data[start]) / (stop - start)
         Py_ssize_t idx
@@ -240,7 +358,7 @@ cdef void cython_ma_interpolate_float64(double[:] data, unsigned char[:] mask, P
         mask[idx] = 0
 
 
-cpdef void cython_repair_mask_float64(double[:] data, unsigned char[:] mask, RepairMethod method, Py_ssize_t max_samples, bint extrapolate=False) nogil:
+cpdef void cython_repair_mask_float64(np.float64_t[:] data, np.uint8_t[:] mask, RepairMethod method, Py_ssize_t max_samples, bint extrapolate=False) nogil:
     cdef:
         Py_ssize_t idx, last_valid_idx = -1
 
@@ -287,10 +405,10 @@ def repair_mask(array, method='interpolate', repair_duration=10, frequency=1, bi
     if repair_duration:
         repair_samples = repair_duration * frequency
         if raise_duration_exceedance:
-            length = longest_zeros_uint8(array.mask)
+            length = longest_section_uint8(array.mask)
             if length > repair_samples:
-                raise ValueError("Length of masked section '%s' exceeds repair duration '%s'." %
-                                 (length * frequency, repair_duration))
+                raise ValueError(
+                    f"Length of masked section '{length * frequency}' exceeds repair duration '{repair_duration}'.")
     else:
         repair_samples = -1
 
@@ -304,19 +422,22 @@ def repair_mask(array, method='interpolate', repair_duration=10, frequency=1, bi
     return array.astype(dtype)
 
 
-cdef Py_ssize_t longest_zeros_uint8(unsigned char[:] mask) nogil:
+cpdef Py_ssize_t longest_section_uint8(np.uint8_t[:] data, np.uint8_t value=0) nogil:
+    '''
+    Find the longest section matching value and return the number of samples.
+    '''
     cdef Py_ssize_t idx, current_samples = 0, max_samples = 0
-    for idx in range(mask.shape[0]):
-        if mask[idx]:
+    for idx in range(data.shape[0]):
+        if data[idx] != value:
             if current_samples > max_samples:
                 max_samples = current_samples
             current_samples = 0
         else:
             current_samples += 1
-    return max_samples
+    return max_samples if max_samples > current_samples else current_samples
 
 
-def aggregate_values(Aggregate mode, double[:] data, const unsigned char[:] mask, const unsigned char[:] matching):
+def aggregate_values(Aggregate mode, np.float64_t[:] data, np.uint8_t[:] mask, np.uint8_t[:] matching):
     if data.shape[0] != mask.shape[0] or data.shape[0] != matching.shape[0]:
         raise ValueError('array lengths do not match')
 
@@ -361,11 +482,7 @@ def aggregate_values(Aggregate mode, double[:] data, const unsigned char[:] mask
 
 cdef _aggregate_values(Aggregate mode, array, matching):
     return aggregate_values(
-        mode,
-        array.data.astype(np.float64, copy=False),
-        np.ma.getmaskarray(array).view(np.uint8),
-        matching.view(np.uint8),
-    )
+        mode, array.data.astype(np.float64, copy=False), getmaskarray(array), matching.view(np.uint8))
 
 
 def max_values(array, matching):
@@ -386,7 +503,7 @@ def min_abs_values(array, matching):
 
 def slices_to_array(Py_ssize_t size, slices):
     cdef:
-        unsigned char[:] array = np.zeros(size, dtype=np.uint8)
+        np.uint8_t[:] array = np.zeros(size, dtype=np.uint8)
         Py_ssize_t start, stop, idx
     for s in slices:
         start = 0 if s.start is None else s.start
@@ -420,13 +537,13 @@ def section_overlap(a, b):
 >>> %timeit section_overlap(x, y)
 1000 loops, best of 3: 251 µs per loop
     '''
-    cdef unsigned char[:] x = a.view(np.uint8), y = b.view(np.uint8)
+    cdef np.uint8_t[:] x = a.view(np.uint8), y = b.view(np.uint8)
 
     if x.shape[0] != y.shape[0]:
         raise ValueError('array lengths do not match')
 
     cdef:
-        unsigned char[:] out = np.zeros(x.shape[0], dtype=np.uint8)
+        np.uint8_t[:] out = np.zeros(x.shape[0], dtype=np.uint8)
         Py_ssize_t idx, rev_idx, last_idx = -1
         bint both_true, last_both_true = True, fill_either = False
 
@@ -453,7 +570,7 @@ def section_overlap(a, b):
     return np.asarray(out).view(np.uint8)
 
 
-def remove_small_runs(array, float seconds=10, float hz=1):  # TODO: floating point hz
+cdef np.uint8_t[:] cython_remove_small_runs(np.uint8_t[:] data, float seconds, float hz=1, bint match=True) nogil:
     '''
     Optimised version of slices_remove_small_slices (330 times faster):
 >>> from analysis_engine.library import runs_of_ones, slices_remove_small_gaps
@@ -471,55 +588,59 @@ def remove_small_runs(array, float seconds=10, float hz=1):  # TODO: floating po
     '''
     cdef Py_ssize_t size = <Py_ssize_t>(seconds * hz)
     if not size:
-        return array
+        return data
 
-    cdef:
-        unsigned char[:] data = array.view(np.uint8)
-        Py_ssize_t idx, fill_idx, samples = 0
+    cdef Py_ssize_t idx, fill_idx, samples = 0
 
     for idx in range(data.shape[0]):
-        if data[idx]:
+        if data[idx] == match:
             samples += 1
         else:
             if samples <= size:
                 for fill_idx in range(idx - samples, idx):
-                    data[fill_idx] = False
+                    data[fill_idx] = not match
             samples = 0
 
     if samples <= size:
         for fill_idx in range((idx + 1) - samples, (idx + 1)):
-            data[fill_idx] = False
+            data[fill_idx] = not match
 
-    return np.asarray(data).view(np.bool)
+    return data
 
 
-def contract_runs(array, Py_ssize_t size):
-    '''
-    Contract runs of True values within arrays, e.g.
-    contract_runs([False, True, True, True], 1) == [False, False, True, False]
-    '''
+def remove_small_runs(array, float seconds=10, float hz=1, bint match=True):
+    return np.asarray(cython_remove_small_runs(array.view(np.uint8), seconds, hz, match=match)).view(np.bool)
+
+
+cdef np.uint8_t[:] cython_contract_runs(np.uint8_t[:] data, Py_ssize_t size, bint match=True) nogil:
     if not size:
-        return array
+        return data
 
-    cdef:
-        unsigned char[:] data = array.view(np.uint8)
-        Py_ssize_t idx, fill_idx, contracted = 0
+    cdef Py_ssize_t idx, fill_idx, contracted = 0
 
     for idx in range(data.shape[0]):
-        if data[idx]:
+        if data[idx] == match:
             if contracted < size:
-                data[idx] = False
+                data[idx] = not match
             contracted += 1
         else:
             if contracted > size:
                 for fill_idx in range(idx - size, idx):
-                    data[fill_idx] = False
+                    data[fill_idx] = not match
             contracted = 0
     if contracted > size:
-        for fill_idx in range(array.shape[0] - size, data.shape[0]):
-            data[fill_idx] = False
+        for fill_idx in range(data.shape[0] - size, data.shape[0]):
+            data[fill_idx] = not match
 
-    return np.asarray(data).view(np.bool)
+    return data
+
+
+def contract_runs(array, Py_ssize_t size, bint match=True):
+    '''
+    Contract runs of True values within arrays, e.g.
+    contract_runs([False, True, True, True], 1) == [False, False, True, False]
+    '''
+    return np.asarray(cython_contract_runs(array.view(np.uint8), size, match=match)).view(np.bool)
 
 
 def runs_of_ones(array, min_samples=None):
@@ -535,7 +656,7 @@ def runs_of_ones(array, min_samples=None):
     :ytype: slice
     '''
     cdef:
-        unsigned char[:] view = array.view(np.uint8)
+        np.uint8_t[:] view = array.view(np.uint8)
         Py_ssize_t idx, min_samples_long = none_idx(min_samples), start_idx = -1
 
     for idx in range(view.shape[0]):
@@ -592,7 +713,7 @@ def is_constant(data):
         return (data == data[0]).all()  # type-inspecific fallback (slower)
 
 
-cpdef bint is_constant_uint8(unsigned char[:] data) nogil:
+cpdef bint is_constant_uint8(np.uint8_t[:] data) nogil:
     '''
     Optimised is_constant check for uint8 datatype.
 
@@ -611,7 +732,7 @@ cpdef bint is_constant_uint8(unsigned char[:] data) nogil:
     return True
 
 
-cpdef bint is_constant_uint16(unsigned short[:] data) nogil:
+cpdef bint is_constant_uint16(np.uint16_t[:] data) nogil:
     '''
     Optimised is_constant check for uint16 datatype.
 
@@ -635,7 +756,7 @@ def first_valid_sample(array, long start_idx=0):
     Returns the first valid sample of data from a point in an array.
     '''
     cdef:
-        unsigned char[:] mask = np.ma.getmaskarray(array).view(np.uint8)
+        np.uint8_t[:] mask = getmaskarray(array)
         Py_ssize_t idx
 
     if start_idx < 0:
@@ -653,7 +774,7 @@ def last_valid_sample(array, end_idx=None):
     Returns the last valid sample of data before a point in an array.
     '''
     cdef:
-        unsigned char[:] mask = np.ma.getmaskarray(array).view(np.uint8)
+        np.uint8_t[:] mask = getmaskarray(array)
         Py_ssize_t end_idx_long, idx
 
     if end_idx is None:
@@ -740,7 +861,7 @@ cdef class Interpolator:
             double slope = (y_hi - y_lo) / (x_hi - x_lo)
         return y_lo + (slope * (value - x_lo))
 
-    cpdef double[:] interpolate(self, double[:] array, bint copy=True):
+    cpdef np.float64_t[:] interpolate(self, np.float64_t[:] array, bint copy=True):
         '''
         Interpolate (and extrapolate) an array according to the Interpolator's interpolation points.
 
@@ -754,7 +875,7 @@ cdef class Interpolator:
         cdef:
             Py_ssize_t idx
             double value
-            double[:] output
+            np.float64_t[:] output
 
         if copy:
             output = np.empty(array.shape[0], dtype=np.float64)
@@ -1063,14 +1184,14 @@ cdef class ByteAligner:
         return self._loop(data_gen, info)
 
 
-cpdef unsigned short[:] sync_words_from_modes(modes):
+cpdef np.uint16_t[:] sync_words_from_modes(modes):
     '''
     Creates an array containing sync words in a contiguous 1d-array.
 
     e.g. sync_words_from_modes(['717'])
     '''
     cdef:
-        unsigned short[:] sync_words = np.empty(len(modes) * 4, dtype=np.uint16)
+        np.uint16_t[:] sync_words = np.empty(len(modes) * 4, dtype=np.uint16)
         Py_ssize_t sync_word_idx = 0
     for mode in modes:
         for sync_word in SYNC_PATTERNS[mode]:
@@ -1111,7 +1232,7 @@ def unpack(array):
     return unpacked
 
 
-cpdef unsigned short[:] unpack_little_endian(unsigned char[:] data):
+cpdef np.uint16_t[:] unpack_little_endian(np.uint8_t[:] data):
     '''
     b'24705c' -> b'47025c00'
     '''
@@ -1119,7 +1240,7 @@ cpdef unsigned short[:] unpack_little_endian(unsigned char[:] data):
         raise ValueError('data length must be a multiple of 3')
 
     cdef:
-        unsigned short[:] output = np.zeros(<Py_ssize_t>(data.shape[0] // 1.5), dtype=np.uint16)
+        np.uint16_t[:] output = np.zeros(<Py_ssize_t>(data.shape[0] // 1.5), dtype=np.uint16)
         Py_ssize_t data_idx = 0, output_idx = 0
 
     while data_idx < data.shape[0]:  # cython range with step is slow
@@ -1145,7 +1266,7 @@ def pack(array):
     return packed
 
 
-def key_value(array, key, delimiter, separator, start=0):
+cpdef bytes key_value(np.uint8_t[:] array, key, delimiter, separator, Py_ssize_t start=0):
     '''
     Find the value of a key in the format:
 
@@ -1169,10 +1290,10 @@ def key_value(array, key, delimiter, separator, start=0):
         return None
     start_idx = index_of_subarray_uint8(array, np.fromstring(delimiter, dtype=np.uint8), start=key_idx) + len(delimiter)
     stop_idx = index_of_subarray_uint8(array, np.fromstring(separator, dtype=np.uint8), start=start_idx)
-    return array[start_idx:stop_idx].tostring().strip()
+    return np.asarray(array[start_idx:stop_idx]).tostring().strip()
 
 
-cpdef Py_ssize_t index_of_subarray_uint8(unsigned char[:] array, unsigned char[:] subarray, Py_ssize_t start=0) nogil:
+cpdef Py_ssize_t index_of_subarray_uint8(np.uint8_t[:] array, np.uint8_t[:] subarray, Py_ssize_t start=0) nogil:
     '''
     Find the first index of a subarray within an array of dtype uint8.
 
@@ -1194,7 +1315,7 @@ cpdef Py_ssize_t index_of_subarray_uint8(unsigned char[:] array, unsigned char[:
     return -1
 
 
-cpdef Py_ssize_t array_index_uint16(unsigned short value, unsigned short[:] array) nogil:
+cpdef Py_ssize_t array_index_uint16(unsigned short value, np.uint16_t[:] array) nogil:
     '''
     Can be much faster than numpy operations which check the entire array.
 
@@ -1302,7 +1423,7 @@ def downsample_arrays(arrays):
 
     for length in lengths:
         if length % shortest:
-            raise ValueError("Arrays lengths '%s' should be multiples of the shortest." % lengths)
+            raise ValueError(f"Arrays lengths '{lengths}' should be multiples of the shortest.")
     downsampled_arrays = []
     for array in arrays:
         step = len(array) // shortest
@@ -1329,9 +1450,7 @@ def upsample_arrays(arrays):
 
     for length in lengths:
         if largest % length:
-            raise ValueError(
-                "The largest array length should be a multiple of all others "
-                "'%s'." % lengths)
+            raise ValueError(f"The largest array length should be a multiple of all others '{lengths}'.")
 
     upsampled_arrays = []
     for array, length in zip(arrays, lengths):
@@ -1395,7 +1514,7 @@ def save_compressed(path, array):
     elif isinstance(array, np.ndarray):
         np.savez_compressed(path, array)
     else:
-        raise NotImplementedError("Object of type '%s' cannot be saved." % type(array))
+        raise NotImplementedError(f"Object of type '{type(array)}' cannot be saved.")
 
 
 def load_compressed(path):
@@ -1414,7 +1533,7 @@ def load_compressed(path):
     elif array_count == 1:
         array = array_dict['arr_0']
     else:
-        raise NotImplementedError('Unknown array type with %d components.' % array_count)
+        raise NotImplementedError(f'Unknown array type with {array_count} components.')
     return array
 
 
@@ -1444,14 +1563,13 @@ cpdef is_power2_fraction(number):
     return is_power2(number)
 
 
-cpdef np.ndarray twos_complement(np.ndarray array_in, int bit_length, bint copy=False):
+cpdef np.ndarray twos_complement(np.ndarray array, int bit_length):
     '''
     Convert the values from "sign bit" notation to "two's complement".
     '''
-    array_out = array_in.copy() if copy else array_in
     cdef:
         int saturated_value = (2 ** bit_length) - 1
         int max_positive_value = 2 ** (bit_length - 1) - 1
-    array_out[array_out > max_positive_value] -= saturated_value + 1
-    return array_out
+    array[array > max_positive_value] -= saturated_value + 1
+    return array
 
