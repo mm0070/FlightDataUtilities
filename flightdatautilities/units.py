@@ -19,8 +19,9 @@ from __future__ import unicode_literals
 
 import decimal
 import math
-import six
 
+import six
+import numpy as np
 
 ##############################################################################
 # Constants
@@ -492,10 +493,10 @@ CONVERSION_MULTIPLIERS = {
 CONVERSION_FUNCTIONS = {
     # Angles:
     DEGREE: {
-        RADIAN: math.radians,
+        RADIAN: np.radians,
     },
     RADIAN: {
-        DEGREE: math.degrees,
+        DEGREE: np.degrees,
     },
     # Temperature:
     CELSIUS: {
