@@ -18,7 +18,6 @@ The following links are useful resources:
 from __future__ import unicode_literals
 
 import decimal
-import math
 
 import six
 import numpy as np
