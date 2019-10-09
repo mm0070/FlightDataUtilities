@@ -47,6 +47,7 @@ KT_S = 'kt/s'
 DEGREE = 'deg'  # [1]
 RADIAN = 'rad'
 DEGREE_S = 'deg/s'  # [1]
+RADIAN_S = 'rad/s'
 
 # Density:
 KG_LITER = 'kg/l'
@@ -606,6 +607,15 @@ UNIT_CORRECTIONS = {
     'degree/sec': DEGREE_S,
     'degrees/s': DEGREE_S,
     'degrees/sec': DEGREE_S,
+    'RAD/S': RADIAN_S,
+    'RAD/SEC': RADIAN_S,
+    'RPS': RADIAN_S,
+    'rad/se': RADIAN_S,
+    'rad/sec': RADIAN_S,
+    'radian/s': RADIAN_S,
+    'radian/sec': RADIAN_S,
+    'radians/s': RADIAN_S,
+    'radians/sec': RADIAN_S,
     # Density:
     'kilogram/liter': KG_LITER,
     'kilogram/litre': KG_LITER,
@@ -993,7 +1003,7 @@ UNIT_CORRECTIONS = {
 
 UNIT_CATEGORIES = {
     'Acceleration': (G, FPS2, MPS2, DEGREE_S2, KT_S),
-    'Angles': (DEGREE, RADIAN, DEGREE_S),
+    'Angles': (DEGREE, RADIAN, DEGREE_S, RADIAN_S),
     'Density': (KG_LITER, LB_GALLON),
     'Electricity': (AMP, VOLT, KVA, OHM, MILLIVOLT, MICROAMP, MILLIAMP),
     'Energy': (JOULE, KJ, MJ),
@@ -1024,6 +1034,7 @@ UNIT_DESCRIPTIONS = {
     DEGREE: 'degrees',
     RADIAN: 'radians',
     DEGREE_S: 'degrees per second',
+    RADIAN_S: 'radians per second',
     # Density:
     KG_LITER: 'kilograms per liter',
     LB_GALLON: 'pounds per gallon',
