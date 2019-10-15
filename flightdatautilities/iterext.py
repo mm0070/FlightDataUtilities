@@ -71,14 +71,11 @@ def chunk(data_gen, size, slices=None, flush=False):
     :yields: List of sliced data chunks if slices else entire data chunks based on size.
     '''
     if slices is None:
-        # return data unchanged
-        output = lambda x: x
+        output = lambda x: x  # return data unchanged
     elif isinstance(slices, slice):
-        # return slice
-        output = lambda x: x[slices]
+        output = lambda x: x[slices]  # return slice
     else:
-        # return list of slices
-        output = lambda x: [x[s] for s in slices]
+        output = lambda x: [x[s] for s in slices]  # return list of slices
 
     prev_data = None
     for data in data_gen:

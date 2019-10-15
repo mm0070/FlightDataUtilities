@@ -275,10 +275,10 @@ class CachedCompressedFile(ReadOnlyCompressedFile):
         )
 
         if need_to_update:
-            logger.debug('Cached file `%s` not found', self.uncompressed_path)
+            logger.debug(f'Cached file `{self.uncompressed_path}` not found')
             super(CachedCompressedFile, self).uncompress()
         else:
-            logger.debug('Found cached file `%s`, reuse it', self.uncompressed_path)
+            logger.debug(f'Found cached file `{self.uncompressed_path}`, reuse it')
 
     def save(self):
         '''
@@ -317,7 +317,7 @@ def open_compressed(filepath, mode='rb'):
     :type mode: str
     '''
     if mode not in {'r', 'rb'}:
-        raise ValueError('unsupported mode: %s' % mode)
+        raise ValueError(f'unsupported mode: {mode}')
     extension = os.path.splitext(filepath)[1].lstrip('.')
     archive_cls = ARCHIVE_CLASSES.get(extension)
     if archive_cls:

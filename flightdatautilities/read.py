@@ -1,7 +1,6 @@
+import io
 import numpy as np
-import os
 import zipfile
-
 from collections import Iterator
 
 from flightdatautilities.compression import open_compressed
@@ -147,8 +146,8 @@ class file_reader(abstract_reader):
     '''
     def __init__(self, path, *args, **kwargs):
         '''
-        :param path: file path or array
-        :type path: str or np.array
+        :param path: file path or fileobj
+        :type path: str or fileobj
         '''
         super(file_reader, self).__init__(**kwargs)
         self.path = path
@@ -185,42 +184,61 @@ class file_reader(abstract_reader):
         return data
 
 
-#class stream_wrapper(object):
-    #def __init__(self, data_iter):
-        #self._data_iter = data_iter
-        #self._chunks = []
-        #self.closed = False
+class StringIteratorIO(io.TextIOBase):
+    '''
+    Copied from https://stackoverflow.com/questions/12593576/adapt-an-iterator-to-behave-like-a-file-like-object-in-python
+    '''
 
-    #@property
-    #def size(self):
-        #return sum(len(c) for c in self._chunks)
+    def __init__(self, iter):
+        self._iter = iter
+        self._left = ''
 
-    #def __next__(self):
-        #if len(self._chunks):
+    def readable(self):
+        return True
 
-        #read_count = min((self.stop - self.pos) // self.itemsize, self.count) if self.stop else self.count
-        #if read_count is not None and read_count <= 0:
-            #raise StopIteration
+    def _read1(self, n=None):
+        while not self._left:
+            try:
+                self._left = next(self._iter)
+            except StopIteration:
+                break
+        ret = self._left[:n]
+        self._left = self._left[len(ret):]
+        return ret
 
-        #data = self.next_data(read_count)
+    def read(self, n=None):
+        l = []
+        if n is None or n < 0:
+            while True:
+                m = self._read1()
+                if not m:
+                    break
+                l.append(m)
+        else:
+            while n > 0:
+                m = self._read1(n)
+                if not m:
+                    break
+                n -= len(m)
+                l.append(m)
+        return ''.join(l)
 
-        #if not len(data):
-            #raise StopIteration
-
-        #self.pos += len(data) * self.itemsize
-        #if self.callback and self.pos != self.prev_pos:  # TODO: callback progress
-            #self.callback(self.pos)
-        #self.prev_pos = self.pos
-        #return data
-
-    #def _grow(self, count):
-
-
-    #def read(self, count):
-        #self.grow(count)
-
-    #def close(self):
-        #pass
+    def readline(self):
+        l = []
+        while True:
+            i = self._left.find('\n')
+            if i == -1:
+                l.append(self._left)
+                try:
+                    self._left = next(self._iter)
+                except StopIteration:
+                    self._left = ''
+                    break
+            else:
+                l.append(self._left[:i+1])
+                self._left = self._left[i+1:]
+                break
+        return ''.join(l)
 
 
 def reader(obj, *args, **kwargs):
