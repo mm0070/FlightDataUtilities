@@ -1,10 +1,10 @@
-import datetime
 import logging
 import os
 import queue
 import socket
 import sys
 import threading
+from datetime import datetime, timezone
 
 import elasticsearch
 import elasticsearch.helpers
@@ -153,7 +153,7 @@ class ElasticsearchHandler(logging.Handler):
             self._timer.cancel()
             self._timer = None
         if self._buffer.qsize():
-            index_name = self.index_name.format(datetime.datetime.utcnow())
+            index_name = self.index_name.format(datetime.now(timezone.utc))
             try:
                 elasticsearch.helpers.bulk(
                     client=self.client,
@@ -171,8 +171,7 @@ class ElasticsearchHandler(logging.Handler):
     def emit(self, record):
         self.format(record)
 
-        ts = datetime.datetime.utcfromtimestamp(record.created)
-        ts = ts.replace(microsecond=ts.microsecond // 1000 * 1000, tzinfo=datetime.timezone.utc)
+        dt = datetime.fromtimestamp(record.created, timezone.utc)
 
         self._buffer.put({
             **self.extra_fields,
@@ -180,7 +179,7 @@ class ElasticsearchHandler(logging.Handler):
                 self._field_mapping.get(k, k): v for k, v in record.__dict__.items()
                 if k not in self._exclude_fields and v is not None
             },
-            'log.timestamp': ts.isoformat().replace('+00:00', 'Z'),
+            'log.timestamp': dt.isoformat(timespec='milliseconds').replace('+00:00', 'Z'),
         })
 
         if self._buffer.qsize() >= self._buffer_size:
