@@ -90,6 +90,7 @@ def masked_array_fill_start(array, max_samples=None):
 
 import numpy as np
 cimport numpy as np
+np.import_array()  # required for calling PyArray_* functions
 
 import scipy
 
@@ -104,28 +105,223 @@ from flightdatautilities.byte_aligned import MODES, STANDARD_MODES, SYNC_PATTERN
 Value = namedtuple('Value', 'index value')
 
 
-cpdef np.uint16_t read_uint16_le(np.uint8_t[:] data, Py_ssize_t idx) nogil:
+cdef np.int64_t[:] empty_int64(np.npy_intp size):
+    '''
+    ~2.3x faster than creating a memoryview from np.empty (Python call).
+    '''
+    cdef np.npy_intp shape[1]
+    shape[0] = size
+    return np.PyArray_EMPTY(1, shape, np.NPY_INT64, False)
+
+
+cdef np.int64_t[:, :] empty2d_int64(np.npy_intp x, np.npy_intp y):
+    '''
+    ~2.3x faster than creating a memoryview from np.empty (Python call).
+    '''
+    cdef np.npy_intp shape[2]
+    shape[0] = x
+    shape[1] = y
+    return np.PyArray_EMPTY(2, shape, np.NPY_INT64, False)
+
+
+cdef np.int64_t[:] zeros_int64(np.npy_intp size):
+    '''
+    ~2.3x faster than creating a memoryview from np.zeros (Python call).
+    '''
+    cdef np.npy_intp shape[1]
+    shape[0] = size
+    return np.PyArray_ZEROS(1, shape, np.NPY_INT64, False)
+
+
+cdef np.int64_t[:, :] zeros2d_int64(np.npy_intp x, np.npy_intp y):
+    '''
+    ~2.3x faster than creating a memoryview from np.empty (Python call).
+    '''
+    cdef np.npy_intp shape[2]
+    shape[0] = x
+    shape[1] = y
+    return np.PyArray_ZEROS(2, shape, np.NPY_INT64, False)
+
+
+cdef np.intp_t[:] empty_intp(np.npy_intp size):
+    '''
+    ~2.3x faster than creating a memoryview from np.empty (Python call).
+    '''
+    cdef np.npy_intp shape[1]
+    shape[0] = size
+    return np.PyArray_EMPTY(1, shape, np.NPY_INTP, False)
+
+
+cdef np.intp_t[:, :] empty2d_intp(np.npy_intp x, np.npy_intp y):
+    '''
+    ~2.3x faster than creating a memoryview from np.empty (Python call).
+    '''
+    cdef np.npy_intp shape[2]
+    shape[0] = x
+    shape[1] = y
+    return np.PyArray_EMPTY(2, shape, np.NPY_INTP, False)
+
+
+cdef np.intp_t[:] zeros_intp(np.npy_intp size):
+    '''
+    ~2.3x faster than creating a memoryview from np.zeros (Python call).
+    '''
+    cdef np.npy_intp shape[1]
+    shape[0] = size
+    return np.PyArray_ZEROS(1, shape, np.NPY_INTP, False)
+
+
+cdef np.intp_t[:, :] zeros2d_intp(np.npy_intp x, np.npy_intp y):
+    '''
+    ~2.3x faster than creating a memoryview from np.empty (Python call).
+    '''
+    cdef np.npy_intp shape[2]
+    shape[0] = x
+    shape[1] = y
+    return np.PyArray_ZEROS(2, shape, np.NPY_INTP, False)
+
+
+cdef np.uint8_t[:] empty_uint8(np.npy_intp size):
+    '''
+    ~2.3x faster than creating a memoryview from np.empty (Python call).
+    '''
+    cdef np.npy_intp shape[1]
+    shape[0] = size
+    return np.PyArray_EMPTY(1, shape, np.NPY_UINT8, False)
+
+
+cdef np.uint8_t[:] zeros_uint8(np.npy_intp size):
+    '''
+    ~2.3x faster than creating a memoryview from np.zeros (Python call).
+    '''
+    cdef np.npy_intp shape[1]
+    shape[0] = size
+    return np.PyArray_ZEROS(1, shape, np.NPY_UINT8, False)
+
+
+cdef np.uint8_t[:] ones_uint8(np.npy_intp size):
+    '''
+    ~2.3x faster than creating a memoryview from np.zeros (Python call).
+    '''
+    cdef np.npy_intp shape[1]
+    shape[0] = size
+    return np.PyArray_ZEROS(1, shape, np.NPY_UINT8, False) + 1
+
+
+cdef np.uint16_t[:] empty_uint16(np.npy_intp size):
+    '''
+    ~2.3x faster than creating a memoryview from np.empty (Python call).
+    '''
+    cdef np.npy_intp shape[1]
+    shape[0] = size
+    return np.PyArray_EMPTY(1, shape, np.NPY_UINT16, False)
+
+
+cdef np.uint16_t[:] zeros_uint16(np.npy_intp size):
+    '''
+    ~2.3x faster than creating a memoryview from np.zeros (Python call).
+    '''
+    cdef np.npy_intp shape[1]
+    shape[0] = size
+    return np.PyArray_ZEROS(1, shape, np.NPY_UINT16, False)
+
+
+cdef np.uint64_t[:] empty_uint64(np.npy_intp size):
+    '''
+    ~2.3x faster than creating a memoryview from np.empty (Python call).
+    '''
+    cdef np.npy_intp shape[1]
+    shape[0] = size
+    return np.PyArray_EMPTY(1, shape, np.NPY_UINT64, False)
+
+
+cdef np.uint64_t[:] zeros_uint64(np.npy_intp size):
+    '''
+    ~2.3x faster than creating a memoryview from np.zeros (Python call).
+    '''
+    cdef np.npy_intp shape[1]
+    shape[0] = size
+    return np.PyArray_ZEROS(1, shape, np.NPY_UINT64, False)
+
+
+cdef np.float64_t[:] empty_float64(np.npy_intp size):
+    '''
+    ~2.3x faster than creating a memoryview from np.empty (Python call).
+    '''
+    cdef np.npy_intp shape[1]
+    shape[0] = size
+    return np.PyArray_EMPTY(1, shape, np.NPY_FLOAT64, False)
+
+
+cdef np.float64_t[:, :] empty2d_float64(np.npy_intp x, np.npy_intp y):
+    '''
+    ~2.3x faster than creating a memoryview from np.empty (Python call).
+    '''
+    cdef np.npy_intp shape[2]
+    shape[0] = x
+    shape[1] = y
+    return np.PyArray_EMPTY(2, shape, np.NPY_FLOAT64, False)
+
+
+cdef np.float64_t[:] zeros_float64(np.npy_intp size):
+    '''
+    ~2.3x faster than creating a memoryview from np.zeros (Python call).
+    '''
+    cdef np.npy_intp shape[1]
+    shape[0] = size
+    return np.PyArray_ZEROS(1, shape, np.NPY_FLOAT64, False)
+
+
+cdef np.float64_t[:, :] zeros2d_float64(np.npy_intp x, np.npy_intp y):
+    '''
+    ~2.3x faster than creating a memoryview from np.zeros (Python call).
+    '''
+    cdef np.npy_intp shape[2]
+    shape[0] = x
+    shape[1] = y
+    return np.PyArray_ZEROS(2, shape, np.NPY_FLOAT64, False)
+
+
+cpdef compare():
+    cdef Py_ssize_t idx
+    import time
+    a = time.time()
+    cdef np.float64_t[:] memview
+    for idx in range(1000):
+        memview = np.zeros(100, dtype=np.float64)
+    print(time.time() - a)
+    a = time.time()
+    for idx in range(1000):
+        zeros_float64(100)
+    print(time.time() - a)
+
+
+cdef np.uint64_t saturated_value(np.uint64_t bit_length) nogil:
+    return (2 ** bit_length) - 1
+
+
+cdef np.uint16_t read_uint16_le(np.uint8_t[:] data, Py_ssize_t idx) nogil:
     '''
     Read a little-endian unsigned short from an unsigned byte array.
     '''
     return (data[idx + 1] << 8) + data[idx]
 
 
-cpdef np.uint16_t read_uint16_be(np.uint8_t[:] data, Py_ssize_t idx) nogil:
+cdef np.uint16_t read_uint16_be(np.uint8_t[:] data, Py_ssize_t idx) nogil:
     '''
     Read a big-endian unsigned short from an unsigned byte array.
     '''
     return (data[idx] << 8) + data[idx + 1]
 
 
-cpdef np.uint32_t read_uint32_le(np.uint8_t[:] data, Py_ssize_t idx) nogil:
+cdef np.uint32_t read_uint32_le(np.uint8_t[:] data, Py_ssize_t idx) nogil:
     '''
     Read a little-endian unsigned integer from an unsigned byte array.
     '''
     return (data[idx + 3] << 24) + (data[idx + 2] << 16) + (data[idx + 1] << 8) + data[idx]
 
 
-cpdef np.uint32_t read_uint32_be(np.uint8_t[:] data, Py_ssize_t idx) nogil:
+cdef np.uint32_t read_uint32_be(np.uint8_t[:] data, Py_ssize_t idx) nogil:
     '''
     Read a big-endian unsigned integer from an unsigned byte array.
     '''
@@ -194,11 +390,15 @@ cpdef Py_ssize_t none_idx(idx):
     return -1 if idx is None else idx
 
 
-cpdef np.uint8_t[:] getmaskarray(array):
+cdef np.uint8_t[:] getmaskarray1d(array):
     '''
-    Get the mask array from a np.ma.masked_array in a Cython-compatible dtype.
+    Get the mask array from a np.ma.masked_array in a Cython-compatible dtype. Assumes scalar mask is False.
+    ~3x faster when mask is a scalar, ~10% faster when mask is an array.
     '''
-    return np.ma.getmaskarray(array).view(np.uint8)
+    if not np.PyArray_CheckScalar(array.mask):
+        return array.mask.view(np.uint8)
+
+    return zeros_uint8(len(array))
 
 
 cdef Py_ssize_t cython_nearest_idx(np.uint8_t[:] array, Py_ssize_t idx, bint match=True, Py_ssize_t start_idx=0,
@@ -250,7 +450,7 @@ cdef Py_ssize_t cython_prev_idx(np.uint8_t[:] array, Py_ssize_t idx, bint match=
     return -1
 
 
-cdef Py_ssize_t cython_next_idx(np.uint8_t[:] array, Py_ssize_t idx, bint match=True, Py_ssize_t stop_idx=-1) nogil:
+cdef Py_ssize_t cython_next_idx(np.uint8_t[:] array, Py_ssize_t idx=0, bint match=True, Py_ssize_t stop_idx=-1) nogil:
     idx = cython_array_idx(idx, array.shape[0])
     stop_idx = cython_array_stop_idx(stop_idx, array.shape[0])
 
@@ -262,32 +462,32 @@ cdef Py_ssize_t cython_next_idx(np.uint8_t[:] array, Py_ssize_t idx, bint match=
     return -1
 
 
-def nearest_idx(array, Py_ssize_t idx, bint match=True, Py_ssize_t start_idx=0, Py_ssize_t stop_idx=-1):
+cpdef nearest_idx(array, Py_ssize_t idx, bint match=True, Py_ssize_t start_idx=0, Py_ssize_t stop_idx=-1):
     return idx_none(cython_nearest_idx(array.view(np.uint8), idx, match=match, start_idx=start_idx, stop_idx=stop_idx))
 
 
-def nearest_unmasked_value(array, Py_ssize_t idx, Py_ssize_t start_idx=0, Py_ssize_t stop_idx=-1):
-    cdef Py_ssize_t unmasked_idx = cython_nearest_idx(getmaskarray(array), idx, match=False, start_idx=start_idx,
+cpdef nearest_unmasked_value(array, Py_ssize_t idx, Py_ssize_t start_idx=0, Py_ssize_t stop_idx=-1):
+    cdef Py_ssize_t unmasked_idx = cython_nearest_idx(getmaskarray1d(array), idx, match=False, start_idx=start_idx,
                                                       stop_idx=stop_idx)
     return array_idx_value(array, unmasked_idx)
 
 
-def prev_unmasked_value(array, Py_ssize_t idx, Py_ssize_t start_idx=0):
-    cdef Py_ssize_t unmasked_idx = cython_prev_idx(getmaskarray(array), idx, match=False, start_idx=start_idx)
+cpdef prev_unmasked_value(array, Py_ssize_t idx, Py_ssize_t start_idx=0):
+    cdef Py_ssize_t unmasked_idx = cython_prev_idx(getmaskarray1d(array), idx, match=False, start_idx=start_idx)
     return array_idx_value(array, unmasked_idx)
 
 
-def next_unmasked_value(array, Py_ssize_t idx, Py_ssize_t stop_idx=-1):
-    cdef Py_ssize_t unmasked_idx = cython_next_idx(getmaskarray(array), idx, match=False, stop_idx=stop_idx)
+cpdef next_unmasked_value(array, Py_ssize_t idx, Py_ssize_t stop_idx=-1):
+    cdef Py_ssize_t unmasked_idx = cython_next_idx(getmaskarray1d(array), idx, match=False, stop_idx=stop_idx)
     return array_idx_value(array, unmasked_idx)
 
 
-def first_unmasked_value(array, Py_ssize_t start_idx=0):
+cpdef first_unmasked_value(array, Py_ssize_t start_idx=0):
     return next_unmasked_value(array, start_idx)
 
 
-def last_unmasked_value(array, Py_ssize_t stop_idx=-1, Py_ssize_t min_samples=-1):
-    cdef np.uint8_t[:] mask = getmaskarray(array)
+cpdef last_unmasked_value(array, Py_ssize_t stop_idx=-1, Py_ssize_t min_samples=-1):
+    cdef np.uint8_t[:] mask = getmaskarray1d(array)
     if min_samples > 0:
         mask = cython_remove_small_runs(mask, <float>min_samples)
     stop_idx = cython_array_stop_idx(stop_idx, mask.shape[0])
@@ -300,7 +500,7 @@ def last_unmasked_value(array, Py_ssize_t stop_idx=-1, Py_ssize_t min_samples=-1
     return None
 
 
-def nearest_slice(array, Py_ssize_t idx, bint match=True):
+cpdef nearest_slice(array, Py_ssize_t idx, bint match=True):
     cdef np.uint8_t[:] data = array.view(np.uint8)
     cdef Py_ssize_t start_idx, stop_idx, nearest_idx = cython_nearest_idx(data, idx, match=match)
 
@@ -320,8 +520,7 @@ def nearest_slice(array, Py_ssize_t idx, bint match=True):
                 break
         else:
             start_idx = 0
-    elif nearest_idx > idx:
-        # nearest slice starts at a later idx, scan forward to find slice stop
+    elif nearest_idx > idx:  # nearest slice starts at a later idx, scan forward to find slice stop
         start_idx = nearest_idx
         for stop_idx in range(start_idx + 1, data.shape[0]):
             if data[stop_idx] != match:
@@ -329,8 +528,7 @@ def nearest_slice(array, Py_ssize_t idx, bint match=True):
         else:
             stop_idx = data.shape[0]
 
-    else:
-        # nearest slice stops at an earlier idx, scan backwards to find slice start
+    else:  # nearest slice stops at an earlier idx, scan backwards to find slice start
         stop_idx = nearest_idx + 1
         for start_idx in range(nearest_idx, -1, -1):
             if data[start_idx] != match:
@@ -383,7 +581,7 @@ cpdef void cython_repair_mask_float64(np.float64_t[:] data, np.uint8_t[:] mask, 
         cython_ma_fill_range_float64(data, mask, data[last_valid_idx], last_valid_idx + 1, data.shape[0])
 
 
-def repair_mask(array, method='interpolate', repair_duration=10, frequency=1, bint copy=False, bint extrapolate=False, bint raise_duration_exceedance=False, bint raise_entirely_masked=True):
+cpdef repair_mask(array, method='interpolate', repair_duration=10, frequency=1, bint copy=False, bint extrapolate=False, bint raise_duration_exceedance=False, bint raise_entirely_masked=True):
     '''
     TODO: find better solution for repair_above kwarg from original.
     '''
@@ -397,10 +595,7 @@ def repair_mask(array, method='interpolate', repair_duration=10, frequency=1, bi
         return array
 
     dtype = array.dtype
-    array = array.astype(np.float64)
-
-    if copy:
-        array = array.copy()
+    array = array.astype(np.float64, copy=copy)
 
     if repair_duration:
         repair_samples = repair_duration * frequency
@@ -443,7 +638,7 @@ def aggregate_values(Aggregate mode, np.float64_t[:] data, np.uint8_t[:] mask, n
 
     cdef:
         Py_ssize_t idx, value_idx = -1
-        double value
+        np.float64_t value
         bint matching_section = False, update_value = False
 
     for idx in range(matching.shape[0]):
@@ -482,42 +677,45 @@ def aggregate_values(Aggregate mode, np.float64_t[:] data, np.uint8_t[:] mask, n
 
 cdef _aggregate_values(Aggregate mode, array, matching):
     return aggregate_values(
-        mode, array.data.astype(np.float64, copy=False), getmaskarray(array), matching.view(np.uint8))
+        mode, array.data.astype(np.float64, copy=False), getmaskarray1d(array), matching.view(np.uint8))
 
 
-def max_values(array, matching):
+cpdef max_values(array, matching):
     return _aggregate_values(Aggregate.MAX, array, matching)
 
 
-def min_values(array, matching):
+cpdef min_values(array, matching):
     return _aggregate_values(Aggregate.MIN, array, matching)
 
 
-def max_abs_values(array, matching):
+cpdef max_abs_values(array, matching):
     return _aggregate_values(Aggregate.MAX_ABS, array, matching)
 
 
-def min_abs_values(array, matching):
+cpdef min_abs_values(array, matching):
     return _aggregate_values(Aggregate.MIN_ABS, array, matching)
 
 
-def slices_to_array(Py_ssize_t size, slices):
+cpdef slices_to_array(Py_ssize_t size, slices):
+    '''
+    Convert slices to a boolean array of a specified size. Slice step is ignored.
+    '''
     cdef:
-        np.uint8_t[:] array = np.zeros(size, dtype=np.uint8)
+        np.uint8_t[:] array = zeros_uint8(size)
         Py_ssize_t start, stop, idx
     for s in slices:
         start = 0 if s.start is None else s.start
-        stop = array.shape[0] if s.stop is None else s.stop
+        stop = size if s.stop is None else s.stop
         if start < 0:
             start = 0
-        if stop > array.shape[0]:
-            stop = array.shape[0]
+        if stop > size:
+            stop = size
         for idx in range(start, stop):
             array[idx] = 1
-    return np.asarray(array).view(np.uint8)
+    return np.asarray(array).view(np.bool)
 
 
-def section_overlap(a, b):
+cpdef section_overlap(a, b):
     '''
     Optimised version of ~O(N^2) (2.5 million times faster)
 >>> from analysis_engine.library import runs_of_ones, slices_overlap
@@ -543,7 +741,7 @@ def section_overlap(a, b):
         raise ValueError('array lengths do not match')
 
     cdef:
-        np.uint8_t[:] out = np.zeros(x.shape[0], dtype=np.uint8)
+        np.uint8_t[:] out = zeros_uint8(x.shape[0])
         Py_ssize_t idx, rev_idx, last_idx = -1
         bint both_true, last_both_true = True, fill_either = False
 
@@ -567,11 +765,13 @@ def section_overlap(a, b):
             fill_either = False
         last_both_true = both_true
 
-    return np.asarray(out).view(np.uint8)
+    return np.asarray(out).view(np.bool)
 
 
 cdef np.uint8_t[:] cython_remove_small_runs(np.uint8_t[:] data, float seconds, float hz=1, bint match=True) nogil:
     '''
+    Remove small runs of matching values from a boolean array.
+
     Optimised version of slices_remove_small_slices (330 times faster):
 >>> from analysis_engine.library import runs_of_ones, slices_remove_small_gaps
 >>> T, F = True, False
@@ -608,11 +808,18 @@ cdef np.uint8_t[:] cython_remove_small_runs(np.uint8_t[:] data, float seconds, f
     return data
 
 
-def remove_small_runs(array, float seconds=10, float hz=1, bint match=True):
+cpdef remove_small_runs(array, float seconds=10, float hz=1, bint match=True):
+    '''
+    Remove small runs of matching values from a boolean array.
+    '''
     return np.asarray(cython_remove_small_runs(array.view(np.uint8), seconds, hz, match=match)).view(np.bool)
 
 
 cdef np.uint8_t[:] cython_contract_runs(np.uint8_t[:] data, Py_ssize_t size, bint match=True) nogil:
+    '''
+    Contract runs of matching values within an array, e.g.
+    contract_runs([False, True, True, True], 1) == [False, False, True, False]
+    '''
     if not size:
         return data
 
@@ -635,9 +842,9 @@ cdef np.uint8_t[:] cython_contract_runs(np.uint8_t[:] data, Py_ssize_t size, bin
     return data
 
 
-def contract_runs(array, Py_ssize_t size, bint match=True):
+cpdef contract_runs(array, Py_ssize_t size, bint match=True):
     '''
-    Contract runs of True values within arrays, e.g.
+    Contract runs of matching values within an array, e.g.
     contract_runs([False, True, True, True], 1) == [False, False, True, False]
     '''
     return np.asarray(cython_contract_runs(array.view(np.uint8), size, match=match)).view(np.bool)
@@ -698,7 +905,7 @@ def runs_of_ones(array, min_samples=None):
 # is_constant
 
 
-def is_constant(data):
+cpdef bint is_constant(data):
     '''
     Check if an array is constant in value.
 
@@ -751,12 +958,12 @@ cpdef bint is_constant_uint16(np.uint16_t[:] data) nogil:
     return True
 
 
-def first_valid_sample(array, long start_idx=0):
+cpdef first_valid_sample(array, long start_idx=0):
     '''
     Returns the first valid sample of data from a point in an array.
     '''
     cdef:
-        np.uint8_t[:] mask = getmaskarray(array)
+        np.uint8_t[:] mask = getmaskarray1d(array)
         Py_ssize_t idx
 
     if start_idx < 0:
@@ -769,12 +976,12 @@ def first_valid_sample(array, long start_idx=0):
     return Value(None, None)
 
 
-def last_valid_sample(array, end_idx=None):
+cpdef last_valid_sample(array, end_idx=None):
     '''
     Returns the last valid sample of data before a point in an array.
     '''
     cdef:
-        np.uint8_t[:] mask = getmaskarray(array)
+        np.uint8_t[:] mask = getmaskarray1d(array)
         Py_ssize_t end_idx_long, idx
 
     if end_idx is None:
@@ -821,8 +1028,8 @@ cdef class Interpolator:
         if size < 2:
             raise ValueError('At least 2 interpolation points are required.')
 
-        self._xs = np.empty(size, dtype=np.float64)
-        self._ys = np.empty(size, dtype=np.float64)
+        self._xs = empty_float64(size)
+        self._ys = empty_float64(size)
         for idx, (x, y) in enumerate(sorted(points)):
             self._xs[idx] = x
             self._ys[idx] = y
@@ -837,7 +1044,7 @@ cdef class Interpolator:
 
         self._size = size
 
-    cdef double _interpolate_value(self, double value) nogil:
+    cdef np.float64_t _interpolate_value(self, np.float64_t value) nogil:
         '''
         Interpolate a value according to the Interpolator's interpolation points.
 
@@ -847,18 +1054,15 @@ cdef class Interpolator:
         :rtype: double
         '''
         cdef:
-            Py_ssize_t idx
+            Py_ssize_t idx = 1
 
-        for idx in range(1, self._size):
+        for idx in range(idx, self._size):
             if value <= self._xs[idx]:
                 break
 
         cdef:
-            double x_hi = self._xs[idx]
-            double x_lo = self._xs[idx - 1]
-            double y_hi = self._ys[idx]
-            double y_lo = self._ys[idx - 1]
-            double slope = (y_hi - y_lo) / (x_hi - x_lo)
+            np.float64_t x_hi = self._xs[idx], x_lo = self._xs[idx - 1], \
+                y_hi = self._ys[idx], y_lo = self._ys[idx - 1], slope = (y_hi - y_lo) / (x_hi - x_lo)
         return y_lo + (slope * (value - x_lo))
 
     cpdef np.float64_t[:] interpolate(self, np.float64_t[:] array, bint copy=True):
@@ -874,11 +1078,11 @@ cdef class Interpolator:
         '''
         cdef:
             Py_ssize_t idx
-            double value
+            np.float64_t value
             np.float64_t[:] output
 
         if copy:
-            output = np.empty(array.shape[0], dtype=np.float64)
+            output = empty_float64(array.shape[0])
         else:
             output = array
 
@@ -933,19 +1137,19 @@ cdef class ByteAligner:
         '''
         Reset the internal state to prepare for reuse with new data.
         '''
-        self._buff = np.empty(0, dtype=np.uint8)
+        self._buff = empty_uint8(0)
         self._idx = 0
         self._frame_count = 0
         self._output_arrays = []
 
-    cdef unsigned short _get_word(self, Py_ssize_t idx) nogil:
+    cdef np.uint16_t _get_word(self, Py_ssize_t idx) nogil:
         '''
         Get the word value at specified byte index from the buffer.
 
         :param idx: byte index of the word within the buffer
         :returns: word value at byte index
         '''
-        cdef unsigned short first_byte, second_byte
+        cdef np.uint16_t first_byte, second_byte
         if self._little_endian:
             first_byte = self._buff[idx + 1]
             second_byte = self._buff[idx]
@@ -964,7 +1168,7 @@ cdef class ByteAligner:
         '''
         cdef:
             Py_ssize_t sync_word_idx
-            unsigned short value = self._get_word(idx)
+            np.uint16_t value = self._get_word(idx)
         for sync_word_idx in range(self.sync_words.shape[0]):
             if self._frames_only and (sync_word_idx % 4) != 0:
                 continue
@@ -975,7 +1179,7 @@ cdef class ByteAligner:
             return -1
         return sync_word_idx
 
-    cdef short _frame_wps(self, Py_ssize_t idx) nogil:
+    cdef np.int16_t _frame_wps(self, Py_ssize_t idx) nogil:
         '''
         Find the wps of a frame starting at idx.
 
@@ -989,7 +1193,8 @@ cdef class ByteAligner:
 
         cdef:
             Py_ssize_t frame_idx, next_sync_word_idx, offset, wps_array_idx
-            unsigned short wps
+            np.uint16_t wps
+
         for wps_array_idx in range(self._wps_array.shape[0]):
             wps = self._wps_array[wps_array_idx]
             if (idx + wps * 4 * 2) > self._buff.shape[0]:
@@ -1031,7 +1236,9 @@ cdef class ByteAligner:
         '''
         if is_array(data_gen):
             data_gen = (data_gen,)
+
         cdef Py_ssize_t idx, next_frame_idx, remainder_idx
+
         for data in data_gen:
             self._buff = np.concatenate((self._buff, data))
             idx = 0
@@ -1079,8 +1286,9 @@ cdef class ByteAligner:
             data_gen = (data_gen,)
 
         cdef:
-            Py_ssize_t frame_start_idx = -1, frame_stop_idx = -1, idx = 0, next_frame_idx, remainder_idx
-            Py_ssize_t frame_start = -1 if start is None else start // 4, frame_stop = -1 if stop is None else <int>ceil(stop / 4.)
+            Py_ssize_t frame_start_idx = -1, frame_stop_idx = -1, idx = 0, \
+                frame_start = -1 if start is None else start // 4, \
+                frame_stop = -1 if stop is None else <Py_ssize_t>ceil(stop / 4.), next_frame_idx, remainder_idx
 
         for data in data_gen:
             self._buff = np.concatenate((self._buff, data))
@@ -1144,9 +1352,11 @@ cdef class ByteAligner:
         '''
         if start is not None and stop is not None and stop <= start:
             raise ValueError('stop must be greater than start')
+
         cdef:
-            Py_ssize_t frame_start = -1 if start is None else start // 4
-            Py_ssize_t frame_stop = -1 if stop is None else <int>ceil(stop / 4.)
+            Py_ssize_t frame_start = -1 if start is None else start // 4, \
+                frame_stop = -1 if stop is None else <int>ceil(stop / 4.)
+
         def get_data(idx):
             if idx is None:
                 return np.concatenate(self._output_arrays) if self._output_arrays else None
@@ -1158,7 +1368,7 @@ cdef class ByteAligner:
                 output_array = np.concatenate(self._output_arrays)
                 self._output_arrays = []
                 return output_array
-            cdef unsigned int frame_size = self._wps * 4 * 2
+            cdef Py_ssize_t frame_size = self._wps * 4 * 2
             self._output_arrays.append(self._buff[idx:idx + frame_size])
             if sum(len(a) for a in self._output_arrays) >= self._output_buffer:
                 output_array = np.concatenate(self._output_arrays)
@@ -1184,14 +1394,14 @@ cdef class ByteAligner:
         return self._loop(data_gen, info)
 
 
-cpdef np.uint16_t[:] sync_words_from_modes(modes):
+cdef np.uint16_t[:] sync_words_from_modes(modes):
     '''
     Creates an array containing sync words in a contiguous 1d-array.
 
     e.g. sync_words_from_modes(['717'])
     '''
     cdef:
-        np.uint16_t[:] sync_words = np.empty(len(modes) * 4, dtype=np.uint16)
+        np.uint16_t[:] sync_words = empty_uint16(len(modes) * 4)
         Py_ssize_t sync_word_idx = 0
     for mode in modes:
         for sync_word in SYNC_PATTERNS[mode]:
@@ -1200,7 +1410,7 @@ cpdef np.uint16_t[:] sync_words_from_modes(modes):
     return sync_words
 
 
-def swap_bytes(array):
+cpdef swap_bytes(array):
     '''
     Swap byte-order endianness.
 
@@ -1215,7 +1425,7 @@ def swap_bytes(array):
     return array.byteswap(True)
 
 
-def unpack(array):
+cpdef unpack(array):
     '''
     Unpack 'packed' flight data into unpacked (byte-aligned) format.
 
@@ -1240,7 +1450,7 @@ cpdef np.uint16_t[:] unpack_little_endian(np.uint8_t[:] data):
         raise ValueError('data length must be a multiple of 3')
 
     cdef:
-        np.uint16_t[:] output = np.zeros(<Py_ssize_t>(data.shape[0] // 1.5), dtype=np.uint16)
+        np.uint16_t[:] output = zeros_uint16(<Py_ssize_t>(data.shape[0] // 1.5))
         Py_ssize_t data_idx = 0, output_idx = 0
 
     while data_idx < data.shape[0]:  # cython range with step is slow
@@ -1252,7 +1462,7 @@ cpdef np.uint16_t[:] unpack_little_endian(np.uint8_t[:] data):
     return output
 
 
-def pack(array):
+cpdef pack(array):
     '''
     Pack 'unpacked' flight data into packed format.
 
@@ -1356,7 +1566,7 @@ def extrap1d(interpolator):
     return ufunclike
 
 
-def merge_masks(masks):
+cpdef merge_masks(masks):
     '''
     ORs multiple masks together. Could this be done in one step with numpy?
 
@@ -1372,7 +1582,7 @@ def merge_masks(masks):
     return merged_mask
 
 
-def mask_ratio(mask):
+cpdef mask_ratio(mask):
     '''
     Ratio of masked data (1 == all masked).
     '''
@@ -1384,14 +1594,14 @@ def mask_ratio(mask):
     return mask.sum() / float(len(mask))
 
 
-def percent_unmasked(mask):
+cpdef percent_unmasked(mask):
     '''
     Percentage of unmasked data.
     '''
     return (1 - mask_ratio(mask)) * 100
 
 
-def sum_arrays(arrays):
+cpdef sum_arrays(arrays):
     '''
     Sums multiple numpy arrays together.
 
@@ -1407,7 +1617,7 @@ def sum_arrays(arrays):
     return summed_array
 
 
-def downsample_arrays(arrays):
+cpdef downsample_arrays(arrays):
     '''
     Return arrays downsampled to the size of the smallest.
 
@@ -1433,7 +1643,7 @@ def downsample_arrays(arrays):
     return downsampled_arrays
 
 
-def upsample_arrays(arrays):
+cpdef upsample_arrays(arrays):
     '''
     Return arrays upsampled to the size of the largest.
 
@@ -1465,7 +1675,7 @@ def upsample_arrays(arrays):
     return upsampled_arrays
 
 
-def align_arrays(slave_array, master_array):
+cpdef align_arrays(slave_array, master_array):
     '''
     Very basic aligning using repeat to upsample and skipping over samples to
     downsample the slave array to the master frequency
@@ -1492,7 +1702,7 @@ def align_arrays(slave_array, master_array):
         return slave_array[0::int(1 // ratio)]
 
 
-def save_compressed(path, array):
+cpdef save_compressed(path, array):
     '''
     Save either a MappedArray, np.ma.MaskedArray or np.ndarray in a compressed archive.
     '''
@@ -1517,7 +1727,7 @@ def save_compressed(path, array):
         raise NotImplementedError(f"Object of type '{type(array)}' cannot be saved.")
 
 
-def load_compressed(path):
+cpdef load_compressed(path):
     '''
     Load either a MappedArray, np.ma.MaskedArray or np.ndarray from a compressed archive.
     '''
@@ -1563,13 +1773,10 @@ cpdef is_power2_fraction(number):
     return is_power2(number)
 
 
-cpdef np.ndarray twos_complement(np.ndarray array, int bit_length):
+cpdef np.ndarray twos_complement(np.ndarray array, np.uint64_t bit_length):
     '''
     Convert the values from "sign bit" notation to "two's complement".
     '''
-    cdef:
-        int saturated_value = (2 ** bit_length) - 1
-        int max_positive_value = 2 ** (bit_length - 1) - 1
-    array[array > max_positive_value] -= saturated_value + 1
+    array[array > saturated_value(bit_length - 1)] -= saturated_value(bit_length) + 1
     return array
 
