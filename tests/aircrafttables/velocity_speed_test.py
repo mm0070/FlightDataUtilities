@@ -12,7 +12,6 @@ Unit tests for aircraft velocity speed tables and functions.
 
 import inspect
 import itertools
-import six
 import unittest
 import warnings
 
@@ -121,10 +120,10 @@ def _velocity_speed_tables_integrity_test_generator():
                 self.assertTrue(t, 'Expected tuple values in %s table.' % name)
                 t = all(isinstance(v, (type(None), int, float)) for v in itertools.chain.from_iterable(table.values()))
                 self.assertTrue(t, 'Invalid velocity speed types in %s table.' % name)
-                t = all((v is None or 80 <= v < 500) for v in itertools.chain.from_iterable(b for a, b in six.iteritems(table) if not a == 'weight'))
+                t = all((v is None or 80 <= v < 500) for v in itertools.chain.from_iterable(b for a, b in table.items() if not a == 'weight'))
                 self.assertTrue(t, 'Invalid velocity speed values in %s table.' % name)
                 # Require that value is in a sensible range...
-                t = all((v is None or 80 <= v < 500) for v in itertools.chain.from_iterable(b for a, b in six.iteritems(table) if not a == 'weight'))
+                t = all((v is None or 80 <= v < 500) for v in itertools.chain.from_iterable(b for a, b in table.items() if not a == 'weight'))
                 self.assertTrue(t, 'Invalid velocity speed values in %s table.' % name)
                 ##### Require that speed values increase with weight...
                 ####from itertools import tee
