@@ -84,7 +84,7 @@ def _velocity_speed_tables_integrity_test_generator():
         self.assertGreaterEqual(cls.weight_scale, 1, 'Invalid weight scale defined.')
 
         # Check that the weight unit option is valid:
-        self.assertIsInstance(cls.weight_unit, (type(None), six.string_types), 'Invalid weight unit type.')
+        self.assertIsInstance(cls.weight_unit, (type(None), str), 'Invalid weight unit type.')
         self.assertIn(cls.weight_unit, (ut.KG, ut.LB, ut.TONNE, None), 'Invalid weight unit defined.')
 
         # Warn about weight scale and unit issues:
@@ -117,7 +117,7 @@ def _velocity_speed_tables_integrity_test_generator():
                 self.assertGreater(len(table), 1, 'No flap/conf rows in %s table.' % name)
                 lengths = map(len, table.values())
                 self.assertEqual(len(set(lengths)), 1, 'Row lengths mismatch in %s table.' % name)
-                t = all(isinstance(k, six.string_types) for k in table.keys())
+                t = all(isinstance(k, str) for k in table.keys())
                 self.assertTrue(t, 'Expected flap/conf string keys in %s table.' % name)
                 t = all(isinstance(v, tuple) for v in table.values())
                 self.assertTrue(t, 'Expected tuple values in %s table.' % name)
@@ -171,7 +171,7 @@ def _velocity_speed_tables_integrity_test_generator():
             if name in ('v2', 'vref', 'vapp'):
                 self.assertFalse('weight' in table, 'Weight must not be in %s fallback table.' % name)
                 self.assertGreater(len(table), 0, 'No flap/conf rows in %s fallback table.' % name)
-                t = all(isinstance(k, six.string_types) for k in table.keys())
+                t = all(isinstance(k, str) for k in table.keys())
                 self.assertTrue(t, 'Expected flap/conf string keys in %s fallback table.' % name)
                 t = all(isinstance(v, (type(None), int, float)) for v in table.values())
                 self.assertTrue(t, 'Invalid velocity speed types in %s fallback table.' % name)

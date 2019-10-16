@@ -2,8 +2,6 @@
 ################################################################################
 
 
-import six
-
 __all__ = ['dcompact', 'dmerge']
 
 
@@ -21,7 +19,7 @@ def dcompact(d):
     for k, v in d.items():
         if isinstance(v, dict):
             x = dcompact(v)
-        elif isinstance(v, six.string_types):
+        elif isinstance(v, str):
             x = v.strip()
         else:
             x = v
