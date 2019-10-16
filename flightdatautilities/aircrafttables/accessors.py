@@ -6,7 +6,8 @@
 #############################################################################
 # Imports
 
-from itertools import chain, cycle, product
+import itertools
+
 from natsort import natsorted
 
 from flightdatautilities.aircrafttables import constants
@@ -71,7 +72,7 @@ def get_flap_detents():
     '''
     detents = set()
     for x in mi.FLAP_MODEL_MAP, mi.FLAP_SERIES_MAP, mi.FLAP_FAMILY_MAP:
-        detents.update(chain.from_iterable(x.values()))
+        detents.update(itertools.chain.from_iterable(x.values()))
     return natsorted(detents)
 
 
@@ -84,7 +85,7 @@ def get_slat_detents():
     '''
     detents = set()
     for x in mi.SLAT_MODEL_MAP, mi.SLAT_SERIES_MAP, mi.SLAT_FAMILY_MAP:
-        detents.update(chain.from_iterable(x.values()))
+        detents.update(itertools.chain.from_iterable(x.values()))
     return natsorted(detents)
 
 
@@ -97,7 +98,7 @@ def get_aileron_detents():
     '''
     detents = set()
     for x in mi.AILERON_MODEL_MAP, mi.AILERON_SERIES_MAP, mi.AILERON_FAMILY_MAP:
-        detents.update(chain.from_iterable(x.values()))
+        detents.update(itertools.chain.from_iterable(x.values()))
     return natsorted(detents)
 
 
@@ -110,7 +111,7 @@ def get_conf_detents():
     '''
     detents = set()
     for x in mi.CONF_MODEL_MAP, mi.CONF_SERIES_MAP, mi.CONF_FAMILY_MAP:
-        detents.update(chain.from_iterable(map(lambda y: y.keys(), x.values())))
+        detents.update(itertools.chain.from_iterable(map(lambda y: y.keys(), x.values())))
     return natsorted(detents)
 
 
@@ -124,7 +125,7 @@ def get_lever_detents():
     extract = lambda x: (v[1] for v in x.keys())
     detents = set(map(str, get_flap_detents()))  # initialise with flap detents
     for x in mi.LEVER_MODEL_MAP, mi.LEVER_SERIES_MAP, mi.LEVER_FAMILY_MAP:
-        detents.update(chain.from_iterable(map(extract, x.values())))
+        detents.update(itertools.chain.from_iterable(map(extract, x.values())))
     detents.update(constants.LEVER_STATES.values())  # include conf lever states
     return natsorted(detents)
 
@@ -580,7 +581,7 @@ def get_vspeed_map(model=None, series=None, family=None, engine_type=None, engin
     # - aircraft series.
     # - aircraft family.
     engines = engine_type, engine_series, None
-    it = zip(map(lambda x: x[::-1], product(engines, keys)), cycle(maps))
+    it = zip(map(lambda x: x[::-1], itertools.product(engines, keys)), itertools.cycle(maps))
 
     for k, m in it:
         if k in m:
@@ -625,7 +626,7 @@ def get_engine_map(engine_type=None, engine_series=None, mods=None, restriction=
     # - aircraft series.
     # - aircraft family.
     mod_keys = mods if mods else []
-    it = zip(map(lambda x: x[::-1], product(mod_keys + [None], keys)), cycle([series_map]))
+    it = zip(map(lambda x: x[::-1], itertools.product(mod_keys + [None], keys)), itertools.cycle([series_map]))
 
     for k, m in it:
         if k in m:

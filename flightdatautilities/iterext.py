@@ -8,9 +8,7 @@ Flight Data Utilities: Iter Extensions
 # Imports
 
 
-import numpy as np
-
-from itertools import chain, count, groupby, islice, takewhile, tee
+import itertools
 from operator import itemgetter
 
 
@@ -39,10 +37,10 @@ def batch(start, stop, step):
     if stop - start <= step:
         yield (start, stop)
         return
-    a, b = tee(count(start, step))
+    a, b = itertools.tee(itertools.count(start, step))
     next(b, None)
     last = None
-    for x in takewhile(lambda z: z[1] < stop, zip(a, b)):
+    for x in itertools.takewhile(lambda z: z[1] < stop, zip(a, b)):
         last = x[1]
         yield x
     if last is not None:
@@ -55,8 +53,8 @@ def droplast(n, iterable):
 
     Based on rejected examples in http://bugs.python.org/issue16774
     '''
-    t1, t2 = tee(iterable)
-    return map(itemgetter(0), zip(t1, islice(t2, n, None)))
+    t1, t2 = itertools.tee(iterable)
+    return map(itemgetter(0), zip(t1, itertools.islice(t2, n, None)))
 
 
 def nested_groupby(iterable, function_list, manipulate=None, output=list):
@@ -76,8 +74,10 @@ def nested_groupby(iterable, function_list, manipulate=None, output=list):
     '''
     if not len(function_list):
         return manipulate(iterable) if manipulate else list(iterable)
-    return output((k, nested_groupby(v, function_list[1:], manipulate, output))
-                  for k, v in groupby(iterable, function_list[0]))
+    return output(
+        (k, nested_groupby(v, function_list[1:], manipulate, output))
+        for k, v in itertools.groupby(iterable, function_list[0])
+    )
 
 
 def iter_islast(iterable):
@@ -108,5 +108,4 @@ def is_empty(iterable):
     except StopIteration:
         return iterable, True
     else:
-        return chain((first,), it), False
-
+        return itertools.chain((first,), it), False
