@@ -2,10 +2,7 @@
  Tests for Python 3 and Numpy 1.15 upgrade helpers.
 '''
 import numpy as np
-try:
-    import unittest2 as unittest
-except ImportError:
-    import unittest
+import unittest
 
 from flightdatautilities.numpy_utils import (
     py2round,
