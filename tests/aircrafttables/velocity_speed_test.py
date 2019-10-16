@@ -42,7 +42,7 @@ def _generate_tests(generator):
     '''
 
     ref = vs.VSPEED_MODEL_MAP, vs.VSPEED_SERIES_MAP, vs.VSPEED_FAMILY_MAP
-    ref = map(lambda d: six.itervalues(d), ref)
+    ref = map(lambda d: d.values(), ref)
     ref = set(c for c in itertools.chain.from_iterable(ref))
 
     def class_decorator(cls):
@@ -119,7 +119,7 @@ def _velocity_speed_tables_integrity_test_generator():
                 self.assertTrue(t, 'Expected flap/conf string keys in %s table.' % name)
                 t = all(isinstance(v, tuple) for v in table.values())
                 self.assertTrue(t, 'Expected tuple values in %s table.' % name)
-                t = all(isinstance(v, (type(None), int, float)) for v in itertools.chain.from_iterable(six.itervalues(table)))
+                t = all(isinstance(v, (type(None), int, float)) for v in itertools.chain.from_iterable(table.values()))
                 self.assertTrue(t, 'Invalid velocity speed types in %s table.' % name)
                 t = all((v is None or 80 <= v < 500) for v in itertools.chain.from_iterable(b for a, b in six.iteritems(table) if not a == 'weight'))
                 self.assertTrue(t, 'Invalid velocity speed values in %s table.' % name)

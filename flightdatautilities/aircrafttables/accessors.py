@@ -75,7 +75,7 @@ def get_flap_detents():
     '''
     detents = set()
     for x in mi.FLAP_MODEL_MAP, mi.FLAP_SERIES_MAP, mi.FLAP_FAMILY_MAP:
-        detents.update(itertools.chain.from_iterable(six.itervalues(x)))
+        detents.update(itertools.chain.from_iterable(x.values()))
     return natsorted(detents)
 
 
@@ -88,7 +88,7 @@ def get_slat_detents():
     '''
     detents = set()
     for x in mi.SLAT_MODEL_MAP, mi.SLAT_SERIES_MAP, mi.SLAT_FAMILY_MAP:
-        detents.update(itertools.chain.from_iterable(six.itervalues(x)))
+        detents.update(itertools.chain.from_iterable(x.values()))
     return natsorted(detents)
 
 
@@ -101,7 +101,7 @@ def get_aileron_detents():
     '''
     detents = set()
     for x in mi.AILERON_MODEL_MAP, mi.AILERON_SERIES_MAP, mi.AILERON_FAMILY_MAP:
-        detents.update(itertools.chain.from_iterable(six.itervalues(x)))
+        detents.update(itertools.chain.from_iterable(x.values()))
     return natsorted(detents)
 
 
@@ -115,7 +115,7 @@ def get_conf_detents():
     extract = six.iterkeys
     detents = set()
     for x in mi.CONF_MODEL_MAP, mi.CONF_SERIES_MAP, mi.CONF_FAMILY_MAP:
-        detents.update(itertools.chain.from_iterable(map(extract, six.itervalues(x))))
+        detents.update(itertools.chain.from_iterable(map(extract, x.values())))
     return natsorted(detents)
 
 
@@ -129,7 +129,7 @@ def get_lever_detents():
     extract = lambda x: (v[1] for v in x.keys())
     detents = set(map(str, get_flap_detents()))  # initialise with flap detents
     for x in mi.LEVER_MODEL_MAP, mi.LEVER_SERIES_MAP, mi.LEVER_FAMILY_MAP:
-        detents.update(itertools.chain.from_iterable(map(extract, six.itervalues(x))))
+        detents.update(itertools.chain.from_iterable(map(extract, x.values())))
     detents.update(constants.LEVER_STATES.values())  # include conf lever states
     return natsorted(detents)
 

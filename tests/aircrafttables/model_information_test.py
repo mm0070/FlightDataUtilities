@@ -10,7 +10,6 @@ Unit tests for aircraft model information tables and functions.
 # Imports
 
 
-import six
 import unittest
 
 from flightdatautilities import aircrafttables as at
@@ -162,7 +161,7 @@ class TestConfInformation(unittest.TestCase):
                 available = at.constants.AVAILABLE_CONF_STATES['Airbus'].values()
                 self.assertLessEqual(set(x.keys()), set(available))
                 # Ensure that the angles are found in related mappings:
-                length = len(next(six.itervalues(x)))
+                length = len(next(iter(x.values())))
                 s0 = set(v[0] for v in x.values())
                 s1 = set(getattr(mi, 'SLAT_%s_MAP' % t)[name])
                 self.assertEqual(s0, s1, 'Broken slat values for %s' % name)
