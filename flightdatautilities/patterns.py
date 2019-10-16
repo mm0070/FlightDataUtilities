@@ -1,7 +1,6 @@
+import collections
 import itertools
 import re
-
-from collections import defaultdict
 
 
 OPTIONS = ('(A)', '(B)', '(C)', '(N)', '(L)', '(R)',
@@ -105,7 +104,7 @@ def group_parameter_names(names, options=OPTIONS):
     :returns: Parameter pattern to list of parameter names.
     :rtype: dict
     '''
-    pattern_to_names = defaultdict(list)
+    pattern_to_names = collections.defaultdict(list)
     for name in names:
         pattern = get_pattern(name, options=options)
         pattern_to_names[pattern].append(name)
