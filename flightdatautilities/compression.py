@@ -139,16 +139,14 @@ class CompressedFile:
         if self.output_dir is None:
             # This may fail if the process has no right to create files in
             # parent directory of self.temp_dir
-            if self.temp_dir and not os.path.exists(self.temp_dir):
-                os.makedirs(self.temp_dir)
+            if self.temp_dir:
+                os.makedirs(self.temp_dir, exist_ok=True)
 
             # Prepare the temporary directory to store the file
             # This directory will be deleted on exit!
             self.output_dir = tempfile.mkdtemp(dir=self.temp_dir)
             self.temp_path = self.output_dir
-
-            if not os.path.isdir(self.output_dir):
-                os.makedirs(self.output_dir)
+            os.makedirs(self.output_dir, exist_ok=True)
 
         self.uncompressed_path = os.path.join(self.output_dir, basename)
 

@@ -53,8 +53,7 @@ def copy_file(orig_path, dest_dir=None, postfix='_copy'):
     if dest_dir:
         filename = os.path.basename(path_minus_ext)
         path_minus_ext = os.path.join(dest_dir, filename)
-        if not os.path.isdir(dest_dir):
-            os.makedirs(dest_dir)
+        os.makedirs(dest_dir, exist_ok=True)
     copy_path = path_minus_ext + postfix + ext
     if os.path.isfile(copy_path):
         os.remove(copy_path)
