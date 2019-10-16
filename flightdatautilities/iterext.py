@@ -57,7 +57,7 @@ def nested_groupby(iterable, function_list, manipulate=None, output=list):
     :type function_list: list of functions
     :param manipulate: An optional manipulation function to modify groups.
     :type manipulate: function
-    :param output: A type to convert the nested structure to, e.g. OrderedDict.
+    :param output: A type to convert the nested structure to, e.g. dict.
     :type output: type
     :returns: A list of multi-level grouped data items.
     :rtype: list
