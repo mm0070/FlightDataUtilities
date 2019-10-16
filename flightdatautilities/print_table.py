@@ -1,9 +1,9 @@
+import functools
 import math
 import operator
 import re
 
 from io import StringIO
-from functools import reduce
 from six.moves import zip_longest
 
 
@@ -32,7 +32,7 @@ def indent(rows, hasHeader=False, headerChar='-', delim=' | ', justify='left',
     # break each logical row into one or more physical ones
     logicalRows = [rowWrapper(row) for row in rows]
     # columns of physical rows
-    columns = zip_longest(*reduce(operator.add,logicalRows))
+    columns = zip_longest(*functools.reduce(operator.add,logicalRows))
     # get the maximum of each column by the string length of its items
     maxWidths = [max([len(str(item)) for item in column]) for column in columns]
     rowSeparator = headerChar * (len(prefix) + len(postfix) + sum(maxWidths) + \
@@ -61,7 +61,7 @@ def wrap_onspace(text, width, carriage_return='\n'):
     and most spaces in the text. Expects that existing line
     breaks are posix newlines (\n).
     """
-    return reduce(lambda line, word, width=width: '%s%s%s' %
+    return functools.reduce(lambda line, word, width=width: '%s%s%s' %
                   (line,
                    (' '+carriage_return)[(len(line[line.rfind(carriage_return)+1:])
                          + len(word.split(carriage_return,1)[0]
