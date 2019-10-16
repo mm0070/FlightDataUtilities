@@ -88,7 +88,3 @@ def memoize(*args, **kwargs):
 
     # Return the decorated function (invoking if required):
     return memoizer if invoked else memoizer(obj)
-
-
-###############################################################################
-# vim:et:ft=python:nowrap:sts=4:sw=4:ts=4

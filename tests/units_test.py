@@ -270,7 +270,3 @@ class TestUnitsModule(unittest.TestCase):
             o = arguments[0]
             m = 'Invalid reverse conversion from %s --> %s' % i[1:]
             self.assertAlmostEqual(convert(*i), o, delta=0.001, msg=m)
-
-
-##############################################################################
-# vim:et:ft=python:nowrap:sts=4:sw=4:ts=4

@@ -220,7 +220,3 @@ class TestInitialBearing(unittest.TestCase):
         for (a, b), expected in zip(self.arguments, self.expected):
             bearing = geometry.initial_bearing(*(a + b))
             self.assertAlmostEqual(bearing, expected)
-
-
-##############################################################################
-# vim:et:ft=python:nowrap:sts=4:sw=4:ts=4

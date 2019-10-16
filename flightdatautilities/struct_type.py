@@ -94,7 +94,3 @@ class Struct(dict):
         '''
         convert = lambda v: v.to_dict() if type(v) == Struct else v
         return dcompact(dict((k, convert(v)) for k, v in self.items()))
-
-
-################################################################################
-# vim:et:ft=python:nowrap:sts=4:sw=4:ts=4

@@ -222,7 +222,3 @@ class TestCompression_from_file(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-
-
-###############################################################################
-# vim:et:ft=python:nowrap:sts=4:sw=4:ts=4

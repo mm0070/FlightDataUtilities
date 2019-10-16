@@ -61,7 +61,3 @@ def dmerge(x, y, overwrite=()):
         else:
             dmerge(x[k], v, overwrite=overwrite)
     return x
-
-
-################################################################################
-# vim:et:ft=python:nowrap:sts=4:sw=4:ts=4

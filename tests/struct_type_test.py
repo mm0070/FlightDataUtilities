@@ -166,7 +166,3 @@ class TestStruct(unittest.TestCase):
             'frame': {'type': '737-3C'},
             'model': {'dist_gear_to_tail': 200},
         })
-
-
-################################################################################
-# vim:et:ft=python:nowrap:sts=4:sw=4:ts=4
