@@ -10,7 +10,7 @@ Flight Data Utilities: Iter Extensions
 # Imports
 
 
-from builtins import map, zip
+from builtins import zip
 from itertools import count, groupby, islice, takewhile, tee
 from operator import itemgetter
 
