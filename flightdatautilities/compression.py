@@ -249,7 +249,7 @@ class CachedCompressedFile(ReadOnlyCompressedFile):
 
         if need_to_update:
             logger.debug('Cached file `%s` not found', self.uncompressed_path)
-            super(CachedCompressedFile, self).uncompress()
+            super().uncompress()
         else:
             logger.debug('Found cached file `%s`, reuse it', self.uncompressed_path)
 
