@@ -11,7 +11,7 @@ Flight Data Utilities: Iter Extensions
 
 
 import itertools
-from operator import itemgetter
+import operator
 
 
 ##############################################################################
@@ -56,7 +56,7 @@ def droplast(n, iterable):
     Based on rejected examples in http://bugs.python.org/issue16774
     '''
     t1, t2 = itertools.tee(iterable)
-    return map(itemgetter(0), zip(t1, itertools.islice(t2, n, None)))
+    return map(operator.itemgetter(0), zip(t1, itertools.islice(t2, n, None)))
 
 
 def nested_groupby(iterable, function_list, manipulate=None, output=list):
