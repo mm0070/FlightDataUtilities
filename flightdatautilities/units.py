@@ -15,8 +15,6 @@ The following links are useful resources:
 # Imports
 
 
-from __future__ import unicode_literals
-
 import decimal
 
 import numpy as np
