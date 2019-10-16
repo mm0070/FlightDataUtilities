@@ -19,7 +19,6 @@ import sys
 import yaml
 
 from requests.packages.urllib3.util.retry import Retry
-from six import with_metaclass
 
 
 ##############################################################################
@@ -64,7 +63,7 @@ class NotFoundError(APIError):
 # Classes
 
 
-class Handler(with_metaclass(abc.ABCMeta)):
+class Handler(metaclass=abc.ABCMeta):
     '''
     Abstract class providing basic interface for all handlers.
     '''
@@ -74,7 +73,7 @@ class Handler(with_metaclass(abc.ABCMeta)):
         pass
 
 
-class FileHandler(with_metaclass(abc.ABCMeta, Handler)):
+class FileHandler(Handler, metaclass=abc.ABCMeta):
     '''
     Abstract class providing method of accessing data from files.
     '''
@@ -98,7 +97,7 @@ class FileHandler(with_metaclass(abc.ABCMeta, Handler)):
         raise NotImplementedError('Cannot load data for unknown file type.')
 
 
-class HTTPHandler(with_metaclass(abc.ABCMeta, Handler)):
+class HTTPHandler(Handler, metaclass=abc.ABCMeta):
     '''
     Abstract class providing method of accessing an API via HTTP.
     '''

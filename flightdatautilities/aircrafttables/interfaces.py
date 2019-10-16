@@ -9,12 +9,11 @@
 # Imports
 
 
+import abc
 import logging
 import numbers
 import numpy as np
 import scipy.interpolate
-
-from abc import ABCMeta
 
 from flightdatautilities import units as ut
 
@@ -30,7 +29,7 @@ logger = logging.getLogger(name=__name__)
 # Abstract Classes
 
 
-class VelocitySpeed(object):
+class VelocitySpeed(metaclass=abc.ABCMeta):
     '''
     Provides a base implementation of a velocity speed lookup table.
 
@@ -41,8 +40,6 @@ class VelocitySpeed(object):
     - weight_scale -- how the weight values in the table are scaled.
     - weight_unit -- the unit for all of the weights in the table.
     '''
-
-    __meta__ = ABCMeta
 
     source = None
     minimum_speed = None
