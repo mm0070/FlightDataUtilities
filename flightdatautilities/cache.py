@@ -7,10 +7,7 @@ try:
 except ImportError:
     pass
 
-try:
-    import cPickle as pickle
-except ImportError:
-    import pickle
+import pickle
 
 from datetime import datetime, timedelta
 from decorator import decorator
