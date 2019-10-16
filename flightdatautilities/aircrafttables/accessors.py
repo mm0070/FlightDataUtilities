@@ -9,7 +9,6 @@
 # Imports
 
 import itertools
-import six
 
 from natsort import natsorted
 
@@ -112,10 +111,9 @@ def get_conf_detents():
     :returns: list of detent values
     :rtype: list
     '''
-    extract = six.iterkeys
     detents = set()
     for x in mi.CONF_MODEL_MAP, mi.CONF_SERIES_MAP, mi.CONF_FAMILY_MAP:
-        detents.update(itertools.chain.from_iterable(map(extract, x.values())))
+        detents.update(itertools.chain.from_iterable(v.keys() for v in x.values()))
     return natsorted(detents)
 
 
