@@ -1,6 +1,3 @@
-################################################################################
-
-
 import types
 
 from flightdatautilities.dict_helpers import dcompact

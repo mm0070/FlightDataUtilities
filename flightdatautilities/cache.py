@@ -1,12 +1,6 @@
-###############################################################################
-
 '''
 Flight Data Utilities: Cache
 '''
-
-###############################################################################
-# Imports
-
 
 try:
     import django.db.models
@@ -20,11 +14,6 @@ except ImportError:
 
 from datetime import datetime, timedelta
 from decorator import decorator
-
-
-###############################################################################
-# Exports
-
 
 __all__ = ['memoize']
 

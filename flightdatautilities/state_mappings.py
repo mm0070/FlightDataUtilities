@@ -1,21 +1,10 @@
-##############################################################################
-
 '''
 Multi-state Parameter State Value Mappings
 '''
 
-##############################################################################
-# Import
-
-
 import re
 
 from flightdatautilities.patterns import wildcard_match
-
-
-##############################################################################
-# Constants
-
 
 PARAMETER_CORRECTIONS = {
     '115 VAC Standby Bus': {1: 'On'},

@@ -1,12 +1,6 @@
-##############################################################################
-
 '''
 Flight Data Utilities: API Handler Interfaces
 '''
-
-##############################################################################
-# Imports
-
 
 import abc
 import json
@@ -17,11 +11,6 @@ import sys
 import yaml
 
 from requests.packages.urllib3.util.retry import Retry
-
-
-##############################################################################
-# Globals
-
 
 logger = logging.getLogger(name=__name__)
 

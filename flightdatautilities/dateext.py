@@ -1,23 +1,12 @@
-##############################################################################
-
 '''
 Flight Data Utilities: Date Extensions
 '''
-
-##############################################################################
-# Imports
-
 
 import builtins
 import numpy as np
 import operator
 
 from datetime import date, datetime, time, timedelta
-
-
-##############################################################################
-# Exports
-
 
 __all__ = ['is_day', 'range']
 
