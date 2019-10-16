@@ -1,9 +1,9 @@
 import functools
+import io
 import math
 import operator
 import re
 
-from io import StringIO
 from six.moves import zip_longest
 
 
@@ -39,7 +39,7 @@ def indent(rows, hasHeader=False, headerChar='-', delim=' | ', justify='left',
                                  len(delim)*(len(maxWidths)-1))
     # select the appropriate justify method
     justify = {'center':str.center, 'right':str.rjust, 'left':str.ljust}[justify.lower()]
-    output = StringIO()
+    output = io.StringIO()
     if separateRows:
         output.write(rowSeparator)
     for physicalRows in logicalRows:
