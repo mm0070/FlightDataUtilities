@@ -8,12 +8,11 @@ Flight Data Utilities: Date Extensions
 # Imports
 
 
+import builtins
 import numpy as np
 import operator
 
 from datetime import date, datetime, time, timedelta
-
-builtin_range = range
 
 
 ##############################################################################
@@ -93,7 +92,7 @@ def is_day(when, latitude, longitude, twilight='civil'):
     m = np.radians(357.52911 + jc * (35999.05029 - 0.0001537 * jc))
 
     # sun equation of center
-    sin1m, sin2m, sin3m = (np.sin(i * m) for i in builtin_range(1, 4))
+    sin1m, sin2m, sin3m = (np.sin(i * m) for i in builtins.range(1, 4))
     c = sin1m * (1.914602 - jc * (0.004817 + 0.000014 * jc)) + sin2m * (0.019993 - 0.000101 * jc) + sin3m * 0.000289
 
     # calculate elements used in multiple places below:
