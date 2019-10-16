@@ -26,7 +26,7 @@ def open_raw_data(filepath, binary=True):
         zf = zipfile.ZipFile(filepath, 'r')
         filenames = zf.namelist()
         if len(filenames) != 1:
-            raise IOError('Zip files must contain only a single data file.')
+            raise OSError('Zip files must contain only a single data file.')
         return zf.open(filenames[0])
 
     if extension in {'.bz2'}:
