@@ -39,8 +39,7 @@ def _generate_tests(generator):
     '''
 
     ref = vs.VSPEED_MODEL_MAP, vs.VSPEED_SERIES_MAP, vs.VSPEED_FAMILY_MAP
-    ref = map(lambda d: d.values(), ref)
-    ref = set(c for c in itertools.chain.from_iterable(ref))
+    ref = set(c for c in itertools.chain.from_iterable(d.values() for d in ref))
 
     def class_decorator(cls):
         '''
