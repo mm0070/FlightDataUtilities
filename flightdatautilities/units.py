@@ -580,7 +580,7 @@ UNIT_CORRECTIONS = {
     'deg/sec2': DEGREE_S2,
     'deg/sec^2': DEGREE_S2,
     # Angles:
-    u'\xb0': DEGREE,  # degree symbol
+    '°': DEGREE,
     'DEG': DEGREE,
     'Deg': DEGREE,
     'degs.': DEGREE,
@@ -817,7 +817,7 @@ UNIT_CORRECTIONS = {
     'Rpm': RPM,
     # Temperature:
     b'\xb0C': CELSIUS,
-    u'\xb0C': CELSIUS,
+    '°C': CELSIUS,
     b'\xf8C': CELSIUS,
     'DEGC': CELSIUS,
     'DEG C': CELSIUS,

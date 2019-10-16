@@ -265,7 +265,7 @@ class TestFindCombinations(unittest.TestCase):
             'Pitch',
         ]
         
-        self.assertEqual(find_combinations([u'Heading', 'Airspeed'], parameters,
+        self.assertEqual(find_combinations(['Heading', 'Airspeed'], parameters,
                                            additional_patterns=['Flap Angle (L)']),
                          [])
         
@@ -300,9 +300,9 @@ class TestFindCombinations(unittest.TestCase):
              ['Altitude Radio (A)', 'Altitude Radio (C)', 'Pitch'],
              ['Altitude Radio (B)', 'Altitude Radio (C)', 'Pitch']])
         self.assertEqual(
-            find_combinations([u'Flap Lever', 'Flap Angle (*)'],
-                              [u'Flap Angle', u'Flap Channel Fault (3)',
-                               u'Flap Channel Fault (4)', u'Flap Lever']),
+            find_combinations(['Flap Lever', 'Flap Angle (*)'],
+                              ['Flap Angle', 'Flap Channel Fault (3)',
+                               'Flap Channel Fault (4)', 'Flap Lever']),
             [['Flap Lever', 'Flap Angle']])
         self.assertEqual(find_combinations(['Elevator (L)', 'Elevator (*)'],
                                            ['Elevator (L)', 'Elevator (R)']),
