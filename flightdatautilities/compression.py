@@ -24,7 +24,7 @@ COMPRESSION_FORMATS = {
 }
 
 
-class CompressedFile(object):
+class CompressedFile:
     '''
     Context manager wrapping decompression and compression of given file.
 
