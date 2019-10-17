@@ -180,7 +180,7 @@ class file_reader(abstract_reader):
                 remainder = len(data) % self.itemsize
                 if remainder:
                     data = data[:-remainder]
-                data = np.fromstring(data, dtype=self.dtype)
+                data = np.frombuffer(data, dtype=self.dtype).copy()  # TODO: fast read-only option without copy
         return data
 
 

@@ -63,6 +63,8 @@ pylint.log
 # Project specific ignores:
 tests/test_data/pattern_exists.txt
 tests/test_data/test_removal/
+*.c
+*.so
 
 # Keep empty directories:
 !*/.git*
