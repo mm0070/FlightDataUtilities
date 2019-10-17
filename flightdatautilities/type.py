@@ -23,7 +23,7 @@ def as_dtype(obj, dtype=None, copy=False, cast=False):
         obj = obj.tostring()
     elif dtype is not None:
         if is_bytes(obj):
-            obj = np.fromstring(obj, dtype=dtype)
+            obj = np.frombuffer(obj, dtype=dtype).copy()
         else:
             if is_memoryview(obj):
                 obj = np.asarray(obj)

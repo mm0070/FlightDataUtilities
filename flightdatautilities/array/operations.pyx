@@ -87,7 +87,7 @@ def masked_array_fill_start(array, max_samples=None):
     if c_max_samples != -1 and c_max_samples <= 0:
         return array
 '''
-
+import cython
 import numpy as np
 cimport numpy as np
 
@@ -202,8 +202,9 @@ cpdef last_unmasked_value(array, Py_ssize_t stop_idx=-1, Py_ssize_t min_samples=
 
 
 cpdef nearest_slice(array, Py_ssize_t idx, bint match=True):
-    cdef np.uint8_t[:] data = array.view(np.uint8)
-    cdef Py_ssize_t start_idx, stop_idx, nearest_idx = cy.nearest_idx(data, idx, match=match)
+    cdef:
+        np.uint8_t[:] data = array.view(np.uint8)
+        Py_ssize_t start_idx, stop_idx, nearest_idx = cy.nearest_idx(data, idx, match=match)
 
     if nearest_idx == -1:
         return None
@@ -241,7 +242,8 @@ cpdef nearest_slice(array, Py_ssize_t idx, bint match=True):
     return slice(start_idx, stop_idx)
 
 
-cpdef repair_mask(array, method='interpolate', repair_duration=10, frequency=1, bint copy=False, bint extrapolate=False, bint raise_duration_exceedance=False, bint raise_entirely_masked=True):
+cpdef repair_mask(array, method='interpolate', repair_duration=10, frequency=1, bint copy=False, bint extrapolate=False,
+                  bint raise_duration_exceedance=False, bint raise_entirely_masked=True):
     '''
     TODO: find better solution for repair_above kwarg from original.
     '''
@@ -277,7 +279,7 @@ cpdef repair_mask(array, method='interpolate', repair_duration=10, frequency=1, 
     return array.astype(dtype)
 
 
-cpdef Py_ssize_t longest_section_uint8(np.uint8_t[:] data, np.uint8_t value=0) nogil:
+cpdef Py_ssize_t longest_section_uint8(const np.uint8_t[:] data, np.uint8_t value=0) nogil:
     '''
     Find the longest section matching value and return the number of samples.
     '''
@@ -505,7 +507,7 @@ cpdef bint is_constant(data):
     :type data: np.ndarray
     :rtype: bool
     '''
-    if data.dtype == np.uint8:
+    if data.dtype == np.uint8 or isinstance(data, bytes):
         return is_constant_uint8(data)
     elif data.dtype == np.uint16:
         return is_constant_uint16(data)
@@ -513,7 +515,7 @@ cpdef bint is_constant(data):
         return (data == data[0]).all()  # type-inspecific fallback (slower)
 
 
-cpdef bint is_constant_uint8(np.uint8_t[:] data) nogil:
+cpdef bint is_constant_uint8(const np.uint8_t[:] data) nogil:
     '''
     Optimised is_constant check for uint8 datatype.
 
@@ -532,7 +534,7 @@ cpdef bint is_constant_uint8(np.uint8_t[:] data) nogil:
     return True
 
 
-cpdef bint is_constant_uint16(np.uint16_t[:] data) nogil:
+cpdef bint is_constant_uint16(const np.uint16_t[:] data) nogil:
     '''
     Optimised is_constant check for uint16 datatype.
 
@@ -608,24 +610,7 @@ cpdef swap_bytes(array):
     return array.byteswap(True)
 
 
-cpdef unpack(array):
-    '''
-    Unpack 'packed' flight data into unpacked (byte-aligned) format.
-
-    :type array: np.ndarray(dtype=np.uint8)
-    :rtype: np.ndarray(dtype=np.uint8)
-    '''
-    if len(array) % 3:
-        array = array[:len(array) // 3 * 3]
-    unpacked = np.empty(len(array) // 3 * 4, dtype=np.uint8)
-    unpacked[::4] = array[::3]
-    unpacked[1::4] = array[1::3] & 0x0F
-    unpacked[2::4] = ((array[2::3] & 0x0F) << 4) + ((array[1::3] & 0xF0) >> 4)
-    unpacked[3::4] = (array[2::3] & 0xF0) >> 4
-    return unpacked
-
-
-cpdef np.uint16_t[:] unpack_little_endian(np.uint8_t[:] data):
+cpdef np.uint16_t[:] unpack_little_endian(const np.uint8_t[:] data):
     '''
     b'24705c' -> b'47025c00'
     '''
@@ -645,21 +630,57 @@ cpdef np.uint16_t[:] unpack_little_endian(np.uint8_t[:] data):
     return output
 
 
-cpdef pack(array):
+@cython.cdivision(True)
+@cython.wraparound(False)
+cpdef np.uint8_t[:] unpack(const np.uint8_t[:] packed):
     '''
-    Pack 'unpacked' flight data into packed format.
+    Unpack 'packed' flight data into unpacked (byte-aligned) format.
+
+    opt: ~3x faster than numpy array version
 
     :type array: np.ndarray(dtype=np.uint8)
     :rtype: np.ndarray(dtype=np.uint8)
     '''
-    packed = np.empty(len(array) // 4 * 3, dtype=np.uint8)
-    packed[::3] = array[::4]
-    packed[1::3] = array[1::4] + ((array[2::4] & 0x0F) << 4)
-    packed[2::3] = (array[3::4] << 4) + ((array[2::4] & 0xF0) >> 4)
+    cdef:
+        np.uint8_t[:] unpacked = cy.empty_uint8(packed.shape[0] // 3 * 4)
+        Py_ssize_t packed_idx, unpacked_idx = 0
+
+    for packed_idx in range(0, packed.shape[0], 3):
+        unpacked[unpacked_idx] = packed[packed_idx]
+        unpacked[unpacked_idx + 1] = packed[packed_idx + 1] & 0x0F
+        unpacked[unpacked_idx + 2] = ((packed[packed_idx + 2] & 0x0F) << 4) + ((packed[packed_idx + 1] & 0xF0) >> 4)
+        unpacked[unpacked_idx + 3] = (packed[packed_idx + 2] & 0xF0) >> 4
+        unpacked_idx += 4
+
+    return unpacked
+
+
+@cython.cdivision(True)
+@cython.wraparound(False)
+cpdef np.uint8_t[:] pack(const np.uint8_t[:] unpacked):
+    '''
+    Pack 'unpacked' flight data into packed format.
+
+    opt: ~8x faster than numpy array version
+
+    :type array: np.ndarray(dtype=np.uint8)
+    :rtype: np.ndarray(dtype=np.uint8)
+    '''
+    cdef:
+        np.uint8_t[:] packed = cy.empty_uint8(unpacked.shape[0] // 4 * 3)
+        Py_ssize_t unpacked_idx, packed_idx = 0
+
+    for unpacked_idx in range(0, unpacked.shape[0], 4):
+        packed[packed_idx] = unpacked[unpacked_idx]
+        packed[packed_idx + 1] = unpacked[unpacked_idx + 1] + ((unpacked[unpacked_idx + 2] & 0x0F) << 4)
+        packed[packed_idx + 2] = (unpacked[unpacked_idx + 3] << 4) + ((unpacked[unpacked_idx + 2] & 0xF0) >> 4)
+        packed_idx += 3
+
     return packed
 
 
-cpdef bytes key_value(np.uint8_t[:] array, key, delimiter, separator, Py_ssize_t start=0):
+cpdef bytes key_value(const np.uint8_t[:] array, const np.uint8_t[:] key, const np.uint8_t[:] delimiter,
+                      const np.uint8_t[:] separator, Py_ssize_t start=0):
     '''
     Find the value of a key in the format:
 
@@ -678,15 +699,15 @@ cpdef bytes key_value(np.uint8_t[:] array, key, delimiter, separator, Py_ssize_t
     :returns: The value for the key if found, else None.
     :rtype: str or None
     '''
-    key_idx = index_of_subarray_uint8(array, np.fromstring(key, dtype=np.uint8), start=start)
+    key_idx = index_of_subarray_uint8(array, key, start=start)
     if key_idx == -1:
         return None
-    start_idx = index_of_subarray_uint8(array, np.fromstring(delimiter, dtype=np.uint8), start=key_idx) + len(delimiter)
-    stop_idx = index_of_subarray_uint8(array, np.fromstring(separator, dtype=np.uint8), start=start_idx)
+    start_idx = index_of_subarray_uint8(array, delimiter, start=key_idx) + len(delimiter)
+    stop_idx = index_of_subarray_uint8(array, separator, start=start_idx)
     return np.asarray(array[start_idx:stop_idx]).tostring().strip()
 
 
-cpdef Py_ssize_t index_of_subarray_uint8(np.uint8_t[:] array, np.uint8_t[:] subarray, Py_ssize_t start=0) nogil:
+cpdef Py_ssize_t index_of_subarray_uint8(const np.uint8_t[:] array, const np.uint8_t[:] subarray, Py_ssize_t start=0) nogil:
     '''
     Find the first index of a subarray within an array of dtype uint8.
 
@@ -706,6 +727,10 @@ cpdef Py_ssize_t index_of_subarray_uint8(np.uint8_t[:] array, np.uint8_t[:] suba
         else:
             return array_idx
     return -1
+
+
+cpdef bint subarray_exists_uint8(const np.uint8_t[:] array, const np.uint8_t[:] subarray, Py_ssize_t start=0) nogil:
+    return index_of_subarray_uint8(array, subarray, start=start) != -1
 
 
 cpdef Py_ssize_t array_index_uint16(unsigned short value, np.uint16_t[:] array) nogil:

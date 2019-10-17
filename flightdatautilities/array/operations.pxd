@@ -11,7 +11,8 @@ cpdef bint any_array(array)
 cpdef bint all_array(array)
 cpdef bint entirely_masked(array)
 cpdef bint entirely_unmasked(array)
-cpdef Py_ssize_t index_of_subarray_uint8(np.uint8_t[:] array, np.uint8_t[:] subarray, Py_ssize_t start=*) nogil
+cpdef Py_ssize_t index_of_subarray_uint8(const np.uint8_t[:] array, const np.uint8_t[:] subarray, Py_ssize_t start=*) nogil
+cpdef bint subarray_exists_uint8(const np.uint8_t[:] array, const np.uint8_t[:] subarray, Py_ssize_t start=?) nogil
 cpdef Py_ssize_t array_index_uint16(unsigned short value, np.uint16_t[:] sync_words) nogil
 cpdef merge_masks(masks)
 cpdef mask_ratio(mask)
@@ -25,7 +26,7 @@ cpdef load_compressed(path)
 cpdef bint is_power2(number)
 cpdef is_power2_fraction(number)
 cpdef np.ndarray twos_complement(np.ndarray array, np.uint64_t bit_length)
-cpdef Py_ssize_t longest_section_uint8(np.uint8_t[:] data, np.uint8_t value=?) nogil
+cpdef Py_ssize_t longest_section_uint8(const np.uint8_t[:] data, np.uint8_t value=?) nogil
 cpdef repair_mask(array, method=?, repair_duration=?, frequency=?, bint copy=?, bint extrapolate=?, bint raise_duration_exceedance=?, bint raise_entirely_masked=?)
 cpdef max_values(array, matching)
 cpdef min_values(array, matching)
@@ -36,8 +37,8 @@ cpdef section_overlap(a, b)
 cpdef remove_small_runs(array, float seconds=?, float hz=?, bint match=?)
 cpdef contract_runs(array, Py_ssize_t size, bint match=?)
 cpdef bint is_constant(data)
-cpdef bint is_constant_uint8(np.uint8_t[:] data) nogil
-cpdef bint is_constant_uint16(np.uint16_t[:] data) nogil
+cpdef bint is_constant_uint8(const np.uint8_t[:] data) nogil
+cpdef bint is_constant_uint16(const np.uint16_t[:] data) nogil
 cpdef first_valid_sample(array, Py_ssize_t start_idx=?)
 cpdef last_valid_sample(array, end_idx=?)
 cpdef nearest_idx(array, Py_ssize_t idx, bint match=?, Py_ssize_t start_idx=?, Py_ssize_t stop_idx=?)
@@ -49,10 +50,10 @@ cpdef last_unmasked_value(array, Py_ssize_t stop_idx=?, Py_ssize_t min_samples=?
 cpdef nearest_slice(array, Py_ssize_t idx, bint match=?)
 cpdef is_power2_fraction(number)
 cpdef swap_bytes(array)
-cpdef np.uint16_t[:] unpack_little_endian(np.uint8_t[:] data)
-cpdef unpack(array)
-cpdef pack(array)
-cpdef bytes key_value(np.uint8_t[:] array, key, delimiter, separator, Py_ssize_t start=?)
+cpdef np.uint16_t[:] unpack_little_endian(const np.uint8_t[:] data)
+cpdef np.uint8_t[:] unpack(const np.uint8_t[:] array)
+cpdef np.uint8_t[:] pack(const np.uint8_t[:] array)
+cpdef bytes key_value(const np.uint8_t[:] array, const np.uint8_t[:] key, const np.uint8_t[:] delimiter, const np.uint8_t[:] separator, Py_ssize_t start=?)
 
 
 """

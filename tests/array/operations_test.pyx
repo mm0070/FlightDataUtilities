@@ -419,11 +419,11 @@ class TestSlicesToArray(unittest.TestCase):
 
 class TestKeyValue(unittest.TestCase):
     def test_key_value(self):
-        data = np.frombuffer(b'***\x0ATAILNUM=G-FDSL\x0ASERIALNUM=10344\x0A***', dtype=np.uint8).copy()
+        data = b'***\x0ATAILNUM=G-FDSL\x0ASERIALNUM=10344\x0A***'
         delimiter = b'='
         separator = b'\x0A'
-        self.assertEqual(op.key_value(data, 'TAILNUM', delimiter, separator), b'G-FDSL')
-        self.assertEqual(op.key_value(data, 'SERIALNUM', delimiter, separator), b'10344')
+        self.assertEqual(op.key_value(data, b'TAILNUM', delimiter, separator), b'G-FDSL')
+        self.assertEqual(op.key_value(data, b'SERIALNUM', delimiter, separator), b'10344')
 
 
 class TestSwapBytes(unittest.TestCase):
@@ -438,22 +438,33 @@ class TestSwapBytes(unittest.TestCase):
 
 class TestPack(unittest.TestCase):
     def test_pack(self):
-        self.assertEqual(
-            op.pack(np.frombuffer(b'\x47\x02\xAB\x0C', dtype=np.uint8)).tostring(),
-            np.frombuffer(b'\x47\xB2\xCA', dtype=np.uint8).tostring())
+        self.assertEqual(bytes(op.pack(b'')), b'')
+        self.assertEqual(bytes(op.pack(b'\x47')), b'')
+        self.assertEqual(bytes(op.pack(b'\x47\x02')), b'')
+        self.assertEqual(bytes(op.pack(b'\x47\x02\xAB')), b'')
+        result = b'\x47\xB2\xCA'
+        self.assertEqual(bytes(op.pack(b'\x47\x02\xAB\x0C')), result)
+        self.assertEqual(bytes(op.pack(b'\x47\x02\xAB\x0C\xB8')), result)
+        self.assertEqual(bytes(op.pack(b'\x47\x02\xAB\x0C\xB8\x05')), result)
+        self.assertEqual(bytes(op.pack(b'\x47\x02\xAB\x0C\xB8\x05\xDE')), result)
+        self.assertEqual(bytes(op.pack(b'\x47\x02\xAB\x0C\xB8\x05\xDE\x0F')), result + b'\xB8\xE5\xFD')
 
 
 class TestUnpack(unittest.TestCase):
     def test_unpack(self):
-        self.assertEqual(
-            op.unpack(np.frombuffer(b'\x47\xB2\xCA', dtype=np.uint8)).tostring(),
-            np.frombuffer(b'\x47\x02\xAB\x0C', dtype=np.uint8).tostring())
+        self.assertEqual(bytes(op.unpack(b'')), b'')
+        self.assertEqual(bytes(op.unpack(b'\x47')), b'')
+        self.assertEqual(bytes(op.unpack(b'\x47\xB2')), b'')
+        result = b'\x47\x02\xAB\x0C'
+        self.assertEqual(bytes(op.unpack(b'\x47\xB2\xCA')), result)
+        self.assertEqual(bytes(op.unpack(b'\x47\xB2\xCA\xB8')), result)
+        self.assertEqual(bytes(op.unpack(b'\x47\xB2\xCA\xB8\xDF')), result)
+        self.assertEqual(bytes(op.unpack(b'\x47\xB2\xCA\xB8\xDF\x35')), result + b'\xB8\x0F\x5D\x03')
 
 
 class TestUnpackLittleEndian(unittest.TestCase):
     def test_unpack_little_endian(self):
-        data = np.frombuffer(b'\x24\x70\x5C\x12\x34\x56', dtype=np.uint8).copy()
-        self.assertEqual(hexlify(np.asarray(op.unpack_little_endian(data)).tostring()), b'47025c0023015604')
+        self.assertEqual(hexlify(np.asarray(op.unpack_little_endian(b'\x24\x70\x5C\x12\x34\x56')).tostring()), b'47025c0023015604')
 
 
 class TestArrayIndexUint16(unittest.TestCase):
@@ -464,8 +475,8 @@ class TestArrayIndexUint16(unittest.TestCase):
         self.assertEqual(op.array_index_uint16(10, np.array([2,4,6,8,10], dtype=np.uint16)), 4)
 
 
-class TestIndexOfSubarray(unittest.TestCase):
-    def test_index_of_subarray(self):
+class TestIndexOfSubarrayUint8(unittest.TestCase):
+    def test_index_of_subarray_uint8(self):
         arr = np.zeros(16, dtype=np.uint8)
         subarr = np.arange(1, 5, dtype=np.uint8)
         self.assertEqual(op.index_of_subarray_uint8(arr, subarr), -1)
@@ -487,6 +498,32 @@ class TestIndexOfSubarray(unittest.TestCase):
         self.assertEqual(op.index_of_subarray_uint8(arr, subarr, start=14), -1)
         self.assertEqual(op.index_of_subarray_uint8(subarr, arr), -1)
         self.assertEqual(op.index_of_subarray_uint8(subarr, arr, start=10000), -1)
+
+
+class TestSubarrayExistsUint8(unittest.TestCase):
+    def test_subarray_exists_uint8(self):
+        arr = np.zeros(16, dtype=np.uint8)
+        subarr = np.arange(1, 5, dtype=np.uint8)
+        self.assertEqual(op.subarray_exists_uint8(arr, subarr), False)
+        self.assertEqual(op.subarray_exists_uint8(arr, subarr, start=5), False)
+        arr[0] = 1
+        arr[1] = 2
+        arr[2] = 3
+        arr[3] = 4
+        self.assertEqual(op.subarray_exists_uint8(arr, subarr), True)
+        self.assertEqual(op.subarray_exists_uint8(arr, subarr, start=1), False)
+        arr[1] = 5
+        self.assertEqual(op.subarray_exists_uint8(arr, subarr), False)
+        arr[12] = 1
+        arr[13] = 2
+        arr[14] = 3
+        arr[15] = 4
+        self.assertEqual(op.subarray_exists_uint8(arr, subarr), True)
+        self.assertEqual(op.subarray_exists_uint8(arr, subarr, start=10), True)
+        self.assertEqual(op.subarray_exists_uint8(arr, subarr, start=14), False)
+        self.assertEqual(op.subarray_exists_uint8(subarr, arr), False)
+        self.assertEqual(op.subarray_exists_uint8(subarr, arr, start=10000), False)
+
 
 
 class TestTwosComplement(unittest.TestCase):
