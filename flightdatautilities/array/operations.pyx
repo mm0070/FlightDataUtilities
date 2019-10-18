@@ -643,14 +643,14 @@ cpdef np.uint8_t[:] unpack(const np.uint8_t[:] packed):
     '''
     cdef:
         np.uint8_t[:] unpacked = cy.empty_uint8(packed.shape[0] // 3 * 4)
-        Py_ssize_t packed_idx, unpacked_idx = 0
+        Py_ssize_t packed_idx = 0, unpacked_idx
 
-    for packed_idx in range(0, packed.shape[0], 3):
+    for unpacked_idx in range(0, unpacked.shape[0], 4):
         unpacked[unpacked_idx] = packed[packed_idx]
         unpacked[unpacked_idx + 1] = packed[packed_idx + 1] & 0x0F
         unpacked[unpacked_idx + 2] = ((packed[packed_idx + 2] & 0x0F) << 4) + ((packed[packed_idx + 1] & 0xF0) >> 4)
         unpacked[unpacked_idx + 3] = (packed[packed_idx + 2] & 0xF0) >> 4
-        unpacked_idx += 4
+        packed_idx += 3
 
     return unpacked
 
@@ -668,13 +668,13 @@ cpdef np.uint8_t[:] pack(const np.uint8_t[:] unpacked):
     '''
     cdef:
         np.uint8_t[:] packed = cy.empty_uint8(unpacked.shape[0] // 4 * 3)
-        Py_ssize_t unpacked_idx, packed_idx = 0
+        Py_ssize_t unpacked_idx = 0, packed_idx
 
-    for unpacked_idx in range(0, unpacked.shape[0], 4):
+    for packed_idx in range(0, packed.shape[0], 3):
         packed[packed_idx] = unpacked[unpacked_idx]
         packed[packed_idx + 1] = unpacked[unpacked_idx + 1] + ((unpacked[unpacked_idx + 2] & 0x0F) << 4)
         packed[packed_idx + 2] = (unpacked[unpacked_idx + 3] << 4) + ((unpacked[unpacked_idx + 2] & 0xF0) >> 4)
-        packed_idx += 3
+        unpacked_idx += 4
 
     return packed
 
