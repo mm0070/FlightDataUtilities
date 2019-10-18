@@ -13,7 +13,7 @@ cimport numpy as np
 from libc.math cimport ceil
 
 from flightdatautilities.array cimport cython as cy
-from flightdatautilities.type import is_array
+from flightdatautilities.type import is_array_like
 
 
 WPS = (64, 128, 256, 512, 1024, 2048)
@@ -179,7 +179,7 @@ cdef class ByteAligner:
         :type func: callable
         :yields: value returned by func for each frame
         '''
-        if is_array(data_gen):
+        if is_array_like(data_gen):
             data_gen = (data_gen,)
 
         cdef Py_ssize_t idx, next_frame_idx, remainder_idx
@@ -226,7 +226,7 @@ cdef class ByteAligner:
         elif stop is not None and stop <= 0:
             raise ValueError('negative or zero stop index not supported')
 
-        if is_array(data_gen):
+        if is_array_like(data_gen):
             data_gen = (data_gen,)
 
         cdef:
