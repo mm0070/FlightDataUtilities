@@ -1,6 +1,8 @@
 # cython: language_level=3, boundscheck=False
 cimport numpy as np
 
+from flightdatautilities.array cimport cython as cy
+
 
 cdef enum Aggregate:
     MAX, MIN, MAX_ABS, MIN_ABS
@@ -26,8 +28,7 @@ cpdef load_compressed(path)
 cpdef bint is_power2(number)
 cpdef is_power2_fraction(number)
 cpdef np.ndarray twos_complement(np.ndarray array, np.uint64_t bit_length)
-cpdef Py_ssize_t longest_section_uint8(const np.uint8_t[:] data, np.uint8_t value=?) nogil
-cpdef repair_mask(array, method=?, repair_duration=?, frequency=?, bint copy=?, bint extrapolate=?, bint raise_duration_exceedance=?, bint raise_entirely_masked=?)
+cpdef Py_ssize_t longest_section(cy.np_types[:] data, cy.np_types value=?) nogil
 cpdef max_values(array, matching)
 cpdef min_values(array, matching)
 cpdef max_abs_values(array, matching)
@@ -36,9 +37,7 @@ cpdef slices_to_array(Py_ssize_t size, slices)
 cpdef section_overlap(a, b)
 cpdef remove_small_runs(array, float seconds=?, float hz=?, bint match=?)
 cpdef contract_runs(array, Py_ssize_t size, bint match=?)
-cpdef bint is_constant(data)
-cpdef bint is_constant_uint8(const np.uint8_t[:] data) nogil
-cpdef bint is_constant_uint16(const np.uint16_t[:] data) nogil
+cpdef bint is_constant(cy.np_types[:] data) nogil
 cpdef first_valid_sample(array, Py_ssize_t start_idx=?)
 cpdef last_valid_sample(array, end_idx=?)
 cpdef nearest_idx(array, Py_ssize_t idx, bint match=?, Py_ssize_t start_idx=?, Py_ssize_t stop_idx=?)

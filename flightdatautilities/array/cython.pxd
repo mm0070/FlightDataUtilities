@@ -1,9 +1,49 @@
 # cython: language_level=3, boundscheck=False
+'''
+TODO:
+- change mask memoryview types to np.bool when supported by Cython and remove .view(np.uint8) from calls
+- add const to fused type functions when supported by Cython for immutable buffers
+'''
+cimport cython
 cimport numpy as np
 
-cdef enum RepairMethod:
-    FILL_START, FILL_STOP, INTERPOLATE
+'''
+A fused type allows for a 'statically' typed function to accept multiple different types, e.g.
+cpdef operation(np_types[:] data, np_types value)
+https://cython.readthedocs.io/en/latest/src/userguide/fusedtypes.html
 
+Limitations:
+- Fused types do not currenty support the const keyword for numpy types, either within the ctypedef fused section, the
+  cython.fused_type(...) function or within function signatures, e.g. cdef func(const np_types x). This is a shame as it precludes
+  compatibility with constant buffers, e.g. bytes objects.
+- Fused types do not allow numpy types to be conformed into C types. Whereas cdef func(unsigned char value) will automatically
+  conform np.uint8_t into the corresponding C type, a fused type containing unsigned char does not accept np.uint8_t.
+- Fused types do not support multiple types which represent the same underlying C type, e.g. a fused type is not usable if it
+  contains both np.uint8_t and unsigned char.
+- When calling a function from Python, the type of a fused type variable is inferred automatically. When calling from Cython,
+  input variables must be statically typed, otherwise compilation will fail due to the underlying C function call being ambiguous.
+- If multiple different type signatures of the same function must be called within the same scope, the specific signature must
+  be specified, e.g. myfunc[double](<double>value); myfunc[float](<float>value)
+'''
+ctypedef fused np_types:
+    np.uint8_t
+    np.uint16_t
+    np.uint32_t
+    np.uint64_t
+    np.int8_t
+    np.int16_t
+    np.int32_t
+    np.int64_t
+    np.intp_t
+    np.float32_t
+    np.float64_t
+
+cdef Py_ssize_t NONE_IDX
+
+cdef np.int32_t[:] empty_int32(np.npy_intp psize)
+cdef np.int32_t[:, :] empty2d_int32(np.npy_intp x, np.npy_intp y)
+cdef np.int32_t[:] zeros_int32(np.npy_intp psize)
+cdef np.int32_t[:, :] zeros2d_int32(np.npy_intp x, np.npy_intp y)
 cdef np.int64_t[:] empty_int64(np.npy_intp psize)
 cdef np.int64_t[:, :] empty2d_int64(np.npy_intp x, np.npy_intp y)
 cdef np.int64_t[:] zeros_int64(np.npy_intp psize)
@@ -13,12 +53,22 @@ cdef np.intp_t[:, :] empty2d_intp(np.npy_intp x, np.npy_intp y)
 cdef np.intp_t[:] zeros_intp(np.npy_intp psize)
 cdef np.intp_t[:, :] zeros2d_intp(np.npy_intp x, np.npy_intp y)
 cdef np.uint8_t[:] empty_uint8(np.npy_intp size)
+cdef np.uint8_t[:, :] empty2d_uint8(np.npy_intp x, np.npy_intp y)
 cdef np.uint8_t[:] zeros_uint8(np.npy_intp size)
+cdef np.uint8_t[:, :] zeros2d_uint8(np.npy_intp x, np.npy_intp y)
 cdef np.uint8_t[:] ones_uint8(np.npy_intp size)
 cdef np.uint16_t[:] empty_uint16(np.npy_intp size)
+cdef np.uint16_t[:, :] empty2d_uint16(np.npy_intp x, np.npy_intp y)
 cdef np.uint16_t[:] zeros_uint16(np.npy_intp size)
+cdef np.uint16_t[:, :] zeros2d_uint16(np.npy_intp x, np.npy_intp y)
+cdef np.uint32_t[:] empty_uint32(np.npy_intp size)
+cdef np.uint32_t[:, :] empty2d_uint32(np.npy_intp x, np.npy_intp y)
+cdef np.uint32_t[:] zeros_uint32(np.npy_intp size)
+cdef np.uint32_t[:, :] zeros2d_uint32(np.npy_intp x, np.npy_intp y)
 cdef np.uint64_t[:] empty_uint64(np.npy_intp size)
+cdef np.uint64_t[:, :] empty2d_uint64(np.npy_intp x, np.npy_intp y)
 cdef np.uint64_t[:] zeros_uint64(np.npy_intp size)
+cdef np.uint64_t[:, :] zeros2d_uint64(np.npy_intp x, np.npy_intp y)
 cdef np.float64_t[:] empty_float64(np.npy_intp size)
 cdef np.float64_t[:, :] empty2d_float64(np.npy_intp x, np.npy_intp y)
 cdef np.float64_t[:] zeros_float64(np.npy_intp size)
@@ -27,21 +77,17 @@ cdef np.uint16_t read_uint16_le(np.uint8_t[:] data, Py_ssize_t idx) nogil
 cdef np.uint16_t read_uint16_be(np.uint8_t[:] data, Py_ssize_t idx) nogil
 cdef np.uint32_t read_uint32_le(np.uint8_t[:] data, Py_ssize_t idx) nogil
 cdef np.uint32_t read_uint32_be(np.uint8_t[:] data, Py_ssize_t idx) nogil
+cdef bint lengths_mismatch(Py_ssize_t x, Py_ssize_t y) nogil
 cdef idx_none(Py_ssize_t idx)
 cdef Py_ssize_t none_idx(idx)
-cdef np.uint8_t[:] getmaskarray1d(array)
+cdef Py_ssize_t array_wraparound_idx(Py_ssize_t idx, Py_ssize_t length) nogil
 cdef Py_ssize_t array_idx(Py_ssize_t idx, Py_ssize_t length) nogil
 cdef array_idx_value(Py_ssize_t idx, array)
 cdef Py_ssize_t array_stop_idx(Py_ssize_t stop_idx, Py_ssize_t length) nogil
-cdef Py_ssize_t prev_idx(np.uint8_t[:] array, Py_ssize_t idx, bint match=?, Py_ssize_t start_idx=?) nogil
-cdef Py_ssize_t next_idx(np.uint8_t[:] array, Py_ssize_t idx=?, bint match=?, Py_ssize_t stop_idx=?) nogil
+cdef Py_ssize_t prev_idx(const np.uint8_t[:] array, Py_ssize_t idx, bint match=?, Py_ssize_t start_idx=?) nogil
+cdef Py_ssize_t next_idx(const np.uint8_t[:] array, Py_ssize_t idx=?, bint match=?, Py_ssize_t stop_idx=?) nogil
 cdef Py_ssize_t nearest_idx(np.uint8_t[:] array, Py_ssize_t idx, bint match=?, Py_ssize_t start_idx=?,
                             Py_ssize_t stop_idx=?) nogil
-cdef void ma_fill_range_float64(np.float64_t[:] data, np.uint8_t[:] mask, double value, Py_ssize_t start,
-                                Py_ssize_t stop) nogil
-cdef void ma_interpolate_float64(np.float64_t[:] data, np.uint8_t[:] mask, Py_ssize_t start, Py_ssize_t stop) nogil
-cdef void repair_mask_float64(np.float64_t[:] data, np.uint8_t[:] mask, RepairMethod method, Py_ssize_t max_samples,
-                              bint extrapolate=?) nogil
 cdef np.uint8_t[:] contract_runs(np.uint8_t[:] data, Py_ssize_t size, bint match=?) nogil
 cdef np.uint8_t[:] remove_small_runs(np.uint8_t[:] data, float seconds, float hz=?, bint match=?) nogil
 
@@ -69,7 +115,6 @@ cpdef is_power2_fraction(number)
 cpdef np.ndarray twos_complement(np.ndarray array, np.uint64_t bit_length)
 cpdef object idx_none(Py_ssize_t idx)
 cpdef Py_ssize_t none_idx(idx)
-cdef np.uint8_t[:] getmaskarray1d(array)
 cdef Py_ssize_t cython_nearest_idx(np.uint8_t[:] array, Py_ssize_t idx, bint match=?, Py_ssize_t start_idx=?, Py_ssize_t stop_idx=?) nogil
 cdef void cython_ma_fill_range_float64(np.float64_t[:] data, np.uint8_t[:] mask, double value, Py_ssize_t start, Py_ssize_t stop) nogil
 cdef void cython_ma_interpolate_float64(np.float64_t[:] data, np.uint8_t[:] mask, Py_ssize_t start, Py_ssize_t stop) nogil

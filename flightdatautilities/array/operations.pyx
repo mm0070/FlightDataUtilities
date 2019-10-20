@@ -94,7 +94,7 @@ cimport numpy as np
 from libc.math cimport fabs
 
 from flightdatautilities.array import Value
-from flightdatautilities.array cimport cython as cy
+from flightdatautilities.array cimport cython as cy, masked_array as ma
 
 
 cdef np.uint64_t saturated_value(np.uint64_t bit_length) nogil:
@@ -168,18 +168,18 @@ cpdef nearest_idx(array, Py_ssize_t idx, bint match=True, Py_ssize_t start_idx=0
 
 
 cpdef nearest_unmasked_value(array, Py_ssize_t idx, Py_ssize_t start_idx=0, Py_ssize_t stop_idx=-1):
-    cdef Py_ssize_t unmasked_idx = cy.nearest_idx(cy.getmaskarray1d(array), idx, match=False, start_idx=start_idx,
-                                                      stop_idx=stop_idx)
+    cdef Py_ssize_t unmasked_idx = cy.nearest_idx(ma.getmaskarray1d(array), idx, match=False, start_idx=start_idx,
+                                                  stop_idx=stop_idx)
     return array_idx_value(array, unmasked_idx)
 
 
 cpdef prev_unmasked_value(array, Py_ssize_t idx, Py_ssize_t start_idx=0):
-    cdef Py_ssize_t unmasked_idx = cy.prev_idx(cy.getmaskarray1d(array), idx, match=False, start_idx=start_idx)
+    cdef Py_ssize_t unmasked_idx = cy.prev_idx(ma.getmaskarray1d(array), idx, match=False, start_idx=start_idx)
     return array_idx_value(array, unmasked_idx)
 
 
 cpdef next_unmasked_value(array, Py_ssize_t idx, Py_ssize_t stop_idx=-1):
-    cdef Py_ssize_t unmasked_idx = cy.next_idx(cy.getmaskarray1d(array), idx, match=False, stop_idx=stop_idx)
+    cdef Py_ssize_t unmasked_idx = cy.next_idx(ma.getmaskarray1d(array), idx, match=False, stop_idx=stop_idx)
     return array_idx_value(array, unmasked_idx)
 
 
@@ -188,7 +188,7 @@ cpdef first_unmasked_value(array, Py_ssize_t start_idx=0):
 
 
 cpdef last_unmasked_value(array, Py_ssize_t stop_idx=-1, Py_ssize_t min_samples=-1):
-    cdef np.uint8_t[:] mask = cy.getmaskarray1d(array)
+    cdef np.uint8_t[:] mask = ma.getmaskarray1d(array)
     if min_samples > 0:
         mask = cy.remove_small_runs(mask, <float>min_samples)
     stop_idx = cy.array_stop_idx(stop_idx, mask.shape[0])
@@ -242,44 +242,7 @@ cpdef nearest_slice(array, Py_ssize_t idx, bint match=True):
     return slice(start_idx, stop_idx)
 
 
-cpdef repair_mask(array, method='interpolate', repair_duration=10, frequency=1, bint copy=False, bint extrapolate=False,
-                  bint raise_duration_exceedance=False, bint raise_entirely_masked=True):
-    '''
-    TODO: find better solution for repair_above kwarg from original.
-    '''
-    cdef Py_ssize_t length, repair_samples, unmasked_samples
-
-    if array.mask.all():  # XXX: calling all and any is faster than calling np.ma.count once
-        if raise_entirely_masked:
-            raise ValueError('Array cannot be repaired as it is entirely masked')
-        return array
-    elif not array.mask.any():
-        return array
-
-    dtype = array.dtype
-    array = array.astype(np.float64, copy=copy)
-
-    if repair_duration:
-        repair_samples = repair_duration * frequency
-        if raise_duration_exceedance:
-            length = longest_section_uint8(array.mask)
-            if length > repair_samples:
-                raise ValueError(
-                    f"Length of masked section '{length * frequency}' exceeds repair duration '{repair_duration}'.")
-    else:
-        repair_samples = -1
-
-    cy.repair_mask_float64(
-        array.data,
-        array.mask.view(np.uint8),
-        {'interpolate': cy.RepairMethod.INTERPOLATE, 'fill_start': cy.RepairMethod.FILL_START, 'fill_stop': cy.RepairMethod.FILL_STOP}[method],
-        repair_samples,
-        extrapolate=extrapolate,
-    )
-    return array.astype(dtype)
-
-
-cpdef Py_ssize_t longest_section_uint8(const np.uint8_t[:] data, np.uint8_t value=0) nogil:
+cpdef Py_ssize_t longest_section(cy.np_types[:] data, cy.np_types value=0) nogil:
     '''
     Find the longest section matching value and return the number of samples.
     '''
@@ -339,7 +302,7 @@ def aggregate_values(Aggregate mode, np.float64_t[:] data, np.uint8_t[:] mask, n
 
 cdef _aggregate_values(Aggregate mode, array, matching):
     return aggregate_values(
-        mode, array.data.astype(np.float64, copy=False), cy.getmaskarray1d(array), matching.view(np.uint8))
+        mode, array.data.astype(np.float64, copy=False), ma.getmaskarray1d(array), matching.view(np.uint8))
 
 
 cpdef max_values(array, matching):
@@ -496,59 +459,18 @@ def runs_of_ones(array, min_samples=None):
             #start_idx = -1
 
 
-################################################################################
-# is_constant
-
-
-cpdef bint is_constant(data):
+@cython.wraparound(False)
+cpdef bint is_constant(cy.np_types[:] data) nogil:
     '''
-    Check if an array is constant in value.
-
-    :type data: np.ndarray
-    :rtype: bool
-    '''
-    if data.dtype == np.uint8 or isinstance(data, bytes):
-        return is_constant_uint8(data)
-    elif data.dtype == np.uint16:
-        return is_constant_uint16(data)
-    else:
-        return (data == data[0]).all()  # type-inspecific fallback (slower)
-
-
-cpdef bint is_constant_uint8(const np.uint8_t[:] data) nogil:
-    '''
-    Optimised is_constant check for uint8 datatype.
-
-    Worst case is 6x faster than is_constant, best realistic case is over 1000000x faster.
+    Return whether or not an array is constant in value.
     '''
     if data.shape[0] <= 1:
         return True
 
-    cdef:
-        Py_ssize_t idx
-        unsigned char first_value = data[0]
+    cdef Py_ssize_t idx
 
     for idx in range(1, data.shape[0]):
-        if data[idx] != first_value:
-            return False
-    return True
-
-
-cpdef bint is_constant_uint16(const np.uint16_t[:] data) nogil:
-    '''
-    Optimised is_constant check for uint16 datatype.
-
-    Worst case is 6x faster than is_constant, best realistic case is over 1000000x faster.
-    '''
-    if data.shape[0] <= 1:
-        return True
-
-    cdef:
-        Py_ssize_t idx
-        np.uint16_t first_value = data[0]
-
-    for idx in range(1, data.shape[0]):
-        if data[idx] != first_value:
+        if data[idx] != data[0]:
             return False
     return True
 
@@ -558,7 +480,7 @@ cpdef first_valid_sample(array, Py_ssize_t start_idx=0):
     Returns the first valid sample of data from a point in an array.
     '''
     cdef:
-        np.uint8_t[:] mask = cy.getmaskarray1d(array)
+        np.uint8_t[:] mask = ma.getmaskarray1d(array)
         Py_ssize_t idx
 
     if start_idx < 0:
@@ -576,7 +498,7 @@ cpdef last_valid_sample(array, end_idx=None):
     Returns the last valid sample of data before a point in an array.
     '''
     cdef:
-        np.uint8_t[:] mask = cy.getmaskarray1d(array)
+        np.uint8_t[:] mask = ma.getmaskarray1d(array)
         Py_ssize_t end_idx_long, idx
 
     if end_idx is None:

@@ -3,11 +3,74 @@
 Cython-specific functions intended for optimal performance.
 '''
 import cython
+from libc.limits cimport LLONG_MIN
+from libc.stdio cimport fprintf, stderr
 import numpy as np
 cimport numpy as np
-np.import_array()  # required for calling PyArray_* functions
 
 from flightdatautilities.array import Value
+
+np.import_array()  # required for calling PyArray_* functions
+
+'''
+NONE_IDX is a C integer constant used to represent None/no index. This is used instead of Python None where performance is
+critical or the Global Interpreter Lock is turned off. While -1 would be the traditional value representing no index in C, since
+negative indexing is Pythonic the minimum value of Py_ssize_t (-9223372036854775808) is used as this is not a feasible index for
+any practical purpose (instantiating a char array of this size would require 8 exabytes of memory). The operating system
+independent C type corresponding to Py_ssize_t is long long as this is consistently 8 bytes (Py_ssize_t size) on both Windows and
+Unix.
+'''
+NONE_IDX = LLONG_MIN
+
+
+@cython.wraparound(False)
+cdef np.int32_t[:] empty_int32(np.npy_intp size):
+    '''
+    Return a new one-dimensional np.int32 memoryview of given size, without initializing entries.
+
+    opt: ~2.5x faster than creating a memoryview from np.empty
+    '''
+    cdef np.npy_intp shape[1]
+    shape[0] = size
+    return np.PyArray_EMPTY(1, shape, np.NPY_INT32, False)
+
+
+@cython.wraparound(False)
+cdef np.int32_t[:, :] empty2d_int32(np.npy_intp x, np.npy_intp y):
+    '''
+    Return a new two-dimensional np.int32 memoryview of given size, without initializing entries.
+
+    opt: ~2.5x faster than creating a memoryview from np.empty
+    '''
+    cdef np.npy_intp shape[2]
+    shape[0] = x
+    shape[1] = y
+    return np.PyArray_EMPTY(2, shape, np.NPY_INT32, False)
+
+
+@cython.wraparound(False)
+cdef np.int32_t[:] zeros_int32(np.npy_intp size):
+    '''
+    Return a new one-dimensional np.int32 memoryview of given size, filled with zeros.
+
+    opt: ~2.5x faster than creating a memoryview from np.zeros
+    '''
+    cdef np.npy_intp shape[1]
+    shape[0] = size
+    return np.PyArray_ZEROS(1, shape, np.NPY_INT32, False)
+
+
+@cython.wraparound(False)
+cdef np.int32_t[:, :] zeros2d_int32(np.npy_intp x, np.npy_intp y):
+    '''
+    Return a new two-dimensional np.int32 memoryview of given size, filled with zeros.
+
+    opt: ~2.5x faster than creating a memoryview from np.empty (Python call).
+    '''
+    cdef np.npy_intp shape[2]
+    shape[0] = x
+    shape[1] = y
+    return np.PyArray_ZEROS(2, shape, np.NPY_INT32, False)
 
 
 @cython.wraparound(False)
@@ -102,7 +165,7 @@ cdef np.intp_t[:, :] zeros2d_intp(np.npy_intp x, np.npy_intp y):
     '''
     Return a new two-dimensional np.intp memoryview of given size, filled with zeros.
 
-    opt: ~2.5x faster than creating a memoryview from np.empty
+    opt: ~2.5x faster than creating a memoryview from np.zeros
     '''
     cdef np.npy_intp shape[2]
     shape[0] = x
@@ -123,6 +186,19 @@ cdef np.uint8_t[:] empty_uint8(np.npy_intp size):
 
 
 @cython.wraparound(False)
+cdef np.uint8_t[:, :] empty2d_uint8(np.npy_intp x, np.npy_intp y):
+    '''
+    Return a new two-dimensional np.uint8 memoryview of given size, without initializing entries.
+
+    opt: ~2.5x faster than creating a memoryview from np.empty
+    '''
+    cdef np.npy_intp shape[2]
+    shape[0] = x
+    shape[1] = y
+    return np.PyArray_EMPTY(2, shape, np.NPY_UINT8, False)
+
+
+@cython.wraparound(False)
 cdef np.uint8_t[:] zeros_uint8(np.npy_intp size):
     '''
     Return a new one-dimensional np.uint8 memoryview of given size, filled with zeros.
@@ -135,11 +211,24 @@ cdef np.uint8_t[:] zeros_uint8(np.npy_intp size):
 
 
 @cython.wraparound(False)
+cdef np.uint8_t[:, :] zeros2d_uint8(np.npy_intp x, np.npy_intp y):
+    '''
+    Return a new two-dimensional np.uint8 memoryview of given size, filled with zeros.
+
+    opt: ~2.5x faster than creating a memoryview from np.zeros
+    '''
+    cdef np.npy_intp shape[2]
+    shape[0] = x
+    shape[1] = y
+    return np.PyArray_ZEROS(2, shape, np.NPY_UINT8, False)
+
+
+@cython.wraparound(False)
 cdef np.uint8_t[:] ones_uint8(np.npy_intp size):
     '''
     Return a new one-dimensional np.uint8 memoryview of given size, filled with ones.
 
-    opt: ~2.5x faster than creating a memoryview from np.zeros
+    opt: ~2.5x faster than creating a memoryview from np.ones
     '''
     cdef np.npy_intp shape[1]
     shape[0] = size
@@ -159,6 +248,19 @@ cdef np.uint16_t[:] empty_uint16(np.npy_intp size):
 
 
 @cython.wraparound(False)
+cdef np.uint16_t[:, :] empty2d_uint16(np.npy_intp x, np.npy_intp y):
+    '''
+    Return a new two-dimensional np.uint16 memoryview of given size, without initializing entries.
+
+    opt: ~2.5x faster than creating a memoryview from np.empty
+    '''
+    cdef np.npy_intp shape[2]
+    shape[0] = x
+    shape[1] = y
+    return np.PyArray_EMPTY(2, shape, np.NPY_UINT16, False)
+
+
+@cython.wraparound(False)
 cdef np.uint16_t[:] zeros_uint16(np.npy_intp size):
     '''
     Return a new one-dimensional np.uint16 memoryview of given size, filled with zeros.
@@ -168,6 +270,69 @@ cdef np.uint16_t[:] zeros_uint16(np.npy_intp size):
     cdef np.npy_intp shape[1]
     shape[0] = size
     return np.PyArray_ZEROS(1, shape, np.NPY_UINT16, False)
+
+
+@cython.wraparound(False)
+cdef np.uint16_t[:, :] zeros2d_uint16(np.npy_intp x, np.npy_intp y):
+    '''
+    Return a new two-dimensional np.uint16 memoryview of given size, filled with zeros.
+
+    opt: ~2.5x faster than creating a memoryview from np.empty
+    '''
+    cdef np.npy_intp shape[2]
+    shape[0] = x
+    shape[1] = y
+    return np.PyArray_ZEROS(2, shape, np.NPY_UINT16, False)
+
+
+@cython.wraparound(False)
+cdef np.uint32_t[:] empty_uint32(np.npy_intp size):
+    '''
+    Return a new one-dimensional np.uint32 memoryview of given size, without initializing entries.
+
+    opt: ~2.5x faster than creating a memoryview from np.empty
+    '''
+    cdef np.npy_intp shape[1]
+    shape[0] = size
+    return np.PyArray_EMPTY(1, shape, np.NPY_UINT32, False)
+
+
+@cython.wraparound(False)
+cdef np.uint32_t[:, :] empty2d_uint32(np.npy_intp x, np.npy_intp y):
+    '''
+    Return a new two-dimensional np.uint32 memoryview of given size, without initializing entries.
+
+    opt: ~2.5x faster than creating a memoryview from np.empty``
+    '''
+    cdef np.npy_intp shape[2]
+    shape[0] = x
+    shape[1] = y
+    return np.PyArray_EMPTY(2, shape, np.NPY_UINT32, False)
+
+
+@cython.wraparound(False)
+cdef np.uint32_t[:] zeros_uint32(np.npy_intp size):
+    '''
+    Return a new one-dimensional np.uint32 memoryview of given size, filled with zeros.
+
+    opt: ~2.5x faster than creating a memoryview from np.zeros
+    '''
+    cdef np.npy_intp shape[1]
+    shape[0] = size
+    return np.PyArray_ZEROS(1, shape, np.NPY_UINT32, False)
+
+
+@cython.wraparound(False)
+cdef np.uint32_t[:, :] zeros2d_uint32(np.npy_intp x, np.npy_intp y):
+    '''
+    Return a new two-dimensional np.uint32 memoryview of given size, filled with zeros.
+
+    opt: ~2.5x faster than creating a memoryview from np.empty
+    '''
+    cdef np.npy_intp shape[2]
+    shape[0] = x
+    shape[1] = y
+    return np.PyArray_ZEROS(2, shape, np.NPY_UINT32, False)
 
 
 @cython.wraparound(False)
@@ -183,6 +348,19 @@ cdef np.uint64_t[:] empty_uint64(np.npy_intp size):
 
 
 @cython.wraparound(False)
+cdef np.uint64_t[:, :] empty2d_uint64(np.npy_intp x, np.npy_intp y):
+    '''
+    Return a new two-dimensional np.uint64 memoryview of given size, without initializing entries.
+
+    opt: ~2.5x faster than creating a memoryview from np.empty``
+    '''
+    cdef np.npy_intp shape[2]
+    shape[0] = x
+    shape[1] = y
+    return np.PyArray_EMPTY(2, shape, np.NPY_UINT64, False)
+
+
+@cython.wraparound(False)
 cdef np.uint64_t[:] zeros_uint64(np.npy_intp size):
     '''
     Return a new one-dimensional np.uint64 memoryview of given size, filled with zeros.
@@ -192,6 +370,19 @@ cdef np.uint64_t[:] zeros_uint64(np.npy_intp size):
     cdef np.npy_intp shape[1]
     shape[0] = size
     return np.PyArray_ZEROS(1, shape, np.NPY_UINT64, False)
+
+
+@cython.wraparound(False)
+cdef np.uint64_t[:, :] zeros2d_uint64(np.npy_intp x, np.npy_intp y):
+    '''
+    Return a new two-dimensional np.uint64 memoryview of given size, filled with zeros.
+
+    opt: ~2.5x faster than creating a memoryview from np.empty
+    '''
+    cdef np.npy_intp shape[2]
+    shape[0] = x
+    shape[1] = y
+    return np.PyArray_ZEROS(2, shape, np.NPY_UINT64, False)
 
 
 @cython.wraparound(False)
@@ -276,30 +467,38 @@ cdef np.uint32_t read_uint32_be(np.uint8_t[:] data, Py_ssize_t idx) nogil:
     return (data[idx] << 24) + (data[idx + 1] << 16) + (data[idx + 2] << 8) + data[idx + 3]
 
 
+cdef bint lengths_mismatch(Py_ssize_t x, Py_ssize_t y) nogil:
+    if x == y:
+        return True
+    else:
+        fprintf(stderr, 'array length mismatch (%ld != %ld)\n', x, y)
+        return False
+
+
 cdef idx_none(Py_ssize_t idx):
     '''
-    Converts int idx to int or None where -1 is None for converting from Cython-optimised to Python types.
+    Converts idx to int or None where NONE_IDX is None for converting from Cython-optimised to Python types.
     '''
-    return None if idx == -1 else idx
+    return None if idx == NONE_IDX else idx
 
 
 cdef Py_ssize_t none_idx(idx):
     '''
-    Converts int or None idx to int idx where None is -1 for converting from Python to Cython-optimised types.
+    Converts int or None idx to int idx where None is NONE_IDX for converting from Python to Cython-optimised types.
     '''
-    return -1 if idx is None else idx
+    return NONE_IDX if idx is None else idx
 
 
-cdef np.uint8_t[:] getmaskarray1d(array):
+cdef Py_ssize_t array_wraparound_idx(Py_ssize_t idx, Py_ssize_t length) nogil:
     '''
-    Return the mask memoryview from a np.ma.masked_array in a Cython-compatible dtype. Assumes scalar mask is False.
-
-    opt: ~3x faster when mask is a scalar, ~10% faster when mask is an array
+    Return the array idx within the length of an array converting negative indices to positive to safely turn off Cython
+    wraparound indexing checks. Behaviour for invalid zero or negative lengths is undefined.
     '''
-    if np.PyArray_CheckScalar(array.mask):
-        return zeros_uint8(len(array))
-    else:
-        return array.mask.view(np.uint8)
+    if idx == NONE_IDX or idx >= length:
+        idx = length - 1  # NONE_IDX is assumed to be a stop idx as default start idx is 0
+    elif idx < 0:
+        idx = length + idx if idx > -length else 0
+    return idx
 
 
 cdef Py_ssize_t array_idx(Py_ssize_t idx, Py_ssize_t length) nogil:
@@ -329,7 +528,7 @@ cdef Py_ssize_t array_stop_idx(Py_ssize_t stop_idx, Py_ssize_t length) nogil:
 
 
 @cython.wraparound(False)
-cdef Py_ssize_t prev_idx(np.uint8_t[:] array, Py_ssize_t idx, bint match=True, Py_ssize_t start_idx=0) nogil:
+cdef Py_ssize_t prev_idx(const np.uint8_t[:] array, Py_ssize_t idx, bint match=True, Py_ssize_t start_idx=0) nogil:
     '''
     Return the previous index within the array which matches a value or -1 if the value is not found.
     '''
@@ -345,7 +544,7 @@ cdef Py_ssize_t prev_idx(np.uint8_t[:] array, Py_ssize_t idx, bint match=True, P
 
 
 @cython.wraparound(False)
-cdef Py_ssize_t next_idx(np.uint8_t[:] array, Py_ssize_t idx=0, bint match=True, Py_ssize_t stop_idx=-1) nogil:
+cdef Py_ssize_t next_idx(const np.uint8_t[:] array, Py_ssize_t idx=0, bint match=True, Py_ssize_t stop_idx=0) nogil:
     '''
     Return the next index within the array which matches a value or -1 if the value is not found.
     '''
@@ -382,57 +581,6 @@ cdef Py_ssize_t nearest_idx(np.uint8_t[:] array, Py_ssize_t idx, bint match=True
         if shift <= rev_range and array[idx - shift] == match:
             return idx - shift
     return -1
-
-
-cdef void ma_fill_range_float64(np.float64_t[:] data, np.uint8_t[:] mask, double value, Py_ssize_t start,
-                                Py_ssize_t stop) nogil:
-    '''
-    Fill a section of a float64 masked_array's data and mask with a value and unmask.
-    '''
-    cdef Py_ssize_t idx
-    for idx in range(start, stop):
-        data[idx] = value
-        mask[idx] = 0
-
-
-cdef void ma_interpolate_float64(np.float64_t[:] data, np.uint8_t[:] mask, Py_ssize_t start, Py_ssize_t stop) nogil:
-    '''
-    Fill a section of a float64 masked_array's data and mask with values interpolated between start and stop indices
-    and unmask.
-    '''
-    cdef:
-        double gradient = (data[stop] - data[start]) / (stop - start)
-        Py_ssize_t idx
-    for idx in range(start + 1, stop):
-        data[idx] = data[start] + ((idx - start) * gradient)
-        mask[idx] = 0
-
-
-cdef void repair_mask_float64(np.float64_t[:] data, np.uint8_t[:] mask, RepairMethod method, Py_ssize_t max_samples,
-                              bint extrapolate=False) nogil:
-    cdef:
-        Py_ssize_t idx, last_valid_idx = -1
-
-    for idx in range(data.shape[0]):
-        if not mask[idx]:
-            if last_valid_idx != idx - 1:
-
-                if last_valid_idx == -1:
-                    if (extrapolate or method == FILL_STOP) and (max_samples == -1 or idx <= max_samples):
-                        ma_fill_range_float64(data, mask, data[idx], 0, idx)
-                else:
-                    if max_samples == -1 or idx - last_valid_idx <= max_samples:
-                        if method == INTERPOLATE:
-                            ma_interpolate_float64(data, mask, last_valid_idx, idx)
-                        else:
-                            ma_fill_range_float64(data, mask,
-                                                  data[last_valid_idx] if method == FILL_START else data[idx],
-                                                  last_valid_idx + 1, idx)
-
-            last_valid_idx = idx
-
-    if (extrapolate or method == FILL_START) and last_valid_idx != -1 and last_valid_idx != idx and (max_samples == -1 or idx - last_valid_idx <= max_samples):
-        ma_fill_range_float64(data, mask, data[last_valid_idx], last_valid_idx + 1, data.shape[0])
 
 
 cdef np.uint8_t[:] contract_runs(np.uint8_t[:] data, Py_ssize_t size, bint match=True) nogil:

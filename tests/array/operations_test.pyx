@@ -1,15 +1,16 @@
 # cython: language_level=3, boundscheck=False
+from binascii import hexlify
+import os
 import unittest
 
+cimport cython
 import numpy as np
-import os
-from binascii import hexlify
-
+cimport numpy as np
 from numpy.ma.testutils import assert_array_equal
 
 from flightdatautilities import masked_array_testutils as ma_test
-from flightdatautilities.array cimport operations as op
-from flightdatautilities.array.operations import contract_runs, nearest_idx, remove_small_runs, repair_mask, runs_of_ones
+from flightdatautilities.array cimport cython as cy, operations as op
+from flightdatautilities.array.operations import contract_runs, nearest_idx, remove_small_runs, runs_of_ones
 from flightdatautilities.read import reader
 
 
@@ -115,29 +116,13 @@ class TestFirstValidSample(unittest.TestCase):
 
 class TestIsConstant(unittest.TestCase):
     def test_is_constant(self):
-        self.assertTrue(op.is_constant(np.empty(0, dtype=np.uint16)))
-        self.assertTrue(op.is_constant(np.zeros(10, dtype=np.uint8)))
-        self.assertTrue(op.is_constant(np.zeros(10, dtype=np.uint16)))
-        self.assertTrue(op.is_constant(np.zeros(10, dtype=np.uint32)))
-        self.assertFalse(op.is_constant(np.arange(10, dtype=np.uint32)))
-
-
-class TestIsConstantUint16(unittest.TestCase):
-    def test_is_constant_uint16(self):
-        self.assertTrue(op.is_constant_uint16(np.empty(0, dtype=np.uint16)))
-        self.assertTrue(op.is_constant_uint16(np.zeros(1, dtype=np.uint16)))
-        self.assertTrue(op.is_constant_uint16(np.zeros(10, dtype=np.uint16)))
-        self.assertTrue(op.is_constant_uint16(np.ones(10, dtype=np.uint16)))
-        self.assertFalse(op.is_constant_uint16(np.arange(10, dtype=np.uint16)))
-
-
-class TestIsConstantUint8(unittest.TestCase):
-    def test_is_constant_uint8(self):
-        self.assertTrue(op.is_constant_uint8(np.empty(0, dtype=np.uint8)))
-        self.assertTrue(op.is_constant_uint8(np.zeros(1, dtype=np.uint8)))
-        self.assertTrue(op.is_constant_uint8(np.zeros(10, dtype=np.uint8)))
-        self.assertTrue(op.is_constant_uint8(np.ones(10, dtype=np.uint8)))
-        self.assertFalse(op.is_constant_uint8(np.arange(10, dtype=np.uint8)))
+        self.assertTrue(op.is_constant[np.uint16_t](cy.empty_uint16(0)))
+        self.assertTrue(op.is_constant[np.uint8_t](cy.zeros_uint8(10)))
+        self.assertTrue(op.is_constant[np.uint16_t](cy.zeros_uint16(10)))
+        self.assertTrue(op.is_constant[np.uint32_t](cy.zeros_uint32(10)))
+        self.assertTrue(op.is_constant[np.uint8_t](cy.ones_uint8(10)))
+        self.assertFalse(op.is_constant[np.uint32_t](np.arange(10, dtype=np.uint32)))
+        self.assertFalse(op.is_constant[np.float64_t](np.arange(10, dtype=np.float64)))
 
 
 class TestIsPower2(unittest.TestCase):
@@ -253,87 +238,6 @@ class TestNearestSlice(unittest.TestCase):
         for idx, sl in [(0, slice(1, 3)), (1, slice(1, 3)), (2, slice(1, 3)), (3, slice(1, 3)),
                         (4, slice(5, 6)), (5, slice(5, 6)), (6, slice(5, 6)), (7, slice(5, 6))]:
             self.assertEqual(op.nearest_slice(data, idx), sl)
-
-
-class TestRepairMask(unittest.TestCase):
-    def setUp(self):
-        self.basic_data = np.ma.array(
-            [0, 0, 10, 0, 0, 20, 23, 26, 30, 0, 0],
-            mask=[1,1,0,1,1,0,0,0,0,1,1])
-
-    def test_repair_mask_basic_fill_start(self):
-        self.assertEqual(repair_mask(self.basic_data,
-                                           method='fill_start').tolist(),
-                         [None, None, 10, 10, 10, 20, 23, 26, 30, 30, 30])
-        self.assertEqual(repair_mask(self.basic_data, extrapolate=True,
-                                           method='fill_start').tolist(),
-                         [10, 10, 10, 10, 10, 20, 23, 26, 30, 30, 30])
-
-    def test_repair_mask_basic_fill_stop(self):
-        self.assertEqual(repair_mask(self.basic_data, method='fill_stop').tolist(),
-                         [10, 10, 10, 20, 20, 20, 23, 26, 30, None, None])
-        self.assertEqual(repair_mask(self.basic_data, extrapolate=True, method='fill_stop').tolist(),
-                         [10, 10, 10, 20, 20, 20, 23, 26, 30, 30, 30])
-
-    def test_repair_mask_basic_1(self):
-        data = np.ma.arange(10)
-        data[3] = np.ma.masked
-        data[6:8] = np.ma.masked
-        res = repair_mask(data)
-        np.testing.assert_array_equal(res.data,range(10))
-        # test mask is now unmasked
-        self.assertFalse(np.any(res.mask[3:9]))
-
-    def test_repair_mask_too_much_invalid(self):
-        data = np.ma.arange(20)
-        data[4:15] = np.ma.masked
-        ma_test.assert_masked_array_approx_equal(repair_mask(data), data)
-
-    def test_repair_mask_not_at_start(self):
-        data = np.ma.arange(10)
-        data[0] = np.ma.masked
-        ma_test.assert_masked_array_approx_equal(repair_mask(data), data)
-
-    def test_repair_mask_not_at_end(self):
-        data = np.ma.arange(10)
-        data[9] = np.ma.masked
-        ma_test.assert_masked_array_approx_equal(repair_mask(data), data)
-
-    def test_repair_mask_short_sample(self):
-        # Very short samples were at one time returned as None, but simply
-        # applying the normal "rules" seems more consistent, so this is a
-        # test to show that an old function no longer applies.
-        data = np.ma.arange(2)
-        data[1] = np.ma.masked
-        ma_test.assert_masked_array_approx_equal(repair_mask(data), data)
-
-    def test_repair_mask_extrapolate(self):
-        data = np.ma.array([2,4,6,7,5,3,1], mask=[1,1,0,0,1,1,1])
-        res = repair_mask(data, extrapolate=True)
-        expected = np.ma.array([6,6,6,7,7,7,7], mask=False)
-        assert_array_equal(res, expected)
-
-    def test_repair_mask_fully_masked_array(self):
-        data = np.ma.array(np.arange(10), mask=[1]*10)
-        # fully masked raises ValueError
-        self.assertRaises(ValueError, repair_mask, data)
-        # fully masked returns a masked zero array
-        res = repair_mask(data, raise_entirely_masked=False)
-        assert_array_equal(res.data, data.data)
-        assert_array_equal(res.mask, True)
-
-    #@unittest.skip('repair_above has not yet been carried over from analysis_engine.library version')
-    #def test_repair_mask_above(self):
-        #data = np.ma.arange(10)
-        #data[5] = np.ma.masked
-        #data[7:9] = np.ma.masked
-        #res = repair_mask(data, repair_above=5)
-        #np.testing.assert_array_equal(res.data, range(10))
-        #mask = np.ma.getmaskarray(data)
-        ## test only array[5] is still masked as is the first
-        #self.assertFalse(mask[4])
-        #self.assertTrue(mask[5])
-        #self.assertFalse(np.any(mask[6:]))
 
 
 class TestRemoveSmallRuns(unittest.TestCase):
@@ -531,24 +435,37 @@ class TestTwosComplement(unittest.TestCase):
         self.assertEqual(op.twos_complement(np.arange(4), 2).tolist(), [0, 1, -2, -1])
 
 
-class TestLongestSectionUint8(unittest.TestCase):
-    def test_longest_section_uint8(self):
-        self.assertEqual(op.longest_section_uint8(np.empty(0, dtype=np.uint8)), 0)
+class TestLongestSection(unittest.TestCase):
+    def test_longest_section(self):
+        self.assertEqual(op.longest_section[np.uint8_t](np.empty(0, dtype=np.uint8)), 0)
         data = np.zeros(10, dtype=np.uint8)
-        self.assertEqual(op.longest_section_uint8(data), 10)
-        self.assertEqual(op.longest_section_uint8(data, 0), 10)
-        self.assertEqual(op.longest_section_uint8(data, 1), 0)
+        self.assertEqual(op.longest_section[np.uint8_t](data), len(data))
+        self.assertEqual(op.longest_section[np.uint8_t](data, 0), len(data))
+        self.assertEqual(op.longest_section[np.uint8_t](data, 1), 0)
         data[0] = 1
-        self.assertEqual(op.longest_section_uint8(data), 9)
-        self.assertEqual(op.longest_section_uint8(data, 1), 1)
+        self.assertEqual(op.longest_section[np.uint8_t](data), 9)
+        self.assertEqual(op.longest_section[np.uint8_t](data, 1), 1)
         data[9] = 1
-        self.assertEqual(op.longest_section_uint8(data), 8)
-        self.assertEqual(op.longest_section_uint8(data, 1), 1)
+        self.assertEqual(op.longest_section[np.uint8_t](data), 8)
+        self.assertEqual(op.longest_section[np.uint8_t](data, 1), 1)
         data[2:4] = 2
-        self.assertEqual(op.longest_section_uint8(data), 5)
-        self.assertEqual(op.longest_section_uint8(data, 1), 1)
-        self.assertEqual(op.longest_section_uint8(data, 2), 2)
+        self.assertEqual(op.longest_section[np.uint8_t](data), 5)
+        self.assertEqual(op.longest_section[np.uint8_t](data, 1), 1)
+        self.assertEqual(op.longest_section[np.uint8_t](data, 2), 2)
         data[:] = 2
-        self.assertEqual(op.longest_section_uint8(data), 0)
-        self.assertEqual(op.longest_section_uint8(data, 1), 0)
-        self.assertEqual(op.longest_section_uint8(data, 2), 10)
+        self.assertEqual(op.longest_section[np.uint8_t](data), 0)
+        self.assertEqual(op.longest_section[np.uint8_t](data, 1), 0)
+        self.assertEqual(op.longest_section[np.uint8_t](data, 2), len(data))
+        data = np.zeros(5, dtype=np.float64)
+        self.assertEqual(op.longest_section[np.float64_t](data), 5)
+        self.assertEqual(op.longest_section[np.float64_t](data, 1.5), 0)
+        data[1] = 1.5
+        self.assertEqual(op.longest_section[np.float64_t](data), 3)
+        self.assertEqual(op.longest_section[np.float64_t](data, 1.5), 1)
+        self.assertEqual(op.longest_section[np.float64_t](data, 4.7), 0)
+        data[3:] = 1.5
+        self.assertEqual(op.longest_section[np.float64_t](data), 1)
+        self.assertEqual(op.longest_section[np.float64_t](data, 1.5), 2)
+        data[:] = 1.5
+        self.assertEqual(op.longest_section[np.float64_t](data), 0)
+        self.assertEqual(op.longest_section[np.float64_t](data, 1.5), len(data))
