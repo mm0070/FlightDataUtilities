@@ -41,6 +41,30 @@ class TestFillRange(unittest.TestCase):
         self.assertEqual(mask.tolist(), expected_mask)
 
 
+# TODO: change to next_unmasked_value
+#class TestFirstValidSample(unittest.TestCase):
+    #def test_first_valid_sample(self):
+        #data = np.arange(11, 15)
+        #self.assertEqual(op.first_valid_sample(np.ma.array(data, mask=[1,0,1,0])), (1, 12))
+        #self.assertEqual(op.first_valid_sample(np.ma.array(data, mask=True)), (None, None))
+        #self.assertEqual(op.first_valid_sample(np.ma.array(data, mask=[1,0,1,0]), 2), (3, 14))
+        #self.assertEqual(op.first_valid_sample(np.ma.array(data, mask=[1,0,1,0]), 1), (1, 12))
+        #self.assertEqual(op.first_valid_sample(np.ma.array(data, mask=[1,0,1,0]), 9), (None, None))
+        #self.assertEqual(op.first_valid_sample(np.ma.array(data, mask=[1,0,1,0]), -2), (3, 14))
+
+
+#class TestLastValidSample(unittest.TestCase):
+    #def test_last_valid_sample(self):
+        #data = np.arange(11, 15)
+        #self.assertEqual(op.last_valid_sample(np.ma.array(data, mask=[1,0,1,0])), (3, 14))
+        #self.assertEqual(op.last_valid_sample(np.ma.array(data, mask=True)), (None, None))
+        #self.assertEqual(op.last_valid_sample(np.ma.array(data, mask=[1,0,1,0]), -2), (1, 12))
+        #self.assertEqual(op.last_valid_sample(np.ma.array(data, mask=[1,0,1,0]), -3), (1, 12))
+        #self.assertEqual(op.last_valid_sample(np.ma.array(data, mask=[1,0,1,0]), 9), (3, 14))
+        #self.assertEqual(op.last_valid_sample(np.ma.array(data, mask=[0,0,0,1])), (2, 13))
+
+
+
 #class TestRepairMask(unittest.TestCase):
     #def setUp(self):
         #self.basic_data = np.ma.array(

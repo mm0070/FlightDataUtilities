@@ -8,6 +8,10 @@ cdef enum RepairMethod:
     FILL_START, FILL_STOP, INTERPOLATE
 
 cdef np.uint8_t[:] getmaskarray1d(array)
+
+cpdef prev_unmasked_value(array, Py_ssize_t idx, Py_ssize_t start_idx=?)
+cpdef next_unmasked_value(array, Py_ssize_t idx, Py_ssize_t stop_idx=?)
+cpdef nearest_unmasked_value(array, Py_ssize_t idx, Py_ssize_t start_idx=?, Py_ssize_t stop_idx=?)
 cdef void fill_range_unsafe(cy.np_types[:] data, np.uint8_t[:] mask, cy.np_types value, Py_ssize_t start_idx,
                             Py_ssize_t stop_idx) nogil
 cdef void fill_range(cy.np_types[:] data, np.uint8_t[:] mask, cy.np_types value, Py_ssize_t start,  # TODO

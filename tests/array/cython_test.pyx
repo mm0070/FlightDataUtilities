@@ -253,27 +253,3 @@ class TestArrayWraparoundIdx(unittest.TestCase):
         self.assertEqual(cy.array_wraparound_idx(-3, 2), 0)
         self.assertEqual(cy.array_wraparound_idx(cy.NONE_IDX, 10), 9)
 
-
-"""
-class TestLongestSectionUint8(unittest.TestCase):
-    def test_longest_section_uint8(self):
-        self.assertEqual(array.longest_section_uint8(np.empty(0, dtype=np.uint8)), 0)
-        data = np.zeros(10, dtype=np.uint8)
-        self.assertEqual(array.longest_section_uint8(data), 10)
-        self.assertEqual(array.longest_section_uint8(data, 0), 10)
-        self.assertEqual(array.longest_section_uint8(data, 1), 0)
-        data[0] = 1
-        self.assertEqual(array.longest_section_uint8(data), 9)
-        self.assertEqual(array.longest_section_uint8(data, 1), 1)
-        data[9] = 1
-        self.assertEqual(array.longest_section_uint8(data), 8)
-        self.assertEqual(array.longest_section_uint8(data, 1), 1)
-        data[2:4] = 2
-        self.assertEqual(array.longest_section_uint8(data), 5)
-        self.assertEqual(array.longest_section_uint8(data, 1), 1)
-        self.assertEqual(array.longest_section_uint8(data, 2), 2)
-        data[:] = 2
-        self.assertEqual(array.longest_section_uint8(data), 0)
-        self.assertEqual(array.longest_section_uint8(data, 1), 0)
-        self.assertEqual(array.longest_section_uint8(data, 2), 10)
-"""

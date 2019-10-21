@@ -23,6 +23,19 @@ cdef np.uint8_t[:] getmaskarray1d(array):
     return cy.zeros_uint8(len(array)) if np.PyArray_CheckScalar(array.mask) else array.mask.view(np.uint8)
 
 
+cpdef prev_unmasked_value(array, Py_ssize_t idx, Py_ssize_t start_idx=0):
+    return cy.array_idx_value(array, cy.prev_idx(getmaskarray1d(array), idx, match=False, start_idx=start_idx))
+
+
+cpdef next_unmasked_value(array, Py_ssize_t idx, Py_ssize_t stop_idx=cy.NONE_IDX):
+    return cy.array_idx_value(array, cy.next_idx(getmaskarray1d(array), idx, match=False, stop_idx=stop_idx))
+
+
+cpdef nearest_unmasked_value(array, Py_ssize_t idx, Py_ssize_t start_idx=0, Py_ssize_t stop_idx=cy.NONE_IDX):
+    return cy.array_idx_value(array, cy.nearest_idx(getmaskarray1d(array), idx, match=False, start_idx=start_idx,
+                                                    stop_idx=stop_idx))
+
+
 @cython.wraparound(False)
 cdef void fill_range_unsafe(cy.np_types[:] data, np.uint8_t[:] mask, cy.np_types value, Py_ssize_t start_idx,
                             Py_ssize_t stop_idx) nogil:
@@ -152,4 +165,3 @@ cdef repair_mask(array, RepairMethod method=RepairMethod.INTERPOLATE, repair_dur
 
     repair_data_mask(array.data, array.mask.view(np.uint8), method, repair_samples, extrapolate=extrapolate)
     return array.astype(dtype, copy=False)
-

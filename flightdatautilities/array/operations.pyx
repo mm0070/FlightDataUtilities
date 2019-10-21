@@ -81,12 +81,6 @@ slices_to_array(length, slices)
 '''
 
 
-'''
-def masked_array_fill_start(array, max_samples=None):
-    cdef long c_max_samples = max_samples if max_samples is None else -1
-    if c_max_samples != -1 and c_max_samples <= 0:
-        return array
-'''
 import cython
 import numpy as np
 cimport numpy as np
@@ -145,68 +139,12 @@ cpdef bint entirely_unmasked(array):
     return not array.mask if np.isscalar(array.mask) else not any_array(array.mask)
 
 
-cdef object array_idx_value(Py_ssize_t idx, object array):
-    return Value(None, None) if idx == -1 else Value(idx, array[idx])
-
-
-cpdef object idx_none(Py_ssize_t idx):
-    '''
-    Converts int idx to int or None where -1 is None for converting from Cython-optimised to Python types.
-    '''
-    return None if idx == -1 else idx
-
-
-cpdef Py_ssize_t none_idx(idx):
-    '''
-    Converts int or None idx to int idx where None is -1 for converting from Python to Cython-optimised types.
-    '''
-    return -1 if idx is None else idx
-
-
-cpdef nearest_idx(array, Py_ssize_t idx, bint match=True, Py_ssize_t start_idx=0, Py_ssize_t stop_idx=-1):
-    return idx_none(cy.nearest_idx(array.view(np.uint8), idx, match=match, start_idx=start_idx, stop_idx=stop_idx))
-
-
-cpdef nearest_unmasked_value(array, Py_ssize_t idx, Py_ssize_t start_idx=0, Py_ssize_t stop_idx=-1):
-    cdef Py_ssize_t unmasked_idx = cy.nearest_idx(ma.getmaskarray1d(array), idx, match=False, start_idx=start_idx,
-                                                  stop_idx=stop_idx)
-    return array_idx_value(array, unmasked_idx)
-
-
-cpdef prev_unmasked_value(array, Py_ssize_t idx, Py_ssize_t start_idx=0):
-    cdef Py_ssize_t unmasked_idx = cy.prev_idx(ma.getmaskarray1d(array), idx, match=False, start_idx=start_idx)
-    return array_idx_value(array, unmasked_idx)
-
-
-cpdef next_unmasked_value(array, Py_ssize_t idx, Py_ssize_t stop_idx=-1):
-    cdef Py_ssize_t unmasked_idx = cy.next_idx(ma.getmaskarray1d(array), idx, match=False, stop_idx=stop_idx)
-    return array_idx_value(array, unmasked_idx)
-
-
-cpdef first_unmasked_value(array, Py_ssize_t start_idx=0):
-    return next_unmasked_value(array, start_idx)
-
-
-cpdef last_unmasked_value(array, Py_ssize_t stop_idx=-1, Py_ssize_t min_samples=-1):
-    cdef np.uint8_t[:] mask = ma.getmaskarray1d(array)
-    if min_samples > 0:
-        mask = cy.remove_small_runs(mask, <float>min_samples)
-    stop_idx = cy.array_stop_idx(stop_idx, mask.shape[0])
-
-    cdef Py_ssize_t idx
-
-    for idx in range(stop_idx, -1, -1):
-        if not mask[idx]:
-            return array[idx]
-    return None
-
-
 cpdef nearest_slice(array, Py_ssize_t idx, bint match=True):
     cdef:
         np.uint8_t[:] data = array.view(np.uint8)
         Py_ssize_t start_idx, stop_idx, nearest_idx = cy.nearest_idx(data, idx, match=match)
 
-    if nearest_idx == -1:
+    if nearest_idx == cy.NONE_IDX:
         return None
 
     if nearest_idx == idx:
@@ -422,26 +360,26 @@ def runs_of_ones(array, min_samples=None):
     '''
     cdef:
         np.uint8_t[:] view = array.view(np.uint8)
-        Py_ssize_t idx, min_samples_long = none_idx(min_samples), start_idx = -1
+        Py_ssize_t idx, min_samples_long = cy.none_idx(min_samples), start_idx = -1
 
     for idx in range(view.shape[0]):
         if view[idx] and start_idx == -1:
             start_idx = idx
         elif not view[idx] and start_idx != -1:
-            if min_samples_long == -1 or idx - start_idx > min_samples_long:
+            if min_samples_long == cy.NONE_IDX or idx - start_idx > min_samples_long:
                 yield slice(start_idx, idx)
             start_idx = -1
 
-    if start_idx != -1 and (min_samples_long == -1 or view.shape[0] - start_idx > min_samples_long):
+    if start_idx != -1 and (min_samples_long == cy.NONE_IDX or view.shape[0] - start_idx > min_samples_long):
         yield slice(start_idx, view.shape[0])
 
 
 ## TODO
-#def overlap_merge(x, y, unsigned long extend_start=0, unsigned long extend_stop=0):
+#def overlap_merge(x, y, Py_ssize_t extend_start=0, Py_ssize_t extend_stop=0):
 
     #cdef:
-        #unsigned char[:] xv = x.view(np.uint8), yv = y.view(np.uint8)
-        #long y_start_idx = -1
+        #np.uint8_t[:] xv = x.view(np.uint8), yv = y.view(np.uint8)
+        #Py_ssize_t y_start_idx = -1
 
     #for idx in range(xv.shape[0]):
         #if xv[idx] and x_start_idx == -1:
@@ -473,48 +411,6 @@ cpdef bint is_constant(cy.np_types[:] data) nogil:
         if data[idx] != data[0]:
             return False
     return True
-
-
-cpdef first_valid_sample(array, Py_ssize_t start_idx=0):
-    '''
-    Returns the first valid sample of data from a point in an array.
-    '''
-    cdef:
-        np.uint8_t[:] mask = ma.getmaskarray1d(array)
-        Py_ssize_t idx
-
-    if start_idx < 0:
-        start_idx += mask.shape[0]
-
-    for idx in range(start_idx, mask.shape[0]):
-        if not mask[idx]:
-            return Value(idx, array[idx])
-
-    return Value(None, None)
-
-
-cpdef last_valid_sample(array, end_idx=None):
-    '''
-    Returns the last valid sample of data before a point in an array.
-    '''
-    cdef:
-        np.uint8_t[:] mask = ma.getmaskarray1d(array)
-        Py_ssize_t end_idx_long, idx
-
-    if end_idx is None:
-        end_idx_long = mask.shape[0] - 1
-    else:
-        end_idx_long = end_idx
-        if end_idx_long < 0:
-            end_idx_long = end_idx_long + mask.shape[0]
-    if end_idx_long >= mask.shape[0]:
-        end_idx_long = mask.shape[0] - 1
-
-    for idx in range(end_idx_long, -1, -1):
-        if not mask[idx]:
-            return Value(idx, array[idx])
-
-    return Value(None, None)
 
 
 cpdef swap_bytes(array):
@@ -621,42 +517,40 @@ cpdef bytes key_value(const np.uint8_t[:] array, const np.uint8_t[:] key, const 
     :returns: The value for the key if found, else None.
     :rtype: str or None
     '''
-    key_idx = index_of_subarray_uint8(array, key, start=start)
-    if key_idx == -1:
+    key_idx = cy.index_of_subarray_uint8(array, key, start=start)
+    if key_idx == cy.NONE_IDX:
         return None
-    start_idx = index_of_subarray_uint8(array, delimiter, start=key_idx) + len(delimiter)
-    stop_idx = index_of_subarray_uint8(array, separator, start=start_idx)
-    return np.asarray(array[start_idx:stop_idx]).tostring().strip()
+    start_idx = cy.index_of_subarray_uint8(array, delimiter, start=key_idx) + len(delimiter)
+    stop_idx = cy.index_of_subarray_uint8(array, separator, start=start_idx)
+    return bytes(array[start_idx:stop_idx]).strip()
 
 
-cpdef Py_ssize_t index_of_subarray_uint8(const np.uint8_t[:] array, const np.uint8_t[:] subarray, Py_ssize_t start=0) nogil:
+cpdef index_of_subarray_uint8(const np.uint8_t[:] array, const np.uint8_t[:] subarray, Py_ssize_t start=0):
     '''
     Find the first index of a subarray within an array of dtype uint8.
+
+    TODO: change to cy.np_types fused type once Cython supports const with fused types
 
     :param start: start index to search within array (positive integer or 0)
     :returns:
     '''
-    cdef Py_ssize_t array_idx, subarray_idx
-
-    if subarray.shape[0] > array.shape[0]:
-        # This case is not automatically handled by range on Ubuntu 10.04 32-bit.
-        return -1
-
-    for array_idx in range(start, array.shape[0] - subarray.shape[0] + 1):
-        for subarray_idx in range(subarray.shape[0]):
-            if array[array_idx + subarray_idx] != subarray[subarray_idx]:
-                break
-        else:
-            return array_idx
-    return -1
+    return cy.idx_none(cy.index_of_subarray_uint8(array, subarray, start=start))
 
 
 cpdef bint subarray_exists_uint8(const np.uint8_t[:] array, const np.uint8_t[:] subarray, Py_ssize_t start=0) nogil:
-    return index_of_subarray_uint8(array, subarray, start=start) != -1
-
-
-cpdef Py_ssize_t array_index_uint16(unsigned short value, np.uint16_t[:] array) nogil:
     '''
+    Return whether or not the subarray exists within the array.
+
+    TODO: change to cy.np_types fused type once Cython supports const with fused types
+    '''
+    return cy.index_of_subarray_uint8(array, subarray, start=start) != cy.NONE_IDX
+
+
+@cython.wraparound(False)
+cpdef Py_ssize_t array_value_idx(cy.np_types[:] array, cy.np_types value) nogil:
+    '''
+    Return the first array index which matches value.
+
     Can be much faster than numpy operations which check the entire array.
 
     >>> x = np.zeros(1000000000, dtype=np.uint16)
@@ -670,7 +564,7 @@ cpdef Py_ssize_t array_index_uint16(unsigned short value, np.uint16_t[:] array) 
     for idx in range(array.shape[0]):
         if value == array[idx]:
             return idx
-    return -1
+    return cy.NONE_IDX
 
 
 cpdef merge_masks(masks):

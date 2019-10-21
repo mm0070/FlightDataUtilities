@@ -528,59 +528,72 @@ cdef Py_ssize_t array_stop_idx(Py_ssize_t stop_idx, Py_ssize_t length) nogil:
 
 
 @cython.wraparound(False)
+cdef Py_ssize_t prev_idx_unsafe(const np.uint8_t[:] array, Py_ssize_t idx, bint match=True, Py_ssize_t start_idx=0) nogil:
+    '''
+    Return the previous index within the array which matches a value or -1 if the value is not found.
+    '''
+    cdef Py_ssize_t prev_idx
+    for prev_idx in range(idx - 1, start_idx - 1, -1):
+        if array[prev_idx] == match:
+            return prev_idx
+    return NONE_IDX
+
+
+@cython.wraparound(False)
 cdef Py_ssize_t prev_idx(const np.uint8_t[:] array, Py_ssize_t idx, bint match=True, Py_ssize_t start_idx=0) nogil:
     '''
     Return the previous index within the array which matches a value or -1 if the value is not found.
     '''
-    idx = array_idx(idx, array.shape[0])
-    start_idx = array_idx(start_idx, array.shape[0])
-
-    cdef Py_ssize_t prev_idx
-
-    for prev_idx in range(idx - 1, start_idx - 1, -1):
-        if array[prev_idx] == match:
-            return prev_idx
-    return -1
+    return prev_idx_unsafe(array, array_wraparound_idx(idx, array.shape[0]), match=match,
+                           start_idx=array_wraparound_idx(start_idx, array.shape[0]))
 
 
 @cython.wraparound(False)
-cdef Py_ssize_t next_idx(const np.uint8_t[:] array, Py_ssize_t idx=0, bint match=True, Py_ssize_t stop_idx=0) nogil:
+cdef Py_ssize_t next_idx_unsafe(const np.uint8_t[:] array, Py_ssize_t idx=0, bint match=True, Py_ssize_t stop_idx=NONE_IDX) nogil:
     '''
     Return the next index within the array which matches a value or -1 if the value is not found.
     '''
-    idx = array_idx(idx, array.shape[0])
-    stop_idx = array_stop_idx(stop_idx, array.shape[0])
-
     cdef Py_ssize_t next_idx
-
     for next_idx in range(idx, stop_idx):
         if array[next_idx] == match:
             return next_idx
-    return -1
+    return NONE_IDX
 
 
-cdef Py_ssize_t nearest_idx(np.uint8_t[:] array, Py_ssize_t idx, bint match=True, Py_ssize_t start_idx=0,
-                            Py_ssize_t stop_idx=-1) nogil:
-    if stop_idx < 0:
-        stop_idx = array.shape[0]
+@cython.wraparound(False)
+cdef Py_ssize_t next_idx(const np.uint8_t[:] array, Py_ssize_t idx=0, bint match=True, Py_ssize_t stop_idx=NONE_IDX) nogil:
+    '''
+    Return the next index within the array which matches a value or -1 if the value is not found.
+    '''
+    return next_idx_unsafe(array, array_wraparound_idx(idx, array.shape[0]), match=match,
+           stop_idx=array_wraparound_idx(stop_idx, array.shape[0]))
 
-    idx = array_idx(idx, array.shape[0])
 
-    if not array.shape[0] or idx < start_idx or idx >= stop_idx:
-        return -1
-
+@cython.wraparound(False)
+cdef Py_ssize_t nearest_idx_unsafe(np.uint8_t[:] array, Py_ssize_t idx, bint match=True, Py_ssize_t start_idx=0,
+                                   Py_ssize_t stop_idx=NONE_IDX) nogil:
+    if not array.shape[0]:
+        return NONE_IDX
     if array[idx] == match:
         return idx
 
-    cdef:
-        Py_ssize_t fwd_range = stop_idx - idx, rev_range = idx - start_idx, shift
+    cdef Py_ssize_t fwd_range = stop_idx - idx, rev_range = idx - start_idx, shift
 
     for shift in range(1, (fwd_range if fwd_range >= rev_range else rev_range) + 1):
         if shift < fwd_range and array[idx + shift] == match:
             return idx + shift
         if shift <= rev_range and array[idx - shift] == match:
             return idx - shift
-    return -1
+    return NONE_IDX
+
+
+@cython.wraparound(False)
+cdef Py_ssize_t nearest_idx(np.uint8_t[:] array, Py_ssize_t idx, bint match=True, Py_ssize_t start_idx=0,
+                            Py_ssize_t stop_idx=NONE_IDX) nogil:
+
+    return nearest_idx_unsafe(array, array_wraparound_idx(idx, array.shape[0]), match=match,
+                              start_idx=array_wraparound_idx(start_idx, array.shape[0]),
+                              stop_idx=array_wraparound_idx(stop_idx, array.shape[0]))
 
 
 cdef np.uint8_t[:] contract_runs(np.uint8_t[:] data, Py_ssize_t size, bint match=True) nogil:
@@ -650,392 +663,24 @@ cdef np.uint8_t[:] remove_small_runs(np.uint8_t[:] data, float seconds, float hz
     return data
 
 
-
-"""
-
-cdef np.uint16_t[:] sync_words_from_modes(modes):
-    '''
-    Creates an array containing sync words in a contiguous 1d-array.
-
-    e.g. sync_words_from_modes(['717'])
-    '''
-    cdef:
-        np.uint16_t[:] sync_words = empty_uint16(len(modes) * 4)
-        Py_ssize_t sync_word_idx = 0
-    for mode in modes:
-        for sync_word in SYNC_PATTERNS[mode]:
-            sync_words[sync_word_idx] = sync_word
-            sync_word_idx += 1
-    return sync_words
-
-
-cpdef swap_bytes(array):
-    '''
-    Swap byte-order endianness.
-
-    >>> swap_bytes(np.fromstring(b'\x12\x34\x56\x78')).tostring()
-    b'\x34\x12\x78\x56'
-
-    :param array: Array to be byte-swapped.
-    :type array: np.ndarray
-    :returns: Array after byte-order has been swapped.
-    :rtype: np.ndarray
-    '''
-    return array.byteswap(True)
-
-
-cpdef unpack(array):
-    '''
-    Unpack 'packed' flight data into unpacked (byte-aligned) format.
-
-    :type array: np.ndarray(dtype=np.uint8)
-    :rtype: np.ndarray(dtype=np.uint8)
-    '''
-    if len(array) % 3:
-        array = array[:len(array) // 3 * 3]
-    unpacked = np.empty(len(array) // 3 * 4, dtype=np.uint8)
-    unpacked[::4] = array[::3]
-    unpacked[1::4] = array[1::3] & 0x0F
-    unpacked[2::4] = ((array[2::3] & 0x0F) << 4) + ((array[1::3] & 0xF0) >> 4)
-    unpacked[3::4] = (array[2::3] & 0xF0) >> 4
-    return unpacked
-
-
-cpdef np.uint16_t[:] unpack_little_endian(np.uint8_t[:] data):
-    '''
-    b'24705c' -> b'47025c00'
-    '''
-    if data.shape[0] % 3 != 0:
-        raise ValueError('data length must be a multiple of 3')
-
-    cdef:
-        np.uint16_t[:] output = zeros_uint16(<Py_ssize_t>(data.shape[0] // 1.5))
-        Py_ssize_t data_idx = 0, output_idx = 0
-
-    while data_idx < data.shape[0]:  # cython range with step is slow
-        output[output_idx] = ((data[data_idx] & 0b11110000) << 4) | ((data[data_idx] & 0b1111) << 4) | (data[data_idx + 1] >> 4)
-        output[output_idx + 1] = ((data[data_idx + 1] & 0b1111) << 8) | data[data_idx + 2]
-        data_idx += 3
-        output_idx += 2
-
-    return output
-
-
-cpdef pack(array):
-    '''
-    Pack 'unpacked' flight data into packed format.
-
-    :type array: np.ndarray(dtype=np.uint8)
-    :rtype: np.ndarray(dtype=np.uint8)
-    '''
-    packed = np.empty(len(array) // 4 * 3, dtype=np.uint8)
-    packed[::3] = array[::4]
-    packed[1::3] = array[1::4] + ((array[2::4] & 0x0F) << 4)
-    packed[2::3] = (array[3::4] << 4) + ((array[2::4] & 0xF0) >> 4)
-    return packed
-
-
-cpdef bytes key_value(np.uint8_t[:] array, key, delimiter, separator, Py_ssize_t start=0):
-    '''
-    Find the value of a key in the format:
-
-    <key><delimiter><value><separator>
-
-    :param array: Array in which the key value pair will be searched for.
-    :type array: np.array(dtype=np.uint8)
-    :param key: Key to find a value for.
-    :type key: str
-    :param delimiter: Delimiter char(s) which appear between the key and value, e.g. '=' for 'key=value',
-    :type delimiter: str
-    :param separator: Line separator for key value pairs, e.g. '\x0D' for 'k1=v1\x0Dk2=v2'
-    :type separator: str
-    :param start: Start index within the array to search from.
-    :type start: int
-    :returns: The value for the key if found, else None.
-    :rtype: str or None
-    '''
-    key_idx = index_of_subarray_uint8(array, np.fromstring(key, dtype=np.uint8), start=start)
-    if key_idx == -1:
-        return None
-    start_idx = index_of_subarray_uint8(array, np.fromstring(delimiter, dtype=np.uint8), start=key_idx) + len(delimiter)
-    stop_idx = index_of_subarray_uint8(array, np.fromstring(separator, dtype=np.uint8), start=start_idx)
-    return np.asarray(array[start_idx:stop_idx]).tostring().strip()
-
-
-cpdef Py_ssize_t index_of_subarray_uint8(np.uint8_t[:] array, np.uint8_t[:] subarray, Py_ssize_t start=0) nogil:
+cdef Py_ssize_t index_of_subarray_uint8(const np.uint8_t[:] array, const np.uint8_t[:] subarray, Py_ssize_t start=0) nogil:
     '''
     Find the first index of a subarray within an array of dtype uint8.
 
-    :param start: start index to search within array (positive integer or 0)
-    :returns:
+    TODO: change to cy.np_types fused type once Cython supports const with fused types
+
+    :param start: start index to search within array
     '''
+    if subarray.shape[0] > array.shape[0]:
+        return NONE_IDX  # this case is not automatically handled by range on Ubuntu 10.04 32-bit
+
     cdef Py_ssize_t array_idx, subarray_idx
 
-    if subarray.shape[0] > array.shape[0]:
-        # This case is not automatically handled by range on Ubuntu 10.04 32-bit.
-        return -1
-
-    for array_idx in range(start, array.shape[0] - subarray.shape[0] + 1):
+    for array_idx in range(array_wraparound_idx(start, array.shape[0]), array.shape[0] - subarray.shape[0] + 1):
         for subarray_idx in range(subarray.shape[0]):
             if array[array_idx + subarray_idx] != subarray[subarray_idx]:
                 break
         else:
             return array_idx
-    return -1
+    return NONE_IDX
 
-
-cpdef Py_ssize_t array_index_uint16(unsigned short value, np.uint16_t[:] array) nogil:
-    '''
-    Can be much faster than numpy operations which check the entire array.
-
-    >>> x = np.zeros(1000000000, dtype=np.uint16)
-    >>> x[100000] = 1
-    >>> %timeit np.any(x == 1)
-    1 loops, best of 3: 419 ms per loop
-    >>> %timeit array_index_uint16(1, x) != -1
-    10000 loops, best of 3: 64.2 µs per loop
-    '''
-    cdef Py_ssize_t idx
-    for idx in range(array.shape[0]):
-        if value == array[idx]:
-            return idx
-    return -1
-
-
-def extrap1d(interpolator):
-    '''
-    Extends scipy.interp1d which extrapolates values outside of the interpolation points.
-    http://stackoverflow.com/questions/2745329/how-to-make-scipy-interpolate-give-a-an-extrapolated-result-beyond-the-input-ran
-    Optimised interpolation with extrapolation has been implemented in Interpolator.
-    '''
-    xs = interpolator.x
-    ys = interpolator.y
-
-    def pointwise(x):
-        if x < xs[0]:
-            return ys[0] + (x - xs[0]) * (ys[1] - ys[0]) / (xs[1] - xs[0])
-        elif x > xs[-1]:
-            return ys[-1] + (x - xs[-1]) * (ys[-1] - ys[-2]) / (xs[-1] - xs[-2])
-        else:
-            return interpolator(x)
-
-    def ufunclike(xs):
-        return scipy.array(map(pointwise, scipy.array(xs)))
-
-    return ufunclike
-
-
-cpdef merge_masks(masks):
-    '''
-    ORs multiple masks together. Could this be done in one step with numpy?
-
-    :param masks: Masks to OR together.
-    :type masks: iterable of np.ma.masked_array.mask
-    :raises IndexError: If masks is empty.
-    :returns: Single mask, the result of ORing masks.
-    :rtype: np.ma.masked_array.mask
-    '''
-    merged_mask = np.ma.make_mask(masks[0])
-    for mask in masks[1:]:
-        merged_mask = np.ma.mask_or(merged_mask, mask)
-    return merged_mask
-
-
-cpdef mask_ratio(mask):
-    '''
-    Ratio of masked data (1 == all masked).
-    '''
-    # Handle scalars.
-    if np.all(mask):
-        return 1
-    elif not np.any(mask):
-        return 0
-    return mask.sum() / float(len(mask))
-
-
-cpdef percent_unmasked(mask):
-    '''
-    Percentage of unmasked data.
-    '''
-    return (1 - mask_ratio(mask)) * 100
-
-
-cpdef sum_arrays(arrays):
-    '''
-    Sums multiple numpy arrays together.
-
-    :param arrays: Arrays to sum.
-    :type arrays: iterable of np.ma.masked_array
-    :raises IndexError: If arrays is empty.
-    :returns: The result of summing arrays.
-    :rtype: np.ma.masked_array
-    '''
-    summed_array = arrays[0]
-    for array in arrays[1:]:
-        summed_array += array
-    return summed_array
-
-
-cpdef downsample_arrays(arrays):
-    '''
-    Return arrays downsampled to the size of the smallest.
-
-    :param arrays: Arrays to downsample.
-    :type arrays: iterable of np.ndarray or np.ma.masked_array
-    :returns: Arrays downsampled to the size of the smallest.
-    :rtype: iterable of np.ma.masked_array
-    '''
-    lengths = [len(x) for x in arrays]
-    shortest = min(lengths)
-    if shortest == max(lengths):
-        return arrays
-
-    for length in lengths:
-        if length % shortest:
-            raise ValueError(f"Arrays lengths '{lengths}' should be multiples of the shortest.")
-    downsampled_arrays = []
-    for array in arrays:
-        step = len(array) // shortest
-        if step > 1:
-            array = array[::step]
-        downsampled_arrays.append(array)
-    return downsampled_arrays
-
-
-cpdef upsample_arrays(arrays):
-    '''
-    Return arrays upsampled to the size of the largest.
-
-    :param arrays: Arrays to upsample.
-    :type arrays: iterable of np.ma.masked_array
-    :raises ValueError: If array lengths are not multiples.
-    :returns: Arrays upsampled to the size of the largest.
-    :rtype: iterable of np.ma.masked_array
-    '''
-    lengths = [1 if np.isscalar(a) else len(a) for a in arrays]
-    largest = max(lengths)
-    if largest == min(lengths):
-        return arrays
-
-    for length in lengths:
-        if largest % length:
-            raise ValueError(f"The largest array length should be a multiple of all others '{lengths}'.")
-
-    upsampled_arrays = []
-    for array, length in zip(arrays, lengths):
-        # XXX: Hack to fix MappedArray values mapping being stripped by repeat.
-        values_mapping = getattr(array, 'values_mapping', None)
-        repeat = largest // length
-        if repeat > 1:
-            array = array.repeat(repeat)
-            if values_mapping:
-                array.values_mapping = values_mapping
-        upsampled_arrays.append(array)
-    return upsampled_arrays
-
-
-cpdef align_arrays(slave_array, master_array):
-    '''
-    Very basic aligning using repeat to upsample and skipping over samples to
-    downsample the slave array to the master frequency
-
-    >>> align_arrays(np.arange(10), np.arange(20,30))  # equal length
-    array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
-    >>> align_arrays(np.arange(40,80), np.arange(20,40))  # downsample every other
-    array([40, 42, 44, 46, 48, 50, 52, 54, 56, 58, 60, 62, 64, 66, 68, 70, 72, 74, 76, 78])
-    >>> align_arrays(np.arange(40,80), np.arange(30,40))  # downsample every 4th
-    array([40, 44, 48, 52, 56, 60, 64, 68, 72, 76])
-    >>> align_arrays(np.arange(10), np.arange(20,40))  # upsample
-    array([0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9])
-    '''
-    ratio = len(master_array) / len(slave_array)
-    if ratio == 1:
-        # nothing to do
-        return slave_array
-    if ratio > 1:
-        # repeat slave to upsample
-        # Q: Upsample using repeat good enough, or interpolate?
-        return slave_array.repeat(ratio)
-    else:
-        # take every other sample to downsample
-        return slave_array[0::int(1 // ratio)]
-
-
-cpdef save_compressed(path, array):
-    '''
-    Save either a MappedArray, np.ma.MaskedArray or np.ndarray in a compressed archive.
-    '''
-    try:
-        from flightdataaccessor import MappedArray
-    except ImportError:
-        pass
-    else:
-        if isinstance(array, MappedArray):
-            np.savez_compressed(
-                path,
-                np.array(array.values_mapping),
-                array.data,
-                array.mask,
-            )
-            return
-    if isinstance(array, np.ma.MaskedArray):
-        np.savez_compressed(path, array.data, array.mask)
-    elif isinstance(array, np.ndarray):
-        np.savez_compressed(path, array)
-    else:
-        raise NotImplementedError(f"Object of type '{type(array)}' cannot be saved.")
-
-
-cpdef load_compressed(path):
-    '''
-    Load either a MappedArray, np.ma.MaskedArray or np.ndarray from a compressed archive.
-    '''
-    array_dict = np.load(path)
-    array_count = len(array_dict.keys())
-    if array_count == 3:
-        from flightdataaccessor import MappedArray
-        values_mapping = array_dict['arr_0'].item()
-        raw_array = np.ma.masked_array(array_dict['arr_1'], mask=array_dict['arr_2'])
-        array = MappedArray(raw_array, values_mapping=values_mapping)
-    elif array_count == 2:
-        array = np.ma.MaskedArray(array_dict['arr_0'], mask=array_dict['arr_1'])
-    elif array_count == 1:
-        array = array_dict['arr_0']
-    else:
-        raise NotImplementedError(f'Unknown array type with {array_count} components.')
-    return array
-
-
-cpdef bint is_power2(number):
-    '''
-    Whether or not a number is a power of two. Forces floats to int.
-    Ref: http://code.activestate.com/recipes/577514-chek-if-a-number-is-a-power-of-two/
-
-    opt: ~4x faster than pure python version
-    '''
-    if number % 1:
-        return False
-    cdef int num = <int>number
-    return num > 0 and ((num & (num - 1)) == 0)
-
-
-cpdef is_power2_fraction(number):
-    '''
-    Whether or not a number is a power of two or one divided by a power of two.
-
-    :type number: int or float
-    :returns: if the number is either a power of 2 or a fraction, e.g. 4, 2, 1, 0.5, 0.25
-    :rtype: bool
-    '''
-    if 0 < number < 1:
-        number = 1 / number
-    return is_power2(number)
-
-
-cpdef np.ndarray twos_complement(np.ndarray array, np.uint64_t bit_length):
-    '''
-    Convert the values from "sign bit" notation to "two's complement".
-    '''
-    array[array > saturated_value(bit_length - 1)] -= saturated_value(bit_length) + 1
-    return array
-"""

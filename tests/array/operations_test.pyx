@@ -103,17 +103,6 @@ class TestEntirelyUnmasked(unittest.TestCase):
         self.assertFalse(call([False, True]))
 
 
-class TestFirstValidSample(unittest.TestCase):
-    def test_first_valid_sample(self):
-        data = np.arange(11, 15)
-        self.assertEqual(op.first_valid_sample(np.ma.array(data, mask=[1,0,1,0])), (1, 12))
-        self.assertEqual(op.first_valid_sample(np.ma.array(data, mask=True)), (None, None))
-        self.assertEqual(op.first_valid_sample(np.ma.array(data, mask=[1,0,1,0]), 2), (3, 14))
-        self.assertEqual(op.first_valid_sample(np.ma.array(data, mask=[1,0,1,0]), 1), (1, 12))
-        self.assertEqual(op.first_valid_sample(np.ma.array(data, mask=[1,0,1,0]), 9), (None, None))
-        self.assertEqual(op.first_valid_sample(np.ma.array(data, mask=[1,0,1,0]), -2), (3, 14))
-
-
 class TestIsConstant(unittest.TestCase):
     def test_is_constant(self):
         self.assertTrue(op.is_constant[np.uint16_t](cy.empty_uint16(0)))
@@ -148,17 +137,6 @@ class TestIsPower2Fraction(unittest.TestCase):
         self.assertFalse(op.is_power2_fraction(0.75))
         self.assertFalse(op.is_power2_fraction(0.2))
         self.assertFalse(op.is_power2_fraction(0.015626))
-
-
-class TestLastValidSample(unittest.TestCase):
-    def test_last_valid_sample(self):
-        data = np.arange(11, 15)
-        self.assertEqual(op.last_valid_sample(np.ma.array(data, mask=[1,0,1,0])), (3, 14))
-        self.assertEqual(op.last_valid_sample(np.ma.array(data, mask=True)), (None, None))
-        self.assertEqual(op.last_valid_sample(np.ma.array(data, mask=[1,0,1,0]), -2), (1, 12))
-        self.assertEqual(op.last_valid_sample(np.ma.array(data, mask=[1,0,1,0]), -3), (1, 12))
-        self.assertEqual(op.last_valid_sample(np.ma.array(data, mask=[1,0,1,0]), 9), (3, 14))
-        self.assertEqual(op.last_valid_sample(np.ma.array(data, mask=[0,0,0,1])), (2, 13))
 
 
 class TestMaxValues(unittest.TestCase):
@@ -371,12 +349,12 @@ class TestUnpackLittleEndian(unittest.TestCase):
         self.assertEqual(hexlify(np.asarray(op.unpack_little_endian(b'\x24\x70\x5C\x12\x34\x56')).tostring()), b'47025c0023015604')
 
 
-class TestArrayIndexUint16(unittest.TestCase):
-    def test_array_index_uint16(self):
-        self.assertEqual(op.array_index_uint16(10, np.empty(0, dtype=np.uint16)), -1)
-        self.assertEqual(op.array_index_uint16(10, np.array([2,4,6,8], dtype=np.uint16)), -1)
-        self.assertEqual(op.array_index_uint16(10, np.array([10], dtype=np.uint16)), 0)
-        self.assertEqual(op.array_index_uint16(10, np.array([2,4,6,8,10], dtype=np.uint16)), 4)
+class TestArrayValueIdx(unittest.TestCase):
+    def test_array_value_idx(self):
+        self.assertEqual(op.array_value_idx[np.uint16_t](np.empty(0, dtype=np.uint16), 10), cy.NONE_IDX)
+        self.assertEqual(op.array_value_idx[np.uint16_t](np.array([2,4,6,8], dtype=np.uint16), 10), cy.NONE_IDX)
+        self.assertEqual(op.array_value_idx[np.uint16_t](np.array([10], dtype=np.uint16), 10), 0)
+        self.assertEqual(op.array_value_idx[np.uint16_t](np.array([2,4,6,8,10], dtype=np.uint16), 10), 4)
 
 
 class TestIndexOfSubarrayUint8(unittest.TestCase):

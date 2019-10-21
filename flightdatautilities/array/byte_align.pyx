@@ -107,7 +107,7 @@ cdef class ByteAligner:
         Find the sync word index of the word within the buffer at specified byte index.
 
         :param idx: byte index of the word within the buffer
-        :returns: sync word index if the word is a sync word, otherwise -1
+        :returns: sync word index if the word is a sync word, otherwise cy.NONE_IDX
         '''
         cdef:
             Py_ssize_t sync_word_idx
@@ -119,7 +119,7 @@ cdef class ByteAligner:
                 self._sync_word = value
                 break
         else:
-            return -1
+            return cy.NONE_IDX
         return sync_word_idx
 
     @cython.wraparound(False)
@@ -132,7 +132,7 @@ cdef class ByteAligner:
         '''
         cdef Py_ssize_t first_sync_word_idx = self._sync_word_idx(idx)
 
-        if first_sync_word_idx == -1:
+        if first_sync_word_idx == cy.NONE_IDX:
             return -1
 
         cdef:
@@ -160,11 +160,11 @@ cdef class ByteAligner:
         Find next frame start index within self._buff starting at idx.
 
         :param idx: index to start searching for frames within self._buff
-        :returns: next frame index within self._buff or -1 if frame is not found
+        :returns: next frame index within self._buff or cy.NONE_IDX if frame is not found
         '''
         while True:
             if idx > (self._buff.shape[0] - self._min_frame_size):
-                return -1
+                return cy.NONE_IDX
             self._wps = self._frame_wps(idx)
             if self._wps == -1:
                 idx += 1
@@ -189,7 +189,7 @@ cdef class ByteAligner:
             idx = 0
             while True:
                 next_frame_idx = self._next_frame_idx(idx)
-                if next_frame_idx == -1:
+                if next_frame_idx == cy.NONE_IDX:
                     remainder_idx = max(self._buff.shape[0] - self._max_frame_size, idx)
                     if remainder_idx <= 0:
                         break
@@ -230,9 +230,9 @@ cdef class ByteAligner:
             data_gen = (data_gen,)
 
         cdef:
-            Py_ssize_t frame_start_idx = -1, frame_stop_idx = -1, idx = 0, \
-                frame_start = -1 if start is None else start // 4, \
-                frame_stop = -1 if stop is None else <Py_ssize_t>ceil(stop / 4.), next_frame_idx, remainder_idx
+            Py_ssize_t frame_start_idx = cy.NONE_IDX, frame_stop_idx = cy.NONE_IDX, idx = 0, \
+                frame_start = cy.NONE_IDX if start is None else start // 4, \
+                frame_stop = cy.NONE_IDX if stop is None else <Py_ssize_t>ceil(stop / 4.), next_frame_idx, remainder_idx
 
         for data in data_gen:
             self._buff = np.concatenate((self._buff, data))
@@ -240,11 +240,11 @@ cdef class ByteAligner:
             while True:
                 next_frame_idx = self._next_frame_idx(idx)
 
-                if next_frame_idx == -1:  # next frame not found
-                    if frame_start_idx != -1:  # data has lost sync (possibly end of buffer)
+                if next_frame_idx == cy.NONE_IDX:  # next frame not found
+                    if frame_start_idx != cy.NONE_IDX:  # data has lost sync (possibly end of buffer)
                         yield np.asarray(self._buff[frame_start_idx:frame_stop_idx])
-                        frame_start_idx = -1
-                        frame_stop_idx = -1
+                        frame_start_idx = cy.NONE_IDX
+                        frame_stop_idx = cy.NONE_IDX
                     # truncate buffer to remove already processed data
                     remainder_idx = self._buff.shape[0] - self._min_frame_size
                     idx = max(idx - remainder_idx, 0)
@@ -255,29 +255,29 @@ cdef class ByteAligner:
                 # next frame found
                 self._frame_count += 1
 
-                if frame_start != -1 and self._frame_count <= frame_start:
+                if frame_start != cy.NONE_IDX and self._frame_count <= frame_start:
                     # ignore frame before start index
                     idx = next_frame_idx + self._wps * 4 * 2
                     continue
 
-                if frame_stop_idx != -1 and next_frame_idx != frame_stop_idx:
+                if frame_stop_idx != cy.NONE_IDX and next_frame_idx != frame_stop_idx:
                     # data was in sync, but next frame does not directly follow the previous frame
                     yield np.asarray(self._buff[frame_start_idx:frame_stop_idx])
                     frame_start_idx = next_frame_idx
-                elif frame_start_idx == -1:
+                elif frame_start_idx == cy.NONE_IDX:
                     # data was previously not in sync
                     frame_start_idx = next_frame_idx
 
                 frame_stop_idx = next_frame_idx + self._wps * 4 * 2
 
-                if frame_stop != -1 and frame_stop <= self._frame_count:
+                if frame_stop != cy.NONE_IDX and frame_stop <= self._frame_count:
                     # reached stop index, stop searching for sync
                     yield np.asarray(self._buff[frame_start_idx:frame_stop_idx])
                     break
 
                 idx = frame_stop_idx
 
-            if frame_stop != -1 and frame_stop <= self._frame_count:
+            if frame_stop != cy.NONE_IDX and frame_stop <= self._frame_count:
                 break
 
     def process_slow(self, data_gen, start=None, stop=None):
@@ -297,15 +297,15 @@ cdef class ByteAligner:
             raise ValueError('stop must be greater than start')
 
         cdef:
-            Py_ssize_t frame_start = -1 if start is None else start // 4, \
-                frame_stop = -1 if stop is None else <int>ceil(stop / 4.)
+            Py_ssize_t frame_start = cy.NONE_IDX if start is None else start // 4, \
+                frame_stop = cy.NONE_IDX if stop is None else <Py_ssize_t>ceil(stop / 4.)
 
         def get_data(idx):
             if idx is None:
                 return np.concatenate(self._output_arrays) if self._output_arrays else None
-            if frame_start != -1 and self._frame_count <= frame_start:
+            if frame_start != cy.NONE_IDX and self._frame_count <= frame_start:
                 return
-            if frame_stop != -1 and self._frame_count > frame_stop:
+            if frame_stop != cy.NONE_IDX and self._frame_count > frame_stop:
                 if not self._output_arrays:
                     raise StopIteration
                 output_array = np.concatenate(self._output_arrays)
