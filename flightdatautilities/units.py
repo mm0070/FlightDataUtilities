@@ -524,6 +524,7 @@ CONVERSION_FUNCTIONS = {
 STANDARD_CONVERSIONS = {
     # Acceleration
     MPS2: G,
+    FPS2: G,
     # Angle:
     RADIAN: DEGREE,
     # Electricity:
@@ -540,6 +541,7 @@ STANDARD_CONVERSIONS = {
     KGF: DECANEWTON,
     # Length:
     MILE: NM,
+    METER: FT,
     # Mass:
     LB: KG,
     SLUG: KG,
@@ -554,6 +556,8 @@ STANDARD_CONVERSIONS = {
     RANKINE: CELSIUS,
     # Volume:
     PINT: QUART,
+    # Velocity:
+    FPS: FPM,
     # Other:
     GS_DDM: DOTS,
     LOC_DDM: DOTS,
