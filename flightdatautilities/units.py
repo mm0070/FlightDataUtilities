@@ -184,6 +184,9 @@ CONVERSION_MULTIPLIERS = {
     MPS2: {
         G: 0.101971621,
     },
+    FPS2: {
+        G: 0.031081,
+    },
     # Density:
     KG_LITER: {
         LB_GALLON: 8.3454063545262,
