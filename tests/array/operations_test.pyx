@@ -10,7 +10,7 @@ from numpy.ma.testutils import assert_array_equal
 
 from flightdatautilities import masked_array_testutils as ma_test
 from flightdatautilities.array cimport cython as cy, operations as op
-from flightdatautilities.array.operations import contract_runs, nearest_idx, remove_small_runs, runs_of_ones
+from flightdatautilities.array.operations import contract_runs, remove_small_runs, runs_of_ones
 from flightdatautilities.read import reader
 
 
@@ -161,36 +161,6 @@ class TestMaxValues(unittest.TestCase):
         self.assertEqual(list(op.max_values(arr, matching)), [(0, 0), (3, 3), (9, 9)])
         arr[0] = np.ma.masked
         self.assertEqual(list(op.max_values(arr, matching)), [(3, 3), (9, 9)])
-
-
-class TestNearestIdx(unittest.TestCase):
-
-    def test_nearest_idx(self):
-        self.assertEqual(nearest_idx(np.empty(0, dtype=np.bool), 0), None)
-        self.assertEqual(nearest_idx(np.array([False], dtype=np.bool), 0), None)
-        self.assertEqual(nearest_idx(np.array([True], dtype=np.bool), 0), 0)
-        data = np.zeros(5, dtype=np.bool)
-        self.assertEqual(nearest_idx(data, 0), None)
-        self.assertEqual(nearest_idx(data, 3), None)
-        self.assertEqual(nearest_idx(data, -2), None)
-        self.assertEqual(nearest_idx(data, 5), None)
-        data = np.ones(5, dtype=np.bool)
-        self.assertEqual(nearest_idx(data, 0), 0)
-        self.assertEqual(nearest_idx(data, 3), 3)
-        self.assertEqual(nearest_idx(data, -2), 0)
-        self.assertEqual(nearest_idx(data, 5), 4)
-        self.assertEqual(nearest_idx(data, 0, start_idx=2), None)
-        self.assertEqual(nearest_idx(data, 4, start_idx=2), 4)
-        self.assertEqual(nearest_idx(data, 4, stop_idx=2), None)
-        self.assertEqual(nearest_idx(data, 1, stop_idx=2), 1)
-        self.assertEqual(nearest_idx(data, 1, start_idx=0, stop_idx=2), 1)
-        self.assertEqual(nearest_idx(data, 2, start_idx=0, stop_idx=2), None)
-        data = np.array([True, False, False, False, False])
-        self.assertEqual(nearest_idx(data, 3), 0)
-        data = np.array([False, False, False, False, True])
-        self.assertEqual(nearest_idx(data, 1), 4)
-        data = np.array([False, True, True, False, False])
-        self.assertEqual(nearest_idx(data, 3), 2)
 
 
 class TestNearestSlice(unittest.TestCase):

@@ -253,3 +253,32 @@ class TestArrayWraparoundIdx(unittest.TestCase):
         self.assertEqual(cy.array_wraparound_idx(-3, 2), 0)
         self.assertEqual(cy.array_wraparound_idx(cy.NONE_IDX, 10), 9)
 
+
+class TestNearestIdx(unittest.TestCase):
+
+    def test_nearest_idx(self):
+        self.assertEqual(cy.nearest_idx(np.empty(0, dtype=np.uint8), 0), cy.NONE_IDX)
+        self.assertEqual(cy.nearest_idx(np.array([False], dtype=np.uint8), 0), cy.NONE_IDX)
+        self.assertEqual(cy.nearest_idx(np.array([True], dtype=np.uint8), 0), 0)
+        self.assertEqual(cy.nearest_idx(np.array([False], dtype=np.uint8), 0, match=False), 0)
+        data = np.zeros(5, dtype=np.bool)
+        self.assertEqual(cy.nearest_idx(data, 0), cy.NONE_IDX)
+        self.assertEqual(cy.nearest_idx(data, 3), cy.NONE_IDX)
+        self.assertEqual(cy.nearest_idx(data, -2), cy.NONE_IDX)
+        self.assertEqual(cy.nearest_idx(data, 5), cy.NONE_IDX)
+        data = np.ones(5, dtype=np.bool)
+        self.assertEqual(cy.nearest_idx(data, 0), 0)
+        self.assertEqual(cy.nearest_idx(data, 0, match=False), cy.NONE_IDX)
+        self.assertEqual(cy.nearest_idx(data, 3), 3)
+        self.assertEqual(cy.nearest_idx(data, -2), 0)
+        self.assertEqual(cy.nearest_idx(data, 5), 4)
+        self.assertEqual(cy.nearest_idx(data, 0, match=True, start_idx=2), cy.NONE_IDX)
+        self.assertEqual(cy.nearest_idx(data, 4, match=True, start_idx=2), 4)
+        self.assertEqual(cy.nearest_idx(data, 4, match=True, start_idx=0, stop_idx=2), cy.NONE_IDX)
+        self.assertEqual(cy.nearest_idx(data, 1, match=True, start_idx=0, stop_idx=2), 1)
+        self.assertEqual(cy.nearest_idx(data, 1, match=True, start_idx=0, stop_idx=2), 1)
+        self.assertEqual(cy.nearest_idx(data, 2, match=True, start_idx=0, stop_idx=2), cy.NONE_IDX)
+        self.assertEqual(cy.nearest_idx(np.array([True, False, False, False, False], dtype=np.uint8), 3), 0)
+        self.assertEqual(cy.nearest_idx(np.array([False, False, False, False, True], dtype=np.uint8), 1), 4)
+        self.assertEqual(cy.nearest_idx(np.array([False, True, True, False, False], dtype=np.uint8), 3), 2)
+

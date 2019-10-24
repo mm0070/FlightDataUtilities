@@ -13,7 +13,7 @@ cimport numpy as np
 from libc.math cimport ceil
 
 from flightdatautilities.array cimport cython as cy
-from flightdatautilities.type import is_array_like
+from flightdatautilities.type import as_dtype, is_data
 
 
 WPS = (64, 128, 256, 512, 1024, 2048)
@@ -179,13 +179,13 @@ cdef class ByteAligner:
         :type func: callable
         :yields: value returned by func for each frame
         '''
-        if is_array_like(data_gen):
+        if is_data(data_gen):
             data_gen = (data_gen,)
 
         cdef Py_ssize_t idx, next_frame_idx, remainder_idx
 
         for data in data_gen:
-            self._buff = np.concatenate((self._buff, data))
+            self._buff = np.concatenate((self._buff, as_dtype(data, np.uint8)))
             idx = 0
             while True:
                 next_frame_idx = self._next_frame_idx(idx)
@@ -226,7 +226,7 @@ cdef class ByteAligner:
         elif stop is not None and stop <= 0:
             raise ValueError('negative or zero stop index not supported')
 
-        if is_array_like(data_gen):
+        if is_data(data_gen):
             data_gen = (data_gen,)
 
         cdef:
@@ -235,7 +235,7 @@ cdef class ByteAligner:
                 frame_stop = cy.NONE_IDX if stop is None else <Py_ssize_t>ceil(stop / 4.), next_frame_idx, remainder_idx
 
         for data in data_gen:
-            self._buff = np.concatenate((self._buff, data))
+            self._buff = np.concatenate((self._buff, as_dtype(data, np.uint8)))
 
             while True:
                 next_frame_idx = self._next_frame_idx(idx)
