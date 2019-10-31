@@ -187,6 +187,10 @@ CONVERSION_MULTIPLIERS = {
     FPS2: {
         G: 0.031081,
     },
+    # Angle:
+    RADIAN_S: {
+        DEGREE_S: 57.2958,
+    },
     # Density:
     KG_LITER: {
         LB_GALLON: 8.3454063545262,
@@ -530,6 +534,7 @@ STANDARD_CONVERSIONS = {
     FPS2: G,
     # Angle:
     RADIAN: DEGREE,
+    RADIAN_S: DEGREE_S,
     # Electricity:
     MICROAMP: DOTS,
     MILLIVOLT: DOTS,
