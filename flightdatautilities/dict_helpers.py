@@ -1,4 +1,4 @@
-__all__ = ['dcompact', 'dflatten', 'dmap', 'dmerge']
+__all__ = ['dcompact', 'dflatten', 'dmerge']
 
 
 def dcompact(d):
@@ -60,20 +60,6 @@ def dflatten(d, glue=' ', manipulate=lambda k: k):
 
     # Return the new dictionary:
     return o
-
-
-def dmap(f, d):
-    '''
-    An equivalent of the builtin map function that works for dictionaries.
-
-    :param f: A function that takes a key and value and returns a key and value.
-    :type f: function
-    :param d: The dictionary to map.
-    :type d: dict
-    :return: A dictionary where values have been mapped by the function.
-    :rtype: dict
-    '''
-    return d.__class__(f(k, v) for k, v in d.items())
 
 
 def dmerge(x, y, overwrite=()):
