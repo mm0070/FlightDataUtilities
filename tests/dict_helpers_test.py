@@ -71,13 +71,6 @@ class TestDictionaryCompact(unittest.TestCase):
             self.assertEqual(dcompact(data), expected)
 
 
-class TestDictionaryFlatten(unittest.TestCase):
-
-    @unittest.skip('Not implemented.')
-    def test_(self):
-        pass
-
-
 class TestDictionaryMerge(unittest.TestCase):
 
     def test_only_supports_dictionaries(self):
