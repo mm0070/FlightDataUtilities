@@ -80,13 +80,6 @@ class TestDictionaryFlatten(unittest.TestCase):
         pass
 
 
-class TestDictionaryMap(unittest.TestCase):
-
-    @unittest.skip('Not implemented.')
-    def test_(self):
-        pass
-
-
 class TestDictionaryMerge(unittest.TestCase):
 
     def test_only_supports_dictionaries(self):
