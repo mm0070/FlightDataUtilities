@@ -16,10 +16,8 @@ def dcompact(d):
     :returns: A dictionary with empty values removed.
     :rtype: dict
     '''
-    # New output dictionary:
-    o = d.__class__()
-
     # Filter out any unset/empty values in the dictionary:
+    o = d.__class__()
     for k, v in d.items():
         if isinstance(v, dict):
             x = dcompact(v)
@@ -29,8 +27,6 @@ def dcompact(d):
             x = v
         if bool(x) or x == 0:
             o[k] = x
-
-    # Return the new dictionary:
     return o
 
 
@@ -54,7 +50,6 @@ def dmerge(x, y, overwrite=()):
     :param overwrite: A list of keys where the value should be overwritten.
     :type overwrite: list or tuple
     '''
-
     if not isinstance(x, dict) or not isinstance(y, dict):
         raise TypeError('Arguments must be dictionaries.')
     for k, v in y.items():
