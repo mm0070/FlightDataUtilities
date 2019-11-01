@@ -15,7 +15,7 @@ import unittest
 from copy import deepcopy
 from itertools import product
 
-from flightdatautilities.dict_helpers import dcompact, dfilter, dmerge
+from flightdatautilities.dict_helpers import dcompact, dmerge
 
 
 ##############################################################################
@@ -78,21 +78,6 @@ class TestDictionaryFlatten(unittest.TestCase):
     @unittest.skip('Not implemented.')
     def test_(self):
         pass
-
-
-class TestDictionaryFilter(unittest.TestCase):
-
-    def test_filter_key_equals(self):
-        data = {1: 1, 2: 2, 3: 3}
-        output = dfilter(lambda k, v: k == 1, data)
-        self.assertEqual(len(output), 1)
-        self.assertEqual(output, {1: 1})
-
-    def test_filter_key_endswith(self):
-        data = {'a_suffix': 1 , 'b_suffix': 2, 'other': 3}
-        output = dfilter(lambda k, v: k.endswith('_suffix'), data)
-        self.assertEqual(len(output), 2)
-        self.assertEqual(output, {'a_suffix': 1 , 'b_suffix': 2})
 
 
 class TestDictionaryMap(unittest.TestCase):

@@ -4,7 +4,7 @@
 
 import six
 
-__all__ = ['dcompact', 'dflatten', 'dfilter', 'dmap', 'dmerge']
+__all__ = ['dcompact', 'dflatten', 'dmap', 'dmerge']
 
 
 def dcompact(d):
@@ -68,20 +68,6 @@ def dflatten(d, glue=' ', manipulate=lambda k: k):
     return o
 
 
-def dfilter(f, d):
-    '''
-    An equivalent of the builtin filter function that works for dictionaries.
-
-    :param f: A function that takes a key and value and returns a boolean.
-    :type f: function
-    :param d: The dictionary to filter.
-    :type d: dict
-    :return: A dictionary filtered according to the specified filter function.
-    :rtype: dict
-    '''
-    return d.__class__((k, v) for k, v in d.items() if f(k, v))
-
-
 def dmap(f, d):
     '''
     An equivalent of the builtin map function that works for dictionaries.
@@ -133,7 +119,7 @@ def dmerge(x, y, overwrite=()):
     return x
 
 
-# XXX: Deprecated: Badly engineered - just use dfilter() above!
+# XXX: Deprecated: Badly engineered...
 def dict_filter(d, keep=None, remove=None):
     '''
     Filter a dictionary specifying which keys should stay and which should be
@@ -163,10 +149,10 @@ def dict_filter(d, keep=None, remove=None):
         raise ValueError('Cannot keep and remove at the same time!')
     if keep:
         f = lambda k, v: k in keep
-        return_dict = dfilter(f, d)
+        return_dict = d.__class__((k, v) for k, v in d.items() if f(k, v))
     elif remove:
         f = lambda k, v: k not in remove
-        return_dict = dfilter(f, d)
+        return_dict = d.__class__((k, v) for k, v in d.items() if f(k, v))
     else:
         return_dict = d
 
