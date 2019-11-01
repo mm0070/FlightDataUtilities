@@ -4,7 +4,7 @@
 
 import six
 
-__all__ = ['dcompact', 'dflatten', 'dmerge']
+__all__ = ['dcompact', 'dmerge']
 
 
 def dcompact(d):
@@ -29,40 +29,6 @@ def dcompact(d):
             x = v
         if bool(x) or x == 0:
             o[k] = x
-
-    # Return the new dictionary:
-    return o
-
-
-def dflatten(d, glue=' ', manipulate=lambda k: k):
-    '''
-    Flatten a dictionary joining nested keys together with the provided string.
-
-    Additionally a manipulation function may be passed in for modifying keys.
-
-    :param d: The dictionary to flatten.
-    :type d: dict
-    :param glue: The string to glue keys together with.
-    :type glue: str
-    :param manipulate: An optional key manipulation function.
-    :type manipulate: function
-    :returns: A flattened dictionary.
-    :rtype: dict
-    '''
-    # New output dictionary:
-    o = d.__class__()
-
-    # Loop over dictionary items and recursively flatten:
-    for k0, v0 in d.items():
-        if isinstance(v0, dict):
-            # Flatten nested dictionary and glue manipulated keys:
-            for k1, v1 in dflatten(v0).items():
-                k = glue.join(map(manipulate, [k0, k1]))
-                o[k] = v1
-        else:
-            # Manipulate key and assign value:
-            k = manipulate(k0)
-            o[k] = v0
 
     # Return the new dictionary:
     return o
