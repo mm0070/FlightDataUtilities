@@ -558,6 +558,8 @@ STANDARD_CONVERSIONS = {
     BAR: PSI,
     INHG: MILLIBAR,
     HECTOPASCAL: MILLIBAR,
+    # Speed:
+    METER_S: KT,
     # Temperature:
     FAHRENHEIT: CELSIUS,
     KELVIN: CELSIUS,
