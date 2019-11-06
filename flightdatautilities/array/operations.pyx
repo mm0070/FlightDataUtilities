@@ -89,49 +89,8 @@ from flightdatautilities.array import Value
 from flightdatautilities.array cimport cython as cy, scalar as sc
 
 
-cpdef bint any_array(array):
-    '''
-    Q: why do we need this when array.any() exists?
-    '''
-    cdef:
-        Py_ssize_t idx
-        np.uint8_t[:] data = array.view(np.uint8)
-    for idx in range(data.shape[0]):
-        if data[idx]:
-            return True
-    return False
-
-
-cpdef bint all_array(array):
-    '''
-    Q: why do we need this when array.all() exists?
-    '''
-    cdef:
-        Py_ssize_t idx
-        np.uint8_t[:] data = array.view(np.uint8)
-    for idx in range(data.shape[0]):
-        if not data[idx]:
-            return False
-    return True
-
-
-cpdef bint entirely_masked(array):
-    '''
-    Q: Why do we need this when array.mask.all() exists?
-
-    Worst case is 2x faster than np.ma.count, best case (first sample unmasked) is 500x faster on large array.
-    '''
-    return array.mask if np.isscalar(array.mask) else all_array(array.mask)
-
-
-cpdef bint entirely_unmasked(array):
-    '''
-    Q: Why do we need this when not array.mask.any() exists?
-
-    Worst case is 2x faster than np.ma.count, best case (first sample masked) is 500x faster on large array.
-    '''
-    return not array.mask if np.isscalar(array.mask) else not any_array(array.mask)
-
+################################################################################
+# Slice operations
 
 cpdef nearest_slice(array, Py_ssize_t idx, bint match=True):
     cdef np.uint8_t[:] data = array.view(np.uint8)
@@ -172,20 +131,32 @@ cpdef nearest_slice(array, Py_ssize_t idx, bint match=True):
 
     return slice(start_idx, stop_idx)
 
+def runs_of_ones(array, min_samples=None):
+    '''
+    Create slices where data evaluates to True. Optimised generator version of analysis_engine.library.runs_of_ones.
+    ~12x faster for array of 10000 elements.
 
-cpdef Py_ssize_t longest_section(cy.np_types[:] data, cy.np_types value=0) nogil:
+    :param array: array with 8-bit datatype, e.g. np.bool or np.uint8
+    :type array: np.ndarray
+    :param min_samples: minimum size of slice (stop - start > min_samples)
+    :type min_samples: int or None
+    :yields: slices where data evaluates to True
+    :ytype: slice
     '''
-    Find the longest section matching value and return the number of samples.
-    '''
-    cdef Py_ssize_t idx, current_samples = 0, max_samples = 0
-    for idx in range(data.shape[0]):
-        if data[idx] != value:
-            if current_samples > max_samples:
-                max_samples = current_samples
-            current_samples = 0
-        else:
-            current_samples += 1
-    return max_samples if max_samples > current_samples else current_samples
+    cdef:
+        np.uint8_t[:] view = array.view(np.uint8)
+        Py_ssize_t idx, min_samples_long = cy.none_idx(min_samples), start_idx = -1
+
+    for idx in range(view.shape[0]):
+        if view[idx] and start_idx == -1:
+            start_idx = idx
+        elif not view[idx] and start_idx != -1:
+            if min_samples_long == cy.NONE_IDX or idx - start_idx > min_samples_long:
+                yield slice(start_idx, idx)
+            start_idx = -1
+
+    if start_idx != -1 and (min_samples_long == cy.NONE_IDX or view.shape[0] - start_idx > min_samples_long):
+        yield slice(start_idx, view.shape[0])
 
 
 cpdef slices_to_array(Py_ssize_t size, slices):
@@ -205,6 +176,141 @@ cpdef slices_to_array(Py_ssize_t size, slices):
         for idx in range(start, stop):
             array[idx] = 1
     return np.asarray(array).view(np.bool)
+
+
+################################################################################
+# Type-inspecific array operations
+
+cpdef align_arrays(slave_array, master_array):
+    '''
+    Very basic aligning using repeat to upsample and skipping over samples to
+    downsample the slave array to the master frequency
+
+    >>> align_arrays(np.arange(10), np.arange(20,30))  # equal length
+    array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+    >>> align_arrays(np.arange(40,80), np.arange(20,40))  # downsample every other
+    array([40, 42, 44, 46, 48, 50, 52, 54, 56, 58, 60, 62, 64, 66, 68, 70, 72, 74, 76, 78])
+    >>> align_arrays(np.arange(40,80), np.arange(30,40))  # downsample every 4th
+    array([40, 44, 48, 52, 56, 60, 64, 68, 72, 76])
+    >>> align_arrays(np.arange(10), np.arange(20,40))  # upsample
+    array([0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9])
+    '''
+    ratio = len(master_array) / len(slave_array)
+    if ratio == 1:
+        # nothing to do
+        return slave_array
+    if ratio > 1:
+        # repeat slave to upsample
+        # Q: Upsample using repeat good enough, or interpolate?
+        return slave_array.repeat(ratio)
+    else:
+        # take every other sample to downsample
+        return slave_array[0::int(1 // ratio)]
+
+
+@cython.wraparound(False)
+cpdef bint is_constant(cy.np_types[:] data) nogil:
+    '''
+    Return whether or not an array is constant in value.
+    '''
+    if data.shape[0] <= 1:
+        return True
+
+    cdef Py_ssize_t idx
+
+    for idx in range(1, data.shape[0]):
+        if data[idx] != data[0]:
+            return False
+    return True
+
+
+cpdef Py_ssize_t longest_section(cy.np_types[:] data, cy.np_types value=0) nogil:
+    '''
+    Find the longest section matching value and return the number of samples.
+    '''
+    cdef Py_ssize_t idx, current_samples = 0, max_samples = 0
+    for idx in range(data.shape[0]):
+        if data[idx] != value:
+            if current_samples > max_samples:
+                max_samples = current_samples
+            current_samples = 0
+        else:
+            current_samples += 1
+    return max_samples if max_samples > current_samples else current_samples
+
+
+cpdef sum_arrays(arrays):
+    '''
+    Sums multiple numpy arrays together.
+
+    :param arrays: Arrays to sum.
+    :type arrays: iterable of np.ma.masked_array
+    :raises IndexError: If arrays is empty.
+    :returns: The result of summing arrays.
+    :rtype: np.ma.masked_array
+    '''
+    summed_array = arrays[0]
+    for array in arrays[1:]:
+        summed_array += array
+    return summed_array
+
+
+cpdef swap_bytes(array):
+    '''
+    Swap byte-order endianness.
+
+    >>> swap_bytes(np.fromstring(b'\x12\x34\x56\x78')).tostring()
+    b'\x34\x12\x78\x56'
+
+    :param array: Array to be byte-swapped.
+    :type array: np.ndarray
+    :returns: Array after byte-order has been swapped.
+    :rtype: np.ndarray
+    '''
+    return array.byteswap(True)
+
+
+cpdef np.ndarray twos_complement(np.ndarray array, np.uint64_t bit_length):
+    '''
+    Convert the values from "sign bit" notation to "two's complement".
+    '''
+    array[array > sc.saturated_value(bit_length - 1)] -= sc.saturated_value(bit_length) + 1
+    return array
+
+
+@cython.wraparound(False)
+cpdef value_idx(cy.np_types[:] array, cy.np_types value):
+    '''
+    Return the first array index which matches value.
+
+    Can be much faster than numpy operations which check the entire array.
+
+    >>> x = np.zeros(1000000000, dtype=np.uint16)
+    >>> x[100000] = 1
+    >>> %timeit np.any(x == 1)
+    1 loops, best of 3: 419 ms per loop
+    >>> %timeit array_index_uint16(1, x) != -1
+    10000 loops, best of 3: 64.2 µs per loop
+    '''
+    return cy.idx_none(cy.value_idx(array, value))
+
+
+################################################################################
+# Boolean array operations
+
+cpdef contract_runs(array, Py_ssize_t size, bint match=True):
+    '''
+    Contract runs of matching values within an array, e.g.
+    contract_runs([False, True, True, True], 1) == [False, False, True, False]
+    '''
+    return np.asarray(cy.contract_runs(array.view(np.uint8), size, match=match)).view(np.bool)
+
+
+cpdef remove_small_runs(array, np.float64_t seconds=10, np.float64_t hz=1, bint match=True):
+    '''
+    Remove small runs of matching values from a boolean array.
+    '''
+    return np.asarray(cy.remove_small_runs(array.view(np.uint8), seconds, hz, match=match)).view(np.bool)
 
 
 cpdef section_overlap(a, b):
@@ -260,49 +366,6 @@ cpdef section_overlap(a, b):
     return np.asarray(out).view(np.bool)
 
 
-cpdef remove_small_runs(array, np.float64_t seconds=10, np.float64_t hz=1, bint match=True):
-    '''
-    Remove small runs of matching values from a boolean array.
-    '''
-    return np.asarray(cy.remove_small_runs(array.view(np.uint8), seconds, hz, match=match)).view(np.bool)
-
-
-cpdef contract_runs(array, Py_ssize_t size, bint match=True):
-    '''
-    Contract runs of matching values within an array, e.g.
-    contract_runs([False, True, True, True], 1) == [False, False, True, False]
-    '''
-    return np.asarray(cy.contract_runs(array.view(np.uint8), size, match=match)).view(np.bool)
-
-
-def runs_of_ones(array, min_samples=None):
-    '''
-    Create slices where data evaluates to True. Optimised generator version of analysis_engine.library.runs_of_ones.
-    ~12x faster for array of 10000 elements.
-
-    :param array: array with 8-bit datatype, e.g. np.bool or np.uint8
-    :type array: np.ndarray
-    :param min_samples: minimum size of slice (stop - start > min_samples)
-    :type min_samples: int or None
-    :yields: slices where data evaluates to True
-    :ytype: slice
-    '''
-    cdef:
-        np.uint8_t[:] view = array.view(np.uint8)
-        Py_ssize_t idx, min_samples_long = cy.none_idx(min_samples), start_idx = -1
-
-    for idx in range(view.shape[0]):
-        if view[idx] and start_idx == -1:
-            start_idx = idx
-        elif not view[idx] and start_idx != -1:
-            if min_samples_long == cy.NONE_IDX or idx - start_idx > min_samples_long:
-                yield slice(start_idx, idx)
-            start_idx = -1
-
-    if start_idx != -1 and (min_samples_long == cy.NONE_IDX or view.shape[0] - start_idx > min_samples_long):
-        yield slice(start_idx, view.shape[0])
-
-
 ## TODO
 #def overlap_merge(x, y, Py_ssize_t extend_start=0, Py_ssize_t extend_stop=0):
 
@@ -326,105 +389,8 @@ def runs_of_ones(array, min_samples=None):
             #start_idx = -1
 
 
-@cython.wraparound(False)
-cpdef bint is_constant(cy.np_types[:] data) nogil:
-    '''
-    Return whether or not an array is constant in value.
-    '''
-    if data.shape[0] <= 1:
-        return True
-
-    cdef Py_ssize_t idx
-
-    for idx in range(1, data.shape[0]):
-        if data[idx] != data[0]:
-            return False
-    return True
-
-
-cpdef swap_bytes(array):
-    '''
-    Swap byte-order endianness.
-
-    >>> swap_bytes(np.fromstring(b'\x12\x34\x56\x78')).tostring()
-    b'\x34\x12\x78\x56'
-
-    :param array: Array to be byte-swapped.
-    :type array: np.ndarray
-    :returns: Array after byte-order has been swapped.
-    :rtype: np.ndarray
-    '''
-    return array.byteswap(True)
-
-
-cpdef np.uint16_t[:] unpack_little_endian(const np.uint8_t[:] data):
-    '''
-    b'24705c' -> b'47025c00'
-    '''
-    if data.shape[0] % 3 != 0:
-        raise ValueError('data length must be a multiple of 3')
-
-    cdef:
-        np.uint16_t[:] output = cy.zeros_uint16(<Py_ssize_t>(data.shape[0] // 1.5))
-        Py_ssize_t data_idx = 0, output_idx = 0
-
-    while data_idx < data.shape[0]:  # cython range with step is slow
-        output[output_idx] = ((data[data_idx] & 0b11110000) << 4) | ((data[data_idx] & 0b1111) << 4) | (data[data_idx + 1] >> 4)
-        output[output_idx + 1] = ((data[data_idx + 1] & 0b1111) << 8) | data[data_idx + 2]
-        data_idx += 3
-        output_idx += 2
-
-    return output
-
-
-@cython.cdivision(True)
-@cython.wraparound(False)
-cpdef np.uint8_t[:] unpack(const np.uint8_t[:] packed):
-    '''
-    Unpack 'packed' flight data into unpacked (byte-aligned) format.
-
-    opt: ~3x faster than numpy array version
-
-    :type array: np.ndarray(dtype=np.uint8)
-    :rtype: np.ndarray(dtype=np.uint8)
-    '''
-    cdef:
-        np.uint8_t[:] unpacked = cy.empty_uint8(packed.shape[0] // 3 * 4)
-        Py_ssize_t packed_idx = 0, unpacked_idx
-
-    for unpacked_idx in range(0, unpacked.shape[0], 4):
-        unpacked[unpacked_idx] = packed[packed_idx]
-        unpacked[unpacked_idx + 1] = packed[packed_idx + 1] & 0x0F
-        unpacked[unpacked_idx + 2] = ((packed[packed_idx + 2] & 0x0F) << 4) + ((packed[packed_idx + 1] & 0xF0) >> 4)
-        unpacked[unpacked_idx + 3] = (packed[packed_idx + 2] & 0xF0) >> 4
-        packed_idx += 3
-
-    return unpacked
-
-
-@cython.cdivision(True)
-@cython.wraparound(False)
-cpdef np.uint8_t[:] pack(const np.uint8_t[:] unpacked):
-    '''
-    Pack 'unpacked' flight data into packed format.
-
-    opt: ~8x faster than numpy array version
-
-    :type array: np.ndarray(dtype=np.uint8)
-    :rtype: np.ndarray(dtype=np.uint8)
-    '''
-    cdef:
-        np.uint8_t[:] packed = cy.empty_uint8(unpacked.shape[0] // 4 * 3)
-        Py_ssize_t unpacked_idx = 0, packed_idx
-
-    for packed_idx in range(0, packed.shape[0], 3):
-        packed[packed_idx] = unpacked[unpacked_idx]
-        packed[packed_idx + 1] = unpacked[unpacked_idx + 1] + ((unpacked[unpacked_idx + 2] & 0x0F) << 4)
-        packed[packed_idx + 2] = (unpacked[unpacked_idx + 3] << 4) + ((unpacked[unpacked_idx + 2] & 0xF0) >> 4)
-        unpacked_idx += 4
-
-    return packed
-
+################################################################################
+# Uint8 array (bytes) operations
 
 cpdef bytes key_value(const np.uint8_t[:] array, const np.uint8_t[:] key, const np.uint8_t[:] delimiter,
                       const np.uint8_t[:] separator, Py_ssize_t start=0):
@@ -454,6 +420,15 @@ cpdef bytes key_value(const np.uint8_t[:] array, const np.uint8_t[:] key, const 
     return bytes(array[start_idx:stop_idx]).strip()
 
 
+cpdef bint subarray_exists_uint8(const np.uint8_t[:] array, const np.uint8_t[:] subarray, Py_ssize_t start=0) nogil:
+    '''
+    Return whether or not the subarray exists within the array.
+
+    TODO: change to cy.np_types fused type once Cython supports const with fused types
+    '''
+    return cy.subarray_idx_uint8(array, subarray, start=start) != cy.NONE_IDX
+
+
 cpdef subarray_idx_uint8(const np.uint8_t[:] array, const np.uint8_t[:] subarray, Py_ssize_t start=0):
     '''
     Find the first index of a subarray within an array of dtype uint8.
@@ -466,127 +441,8 @@ cpdef subarray_idx_uint8(const np.uint8_t[:] array, const np.uint8_t[:] subarray
     return cy.idx_none(cy.subarray_idx_uint8(array, subarray, start=start))
 
 
-cpdef bint subarray_exists_uint8(const np.uint8_t[:] array, const np.uint8_t[:] subarray, Py_ssize_t start=0) nogil:
-    '''
-    Return whether or not the subarray exists within the array.
-
-    TODO: change to cy.np_types fused type once Cython supports const with fused types
-    '''
-    return cy.subarray_idx_uint8(array, subarray, start=start) != cy.NONE_IDX
-
-
-@cython.wraparound(False)
-cpdef value_idx(cy.np_types[:] array, cy.np_types value):
-    '''
-    Return the first array index which matches value.
-
-    Can be much faster than numpy operations which check the entire array.
-
-    >>> x = np.zeros(1000000000, dtype=np.uint16)
-    >>> x[100000] = 1
-    >>> %timeit np.any(x == 1)
-    1 loops, best of 3: 419 ms per loop
-    >>> %timeit array_index_uint16(1, x) != -1
-    10000 loops, best of 3: 64.2 µs per loop
-    '''
-    return cy.idx_none(cy.value_idx(array, value))
-
-
-cpdef merge_masks(masks):
-    '''
-    ORs multiple masks together. Could this be done in one step with numpy?
-
-    :param masks: Masks to OR together.
-    :type masks: iterable of np.ma.masked_array.mask
-    :raises IndexError: If masks is empty.
-    :returns: Single mask, the result of ORing masks.
-    :rtype: np.ma.masked_array.mask
-    '''
-    merged_mask = np.ma.make_mask(masks[0])
-    for mask in masks[1:]:
-        merged_mask = np.ma.mask_or(merged_mask, mask)
-    return merged_mask
-
-
-@cython.cdivision(True)
-@cython.wraparound(False)
-cpdef np.uint8_t[:] merge_masks_upsample_uint8(masks):
-    '''
-    opt: upsampling 10 memoryviews to 10,000 elements: ~5x faster than merge_masks(upsample_arrays(masks))
-    '''
-    lengths = [len(m) for m in masks]
-    cdef:
-        # can't use generator in max - "closures inside cpdef functions not yet supported"
-        Py_ssize_t max_length = max(lengths), min_length = min(lengths), output_idx
-        np.uint8_t[:] mask, output = cy.zeros_uint8(max_length)
-        np.float64_t step
-
-    for mask in masks:
-        if mask.shape[0] == max_length:  # opt: ~5x faster than applying step
-            for output_idx in range(output.shape[0]):
-                output[output_idx] |= mask[output_idx]
-        elif mask.shape[0] % min_length:
-            raise ValueError('mask lengths should be multiples of the shortest')
-        else:
-            step = <np.float64_t>mask.shape[0] / <np.float64_t>max_length
-            for output_idx in range(output.shape[0]):
-                output[output_idx] |= mask[<Py_ssize_t>(output_idx * step)]
-
-    return output
-
-
-@cython.cdivision(True)
-@cython.wraparound(False)
-cpdef np.uint8_t[:] merge_masks_uint8(masks):
-    '''
-    opt: for 10 arrays of 10,000 elements: ~8x faster than merge_masks(masks), ~5x faster than np.vstack(masks).any(0)
-    '''
-    cdef:
-        np.uint8_t[:] mask, output = cy.zeros_uint8(len(masks[0]))
-        Py_ssize_t idx
-
-    for mask in masks:
-        for idx in range(output.shape[0]):
-            output[idx] |= mask[idx]
-
-    return output
-
-
-
-cpdef mask_ratio(mask):
-    '''
-    Ratio of masked data (1 == all masked).
-    '''
-    # Handle scalars.
-    if np.all(mask):
-        return 1
-    elif not np.any(mask):
-        return 0
-    return mask.sum() / float(len(mask))
-
-
-cpdef percent_unmasked(mask):
-    '''
-    Percentage of unmasked data.
-    '''
-    return (1 - mask_ratio(mask)) * 100
-
-
-cpdef sum_arrays(arrays):
-    '''
-    Sums multiple numpy arrays together.
-
-    :param arrays: Arrays to sum.
-    :type arrays: iterable of np.ma.masked_array
-    :raises IndexError: If arrays is empty.
-    :returns: The result of summing arrays.
-    :rtype: np.ma.masked_array
-    '''
-    summed_array = arrays[0]
-    for array in arrays[1:]:
-        summed_array += array
-    return summed_array
-
+################################################################################
+# Resample operations
 
 cpdef downsample_arrays(arrays):
     '''
@@ -648,32 +504,74 @@ cpdef upsample_arrays(arrays):
     return upsampled_arrays
 
 
-cpdef align_arrays(slave_array, master_array):
-    '''
-    Very basic aligning using repeat to upsample and skipping over samples to
-    downsample the slave array to the master frequency
+################################################################################
+# Flight Data Recorder data operations
 
-    >>> align_arrays(np.arange(10), np.arange(20,30))  # equal length
-    array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
-    >>> align_arrays(np.arange(40,80), np.arange(20,40))  # downsample every other
-    array([40, 42, 44, 46, 48, 50, 52, 54, 56, 58, 60, 62, 64, 66, 68, 70, 72, 74, 76, 78])
-    >>> align_arrays(np.arange(40,80), np.arange(30,40))  # downsample every 4th
-    array([40, 44, 48, 52, 56, 60, 64, 68, 72, 76])
-    >>> align_arrays(np.arange(10), np.arange(20,40))  # upsample
-    array([0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9])
+@cython.cdivision(True)
+@cython.wraparound(False)
+cpdef np.uint8_t[:] pack(const np.uint8_t[:] unpacked):
     '''
-    ratio = len(master_array) / len(slave_array)
-    if ratio == 1:
-        # nothing to do
-        return slave_array
-    if ratio > 1:
-        # repeat slave to upsample
-        # Q: Upsample using repeat good enough, or interpolate?
-        return slave_array.repeat(ratio)
-    else:
-        # take every other sample to downsample
-        return slave_array[0::int(1 // ratio)]
+    Pack 'unpacked' flight data into packed format.
 
+    opt: ~8x faster than numpy array version
+    '''
+    cdef:
+        np.uint8_t[:] packed = cy.empty_uint8(unpacked.shape[0] // 4 * 3)
+        Py_ssize_t unpacked_idx = 0, packed_idx
+
+    for packed_idx in range(0, packed.shape[0], 3):
+        packed[packed_idx] = unpacked[unpacked_idx]
+        packed[packed_idx + 1] = unpacked[unpacked_idx + 1] + ((unpacked[unpacked_idx + 2] & 0x0F) << 4)
+        packed[packed_idx + 2] = (unpacked[unpacked_idx + 3] << 4) + ((unpacked[unpacked_idx + 2] & 0xF0) >> 4)
+        unpacked_idx += 4
+
+    return packed
+
+
+@cython.cdivision(True)
+@cython.wraparound(False)
+cpdef np.uint8_t[:] unpack(const np.uint8_t[:] packed):
+    '''
+    Unpack 'packed' flight data into unpacked (byte-aligned) format.
+
+    opt: ~3x faster than numpy array version
+    '''
+    cdef:
+        np.uint8_t[:] unpacked = cy.empty_uint8(packed.shape[0] // 3 * 4)
+        Py_ssize_t packed_idx = 0, unpacked_idx
+
+    for unpacked_idx in range(0, unpacked.shape[0], 4):
+        unpacked[unpacked_idx] = packed[packed_idx]
+        unpacked[unpacked_idx + 1] = packed[packed_idx + 1] & 0x0F
+        unpacked[unpacked_idx + 2] = ((packed[packed_idx + 2] & 0x0F) << 4) + ((packed[packed_idx + 1] & 0xF0) >> 4)
+        unpacked[unpacked_idx + 3] = (packed[packed_idx + 2] & 0xF0) >> 4
+        packed_idx += 3
+
+    return unpacked
+
+
+cpdef np.uint16_t[:] unpack_little_endian(const np.uint8_t[:] data):
+    '''
+    b'24705c' -> b'47025c00'
+    '''
+    if data.shape[0] % 3 != 0:
+        raise ValueError('data length must be a multiple of 3')
+
+    cdef:
+        np.uint16_t[:] output = cy.zeros_uint16(<Py_ssize_t>(data.shape[0] // 1.5))
+        Py_ssize_t data_idx = 0, output_idx = 0
+
+    while data_idx < data.shape[0]:  # cython range with step is slow
+        output[output_idx] = ((data[data_idx] & 0b11110000) << 4) | ((data[data_idx] & 0b1111) << 4) | (data[data_idx + 1] >> 4)
+        output[output_idx + 1] = ((data[data_idx + 1] & 0b1111) << 8) | data[data_idx + 2]
+        data_idx += 3
+        output_idx += 2
+
+    return output
+
+
+################################################################################
+# Array serialisation
 
 cpdef save_compressed(path, array):
     '''
@@ -719,10 +617,4 @@ cpdef load_compressed(path):
         raise NotImplementedError(f'Unknown array type with {array_count} components.')
     return array
 
-cpdef np.ndarray twos_complement(np.ndarray array, np.uint64_t bit_length):
-    '''
-    Convert the values from "sign bit" notation to "two's complement".
-    '''
-    array[array > sc.saturated_value(bit_length - 1)] -= sc.saturated_value(bit_length) + 1
-    return array
 

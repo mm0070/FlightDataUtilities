@@ -147,7 +147,7 @@ class TestFillRange(unittest.TestCase):
 
 
 ################################################################################
-# Aggregation
+# Aggregate functions
 
 # TODO: fix crash
 #class TestMaxValues(unittest.TestCase):

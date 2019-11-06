@@ -11,6 +11,9 @@ cimport numpy as np
 from flightdatautilities.array cimport cython as cy, operations as op
 
 
+################################################################################
+# Utility functions
+
 cdef np.uint8_t[:] getmaskarray1d(array):
     '''
     Return the mask memoryview from a np.ma.masked_array in a Cython-compatible dtype. Assumes scalar mask is False.
@@ -24,6 +27,94 @@ cdef np.uint8_t[:] getmaskarray1d(array):
     return cy.zeros_uint8(len(array)) if np.PyArray_CheckScalar(array.mask) else array.mask.view(np.uint8)
 
 
+################################################################################
+# Mask ratio/percentage
+
+cpdef mask_ratio(mask):
+    '''
+    Ratio of masked data (1 == all masked).
+    '''
+    # Handle scalars.
+    if np.all(mask):
+        return 1
+    elif not np.any(mask):
+        return 0
+    return mask.sum() / float(len(mask))
+
+
+cpdef percent_unmasked(mask):
+    '''
+    Percentage of unmasked data.
+    '''
+    return (1 - mask_ratio(mask)) * 100
+
+
+################################################################################
+# Merge masks
+
+cpdef merge_masks(masks):
+    '''
+    ORs multiple masks together. Could this be done in one step with numpy?
+
+    :param masks: Masks to OR together.
+    :type masks: iterable of np.ma.masked_array.mask
+    :raises IndexError: If masks is empty.
+    :returns: Single mask, the result of ORing masks.
+    :rtype: np.ma.masked_array.mask
+    '''
+    merged_mask = np.ma.make_mask(masks[0])
+    for mask in masks[1:]:
+        merged_mask = np.ma.mask_or(merged_mask, mask)
+    return merged_mask
+
+
+@cython.cdivision(True)
+@cython.wraparound(False)
+cpdef np.uint8_t[:] merge_masks_uint8(masks):
+    '''
+    opt: for 10 arrays of 10,000 elements: ~8x faster than merge_masks(masks), ~5x faster than np.vstack(masks).any(0)
+    '''
+    cdef:
+        np.uint8_t[:] mask, output = cy.zeros_uint8(len(masks[0]))
+        Py_ssize_t idx
+
+    for mask in masks:
+        for idx in range(output.shape[0]):
+            output[idx] |= mask[idx]
+
+    return output
+
+
+@cython.cdivision(True)
+@cython.wraparound(False)
+cpdef np.uint8_t[:] merge_masks_upsample_uint8(masks):
+    '''
+    opt: upsampling 10 memoryviews to 10,000 elements: ~5x faster than merge_masks(upsample_arrays(masks))
+    '''
+    lengths = [len(m) for m in masks]
+    cdef:
+        # can't use generator in max - "closures inside cpdef functions not yet supported"
+        Py_ssize_t max_length = max(lengths), min_length = min(lengths), output_idx
+        np.uint8_t[:] mask, output = cy.zeros_uint8(max_length)
+        np.float64_t step
+
+    for mask in masks:
+        if mask.shape[0] == max_length:  # opt: ~5x faster than applying step
+            for output_idx in range(output.shape[0]):
+                output[output_idx] |= mask[output_idx]
+        elif mask.shape[0] % min_length:
+            raise ValueError('mask lengths should be multiples of the shortest')
+        else:
+            step = <np.float64_t>mask.shape[0] / <np.float64_t>max_length
+            for output_idx in range(output.shape[0]):
+                output[output_idx] |= mask[<Py_ssize_t>(output_idx * step)]
+
+    return output
+
+
+################################################################################
+# Find unmasked values
+
 cpdef prev_unmasked_value(array, Py_ssize_t idx, Py_ssize_t start=0):
     return cy.array_idx_value(array, cy.prev_idx(getmaskarray1d(array), idx, match=False, start=start))
 
@@ -36,6 +127,9 @@ cpdef nearest_unmasked_value(array, Py_ssize_t idx, Py_ssize_t start=0, Py_ssize
     return cy.array_idx_value(array, cy.nearest_idx(getmaskarray1d(array), idx, match=False, start=start,
                                                     stop=stop))
 
+
+################################################################################
+# Fill range
 
 @cython.wraparound(False)
 cdef void fill_range_unsafe(cy.np_types[:] data, np.uint8_t[:] mask, cy.np_types value, Py_ssize_t start,
@@ -59,6 +153,9 @@ cdef void fill_range(cy.np_types[:] data, np.uint8_t[:] mask, cy.np_types value,
     fill_range_unsafe(data, mask, value, cy.array_wraparound_idx(start, data.shape[0]),
                       cy.array_wraparound_idx(stop, data.shape[0]))
 
+
+################################################################################
+# Interpolate range
 
 @cython.cdivision(True)
 @cython.wraparound(False)
@@ -95,6 +192,9 @@ cdef void interpolate_range(np.float64_t[:] data, np.uint8_t[:] mask, Py_ssize_t
 
     interpolate_range_unsafe(data, mask, start, stop)
 
+
+################################################################################
+# Repair mask
 
 @cython.wraparound(False)
 cdef void repair_data_mask(np.float64_t[:] data, np.uint8_t[:] mask, RepairMethod method, Py_ssize_t max_samples,

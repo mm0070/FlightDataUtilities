@@ -14,108 +14,10 @@ from flightdatautilities.array.operations import contract_runs, remove_small_run
 from flightdatautilities.read import reader
 
 
-class TestAlignArrays(unittest.TestCase):
-    def test_align_arrays(self):
-        self.assertEqual(op.align_arrays(np.arange(10), np.arange(20, 30)).tolist(),
-                         [0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
-        self.assertEqual(op.align_arrays(np.arange(40, 80), np.arange(20, 40)).tolist(),
-                         [40, 42, 44, 46, 48, 50, 52, 54, 56, 58, 60, 62, 64, 66, 68, 70, 72, 74, 76, 78])
-        self.assertEqual(op.align_arrays(np.arange(40,80), np.arange(30, 40)).tolist(),
-                         [40, 44, 48, 52, 56, 60, 64, 68, 72, 76])
-        self.assertEqual(op.align_arrays(np.arange(10), np.arange(20, 40)).tolist(),
-                         [0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9])
-
-
-class TestAllArray(unittest.TestCase):
-    def test_all_array(self):
-        def call(x):
-            return op.all_array(np.array(x))
-        self.assertTrue(call([]))
-        self.assertTrue(call([True]))
-        self.assertFalse(call([False]))
-        self.assertTrue(call([True, True]))
-        self.assertFalse(call([True, False]))
-        self.assertFalse(call([False, True]))
-
-
-class TestAnyArray(unittest.TestCase):
-    def test_any_array(self):
-        def call(x):
-            return op.any_array(np.array(x))
-        self.assertFalse(call([]))
-        self.assertTrue(call([True]))
-        self.assertFalse(call([False]))
-        self.assertTrue(call([True, True]))
-        self.assertTrue(call([True, False]))
-        self.assertTrue(call([False, True]))
-
-
-class TestContractRuns(unittest.TestCase):
-    def test_contract_runs(self):
-        def call(x, *args, **kwargs):
-            return contract_runs(np.array(x, dtype=np.bool), *args, **kwargs).tolist()
-        T, F = True, False
-        self.assertEqual(call([], 1), [])
-        self.assertEqual(call([F,F,F,F], 0), [F,F,F,F])
-        self.assertEqual(call([T,T,T,T], 0), [T,T,T,T])
-        self.assertEqual(call([F,F,F,F], 1), [F,F,F,F])
-        self.assertEqual(call([T,T,T,F], 1, match=False), [T,T,T,T])
-        self.assertEqual(call([F,F,T,T], 1), [F,F,F,F])
-        self.assertEqual(call([F,T,T,T], 1), [F,F,T,F])
-        self.assertEqual(call([F,T,T,T], 2), [F,F,F,F])
-        self.assertEqual(call([T,T,T,T], 2), [F,F,F,F])
-        self.assertEqual(call([F,T,T,T,F,T,T,F], 1), [F,F,T,F,F,F,F,F])
-
-
-class TestEntirelyMasked(unittest.TestCase):
-    def test_entirely_masked(self):
-        data = np.ma.arange(5)
-        self.assertFalse(op.entirely_masked(data))
-        data.mask = True
-        self.assertTrue(op.entirely_masked(data))
-        def call(x):
-            data = np.ma.empty(len(x))
-            data.mask = x
-            return op.entirely_masked(data)
-        self.assertTrue(call([]))
-        self.assertTrue(call([True]))
-        self.assertFalse(call([False]))
-        self.assertTrue(call([True, True]))
-        self.assertFalse(call([True, False]))
-        self.assertFalse(call([False, True]))
-
-
-class TestEntirelyUnmasked(unittest.TestCase):
-    def test_entirely_unmasked(self):
-        data = np.ma.arange(5)
-        self.assertTrue(op.entirely_unmasked(data))
-        data.mask = True
-        self.assertFalse(op.entirely_unmasked(data))
-        def call(x):
-            data = np.ma.empty(len(x))
-            data.mask = x
-            return op.entirely_unmasked(data)
-        self.assertTrue(call([]))
-        self.assertFalse(call([True]))
-        self.assertTrue(call([False]))
-        self.assertFalse(call([True, True]))
-        self.assertFalse(call([True, False]))
-        self.assertFalse(call([False, True]))
-
-
-class TestIsConstant(unittest.TestCase):
-    def test_is_constant(self):
-        self.assertTrue(op.is_constant[np.uint16_t](cy.empty_uint16(0)))
-        self.assertTrue(op.is_constant[np.uint8_t](cy.zeros_uint8(10)))
-        self.assertTrue(op.is_constant[np.uint16_t](cy.zeros_uint16(10)))
-        self.assertTrue(op.is_constant[np.uint32_t](cy.zeros_uint32(10)))
-        self.assertTrue(op.is_constant[np.uint8_t](cy.ones_uint8(10)))
-        self.assertFalse(op.is_constant[np.uint32_t](np.arange(10, dtype=np.uint32)))
-        self.assertFalse(op.is_constant[np.float64_t](np.arange(10, dtype=np.float64)))
-
+################################################################################
+# Slice operations
 
 class TestNearestSlice(unittest.TestCase):
-
     def test_nearest_slice(self):
         self.assertEqual(op.nearest_slice(np.empty(0, dtype=np.bool), 1), None)
         data = np.zeros(5, dtype=np.bool)
@@ -139,6 +41,113 @@ class TestNearestSlice(unittest.TestCase):
             self.assertEqual(op.nearest_slice(data, idx), sl)
 
 
+class TestRunsOfOnes(unittest.TestCase):
+    def test_runs_of_ones(self):
+        data = np.ma.array(
+            [0,0,1,0,1,1,1,1,1,0,0,1,1,1,0,1,1,1],
+            mask=np.concatenate([np.zeros(14, dtype=np.bool), np.ones(4, dtype=np.bool)]),
+            dtype=np.bool,
+        )
+        self.assertEqual(list(runs_of_ones(data)), [slice(2, 3), slice(4, 9), slice(11, 14), slice(15, 18)])
+        self.assertEqual(list(runs_of_ones(data, min_samples=2)), [slice(4, 9), slice(11, 14), slice(15, 18)])
+        self.assertEqual(list(runs_of_ones(data, min_samples=3)), [slice(4, 9)])
+
+
+class TestSlicesToArray(unittest.TestCase):
+    def test_slices_to_array(self):
+        self.assertEqual(op.slices_to_array(0, []).tolist(), [])
+        self.assertEqual(op.slices_to_array(0, [slice(0, 1)]).tolist(), [])
+        self.assertEqual(op.slices_to_array(1, []).tolist(), [False])
+        self.assertEqual(op.slices_to_array(1, [slice(0, 1)]).tolist(), [True])
+        self.assertEqual(op.slices_to_array(5, []).tolist(), [False] * 5)
+        self.assertEqual(op.slices_to_array(5, [slice(None, None)]).tolist(), [True] * 5)
+        self.assertEqual(op.slices_to_array(5, [slice(-1, 6)]).tolist(), [True] * 5)
+        self.assertEqual(op.slices_to_array(5, [slice(None, 3)]).tolist(), [1, 1, 1, 0, 0])
+        self.assertEqual(op.slices_to_array(5, [slice(3, None)]).tolist(), [0, 0, 0, 1, 1])
+        self.assertEqual(op.slices_to_array(5, [slice(4, 3)]).tolist(), [False] * 5)
+        self.assertEqual(op.slices_to_array(5, [slice(1, 2), slice(3, 5)]).tolist(), [0, 1, 0, 1, 1])
+
+
+################################################################################
+# Type-inspecific array operations
+
+class TestAlignArrays(unittest.TestCase):
+    def test_align_arrays(self):
+        self.assertEqual(op.align_arrays(np.arange(10), np.arange(20, 30)).tolist(),
+                         [0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+        self.assertEqual(op.align_arrays(np.arange(40, 80), np.arange(20, 40)).tolist(),
+                         [40, 42, 44, 46, 48, 50, 52, 54, 56, 58, 60, 62, 64, 66, 68, 70, 72, 74, 76, 78])
+        self.assertEqual(op.align_arrays(np.arange(40,80), np.arange(30, 40)).tolist(),
+                         [40, 44, 48, 52, 56, 60, 64, 68, 72, 76])
+        self.assertEqual(op.align_arrays(np.arange(10), np.arange(20, 40)).tolist(),
+                         [0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9])
+
+
+class TestIsConstant(unittest.TestCase):
+    def test_is_constant(self):
+        self.assertTrue(op.is_constant[np.uint16_t](cy.empty_uint16(0)))
+        self.assertTrue(op.is_constant[np.uint8_t](cy.zeros_uint8(10)))
+        self.assertTrue(op.is_constant[np.uint16_t](cy.zeros_uint16(10)))
+        self.assertTrue(op.is_constant[np.uint32_t](cy.zeros_uint32(10)))
+        self.assertTrue(op.is_constant[np.uint8_t](cy.ones_uint8(10)))
+        self.assertFalse(op.is_constant[np.uint32_t](np.arange(10, dtype=np.uint32)))
+        self.assertFalse(op.is_constant[np.float64_t](np.arange(10, dtype=np.float64)))
+
+
+class TestLongestSection(unittest.TestCase):
+    def test_longest_section(self):
+        self.assertEqual(op.longest_section[np.uint8_t](np.empty(0, dtype=np.uint8)), 0)
+        data = np.zeros(10, dtype=np.uint8)
+        self.assertEqual(op.longest_section[np.uint8_t](data), len(data))
+        self.assertEqual(op.longest_section[np.uint8_t](data, 0), len(data))
+        self.assertEqual(op.longest_section[np.uint8_t](data, 1), 0)
+        data[0] = 1
+        self.assertEqual(op.longest_section[np.uint8_t](data), 9)
+        self.assertEqual(op.longest_section[np.uint8_t](data, 1), 1)
+        data[9] = 1
+        self.assertEqual(op.longest_section[np.uint8_t](data), 8)
+        self.assertEqual(op.longest_section[np.uint8_t](data, 1), 1)
+        data[2:4] = 2
+        self.assertEqual(op.longest_section[np.uint8_t](data), 5)
+        self.assertEqual(op.longest_section[np.uint8_t](data, 1), 1)
+        self.assertEqual(op.longest_section[np.uint8_t](data, 2), 2)
+        data[:] = 2
+        self.assertEqual(op.longest_section[np.uint8_t](data), 0)
+        self.assertEqual(op.longest_section[np.uint8_t](data, 1), 0)
+        self.assertEqual(op.longest_section[np.uint8_t](data, 2), len(data))
+        data = np.zeros(5, dtype=np.float64)
+        self.assertEqual(op.longest_section[np.float64_t](data), 5)
+        self.assertEqual(op.longest_section[np.float64_t](data, 1.5), 0)
+        data[1] = 1.5
+        self.assertEqual(op.longest_section[np.float64_t](data), 3)
+        self.assertEqual(op.longest_section[np.float64_t](data, 1.5), 1)
+        self.assertEqual(op.longest_section[np.float64_t](data, 4.7), 0)
+        data[3:] = 1.5
+        self.assertEqual(op.longest_section[np.float64_t](data), 1)
+        self.assertEqual(op.longest_section[np.float64_t](data, 1.5), 2)
+        data[:] = 1.5
+        self.assertEqual(op.longest_section[np.float64_t](data), 0)
+        self.assertEqual(op.longest_section[np.float64_t](data, 1.5), len(data))
+
+
+class TestSwapBytes(unittest.TestCase):
+    def test_swap_bytes(self):
+        self.assertEqual(len(op.swap_bytes(np.ones(0, dtype=np.uint16))), 0)
+        data = b'\xAF'
+        self.assertEqual(op.swap_bytes(np.frombuffer(data, dtype=np.uint8).copy()).tostring(), data)
+        data = b'\x12\xAB\xCD\xEF'
+        self.assertEqual(op.swap_bytes(np.frombuffer(data, dtype=np.uint8).copy()).tostring(), data)
+        self.assertEqual(op.swap_bytes(np.frombuffer(data, dtype=np.uint16).copy()).tostring(), b'\xAB\x12\xEF\xCD')
+
+
+class TestTwosComplement(unittest.TestCase):
+    def test_twos_complement(self):
+        self.assertEqual(op.twos_complement(np.arange(4), 2).tolist(), [0, 1, -2, -1])
+
+
+################################################################################
+# Boolean array operations
+
 class TestRemoveSmallRuns(unittest.TestCase):
     def test_remove_small_runs(self):
         def call(x, *args, **kwargs):
@@ -160,18 +169,6 @@ class TestRemoveSmallRuns(unittest.TestCase):
         self.assertEqual(call([F,T,T,T,F,T,T,F], 1.5, 2), [F,F,F,F,F,F,F,F])
         self.assertEqual(call([F,T,T,T,F,T,T,F], 1.4, 2), [F,T,T,T,F,F,F,F])
         self.assertEqual(call([F,T,T,T,F,T,T,F], 1.4, 2.2), [F,F,F,F,F,F,F,F])
-
-
-class TestRunsOfOnes(unittest.TestCase):
-    def test_runs_of_ones(self):
-        data = np.ma.array(
-            [0,0,1,0,1,1,1,1,1,0,0,1,1,1,0,1,1,1],
-            mask=np.concatenate([np.zeros(14, dtype=np.bool), np.ones(4, dtype=np.bool)]),
-            dtype=np.bool,
-        )
-        self.assertEqual(list(runs_of_ones(data)), [slice(2, 3), slice(4, 9), slice(11, 14), slice(15, 18)])
-        self.assertEqual(list(runs_of_ones(data, min_samples=2)), [slice(4, 9), slice(11, 14), slice(15, 18)])
-        self.assertEqual(list(runs_of_ones(data, min_samples=3)), [slice(4, 9)])
 
 
 class TestSectionOverlap(unittest.TestCase):
@@ -205,19 +202,8 @@ class TestSectionOverlap(unittest.TestCase):
                               [F,T,T,T,F,F,F,F,T,T,T,T,F])
 
 
-class TestSlicesToArray(unittest.TestCase):
-    def test_slices_to_array(self):
-        self.assertEqual(op.slices_to_array(0, []).tolist(), [])
-        self.assertEqual(op.slices_to_array(0, [slice(0, 1)]).tolist(), [])
-        self.assertEqual(op.slices_to_array(1, []).tolist(), [False])
-        self.assertEqual(op.slices_to_array(1, [slice(0, 1)]).tolist(), [True])
-        self.assertEqual(op.slices_to_array(5, []).tolist(), [False] * 5)
-        self.assertEqual(op.slices_to_array(5, [slice(None, None)]).tolist(), [True] * 5)
-        self.assertEqual(op.slices_to_array(5, [slice(-1, 6)]).tolist(), [True] * 5)
-        self.assertEqual(op.slices_to_array(5, [slice(None, 3)]).tolist(), [1, 1, 1, 0, 0])
-        self.assertEqual(op.slices_to_array(5, [slice(3, None)]).tolist(), [0, 0, 0, 1, 1])
-        self.assertEqual(op.slices_to_array(5, [slice(4, 3)]).tolist(), [False] * 5)
-        self.assertEqual(op.slices_to_array(5, [slice(1, 2), slice(3, 5)]).tolist(), [0, 1, 0, 1, 1])
+################################################################################
+# Uint8 array (bytes) operations
 
 
 class TestKeyValue(unittest.TestCase):
@@ -227,55 +213,6 @@ class TestKeyValue(unittest.TestCase):
         separator = b'\x0A'
         self.assertEqual(op.key_value(data, b'TAILNUM', delimiter, separator), b'G-FDSL')
         self.assertEqual(op.key_value(data, b'SERIALNUM', delimiter, separator), b'10344')
-
-
-class TestSwapBytes(unittest.TestCase):
-    def test_swap_bytes(self):
-        self.assertEqual(len(op.swap_bytes(np.ones(0, dtype=np.uint16))), 0)
-        data = b'\xAF'
-        self.assertEqual(op.swap_bytes(np.frombuffer(data, dtype=np.uint8).copy()).tostring(), data)
-        data = b'\x12\xAB\xCD\xEF'
-        self.assertEqual(op.swap_bytes(np.frombuffer(data, dtype=np.uint8).copy()).tostring(), data)
-        self.assertEqual(op.swap_bytes(np.frombuffer(data, dtype=np.uint16).copy()).tostring(), b'\xAB\x12\xEF\xCD')
-
-
-class TestPack(unittest.TestCase):
-    def test_pack(self):
-        self.assertEqual(bytes(op.pack(b'')), b'')
-        self.assertEqual(bytes(op.pack(b'\x47')), b'')
-        self.assertEqual(bytes(op.pack(b'\x47\x02')), b'')
-        self.assertEqual(bytes(op.pack(b'\x47\x02\xAB')), b'')
-        result = b'\x47\xB2\xCA'
-        self.assertEqual(bytes(op.pack(b'\x47\x02\xAB\x0C')), result)
-        self.assertEqual(bytes(op.pack(b'\x47\x02\xAB\x0C\xB8')), result)
-        self.assertEqual(bytes(op.pack(b'\x47\x02\xAB\x0C\xB8\x05')), result)
-        self.assertEqual(bytes(op.pack(b'\x47\x02\xAB\x0C\xB8\x05\xDE')), result)
-        self.assertEqual(bytes(op.pack(b'\x47\x02\xAB\x0C\xB8\x05\xDE\x0F')), result + b'\xB8\xE5\xFD')
-
-
-class TestUnpack(unittest.TestCase):
-    def test_unpack(self):
-        self.assertEqual(bytes(op.unpack(b'')), b'')
-        self.assertEqual(bytes(op.unpack(b'\x47')), b'')
-        self.assertEqual(bytes(op.unpack(b'\x47\xB2')), b'')
-        result = b'\x47\x02\xAB\x0C'
-        self.assertEqual(bytes(op.unpack(b'\x47\xB2\xCA')), result)
-        self.assertEqual(bytes(op.unpack(b'\x47\xB2\xCA\xB8')), result)
-        self.assertEqual(bytes(op.unpack(b'\x47\xB2\xCA\xB8\xDF')), result)
-        self.assertEqual(bytes(op.unpack(b'\x47\xB2\xCA\xB8\xDF\x35')), result + b'\xB8\x0F\x5D\x03')
-
-
-class TestUnpackLittleEndian(unittest.TestCase):
-    def test_unpack_little_endian(self):
-        self.assertEqual(hexlify(np.asarray(op.unpack_little_endian(b'\x24\x70\x5C\x12\x34\x56')).tostring()), b'47025c0023015604')
-
-
-class TestValueIdx(unittest.TestCase):
-    def test_array_value_idx(self):
-        self.assertEqual(op.value_idx[np.uint16_t](np.empty(0, dtype=np.uint16), 10), None)
-        self.assertEqual(op.value_idx[np.uint16_t](np.array([2,4,6,8], dtype=np.uint16), 10), None)
-        self.assertEqual(op.value_idx[np.uint16_t](np.array([10], dtype=np.uint16), 10), 0)
-        self.assertEqual(op.value_idx[np.uint16_t](np.array([2,4,6,8,10], dtype=np.uint16), 10), 4)
 
 
 class TestSubarrayIdxUint8(unittest.TestCase):
@@ -328,42 +265,38 @@ class TestSubarrayExistsUint8(unittest.TestCase):
         self.assertEqual(op.subarray_exists_uint8(subarr, arr, start=10000), False)
 
 
-class TestTwosComplement(unittest.TestCase):
-    def test_twos_complement(self):
-        self.assertEqual(op.twos_complement(np.arange(4), 2).tolist(), [0, 1, -2, -1])
+################################################################################
+# Flight Data Recorder data operations
+
+class TestPack(unittest.TestCase):
+    def test_pack(self):
+        self.assertEqual(bytes(op.pack(b'')), b'')
+        self.assertEqual(bytes(op.pack(b'\x47')), b'')
+        self.assertEqual(bytes(op.pack(b'\x47\x02')), b'')
+        self.assertEqual(bytes(op.pack(b'\x47\x02\xAB')), b'')
+        result = b'\x47\xB2\xCA'
+        self.assertEqual(bytes(op.pack(b'\x47\x02\xAB\x0C')), result)
+        self.assertEqual(bytes(op.pack(b'\x47\x02\xAB\x0C\xB8')), result)
+        self.assertEqual(bytes(op.pack(b'\x47\x02\xAB\x0C\xB8\x05')), result)
+        self.assertEqual(bytes(op.pack(b'\x47\x02\xAB\x0C\xB8\x05\xDE')), result)
+        self.assertEqual(bytes(op.pack(b'\x47\x02\xAB\x0C\xB8\x05\xDE\x0F')), result + b'\xB8\xE5\xFD')
 
 
-class TestLongestSection(unittest.TestCase):
-    def test_longest_section(self):
-        self.assertEqual(op.longest_section[np.uint8_t](np.empty(0, dtype=np.uint8)), 0)
-        data = np.zeros(10, dtype=np.uint8)
-        self.assertEqual(op.longest_section[np.uint8_t](data), len(data))
-        self.assertEqual(op.longest_section[np.uint8_t](data, 0), len(data))
-        self.assertEqual(op.longest_section[np.uint8_t](data, 1), 0)
-        data[0] = 1
-        self.assertEqual(op.longest_section[np.uint8_t](data), 9)
-        self.assertEqual(op.longest_section[np.uint8_t](data, 1), 1)
-        data[9] = 1
-        self.assertEqual(op.longest_section[np.uint8_t](data), 8)
-        self.assertEqual(op.longest_section[np.uint8_t](data, 1), 1)
-        data[2:4] = 2
-        self.assertEqual(op.longest_section[np.uint8_t](data), 5)
-        self.assertEqual(op.longest_section[np.uint8_t](data, 1), 1)
-        self.assertEqual(op.longest_section[np.uint8_t](data, 2), 2)
-        data[:] = 2
-        self.assertEqual(op.longest_section[np.uint8_t](data), 0)
-        self.assertEqual(op.longest_section[np.uint8_t](data, 1), 0)
-        self.assertEqual(op.longest_section[np.uint8_t](data, 2), len(data))
-        data = np.zeros(5, dtype=np.float64)
-        self.assertEqual(op.longest_section[np.float64_t](data), 5)
-        self.assertEqual(op.longest_section[np.float64_t](data, 1.5), 0)
-        data[1] = 1.5
-        self.assertEqual(op.longest_section[np.float64_t](data), 3)
-        self.assertEqual(op.longest_section[np.float64_t](data, 1.5), 1)
-        self.assertEqual(op.longest_section[np.float64_t](data, 4.7), 0)
-        data[3:] = 1.5
-        self.assertEqual(op.longest_section[np.float64_t](data), 1)
-        self.assertEqual(op.longest_section[np.float64_t](data, 1.5), 2)
-        data[:] = 1.5
-        self.assertEqual(op.longest_section[np.float64_t](data), 0)
-        self.assertEqual(op.longest_section[np.float64_t](data, 1.5), len(data))
+class TestUnpack(unittest.TestCase):
+    def test_unpack(self):
+        self.assertEqual(bytes(op.unpack(b'')), b'')
+        self.assertEqual(bytes(op.unpack(b'\x47')), b'')
+        self.assertEqual(bytes(op.unpack(b'\x47\xB2')), b'')
+        result = b'\x47\x02\xAB\x0C'
+        self.assertEqual(bytes(op.unpack(b'\x47\xB2\xCA')), result)
+        self.assertEqual(bytes(op.unpack(b'\x47\xB2\xCA\xB8')), result)
+        self.assertEqual(bytes(op.unpack(b'\x47\xB2\xCA\xB8\xDF')), result)
+        self.assertEqual(bytes(op.unpack(b'\x47\xB2\xCA\xB8\xDF\x35')), result + b'\xB8\x0F\x5D\x03')
+
+# TODO: unpack_little_endian
+
+
+################################################################################
+# Array serialisation
+
+# TODO: tests
