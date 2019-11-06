@@ -114,55 +114,6 @@ class TestIsConstant(unittest.TestCase):
         self.assertFalse(op.is_constant[np.float64_t](np.arange(10, dtype=np.float64)))
 
 
-class TestIsPower2(unittest.TestCase):
-    def test_is_power2(self):
-        self.assertEqual([i for i in range(2000) if op.is_power2(i)],
-                         [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024])
-        self.assertFalse(op.is_power2(-2))
-        self.assertFalse(op.is_power2(2.2))
-
-
-class TestIsPower2Fraction(unittest.TestCase):
-    def test_is_power2_fraction(self):
-        self.assertEqual([i for i in range(2000) if op.is_power2_fraction(i)],
-                         [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024])
-        self.assertFalse(op.is_power2_fraction(-2))
-        self.assertFalse(op.is_power2_fraction(2.2))
-        self.assertTrue(op.is_power2_fraction(0.5))
-        self.assertTrue(op.is_power2_fraction(0.25))
-        self.assertTrue(op.is_power2_fraction(0.125))
-        self.assertTrue(op.is_power2_fraction(0.0625))
-        self.assertTrue(op.is_power2_fraction(0.03125))
-        self.assertTrue(op.is_power2_fraction(0.015625))
-        self.assertFalse(op.is_power2_fraction(0.75))
-        self.assertFalse(op.is_power2_fraction(0.2))
-        self.assertFalse(op.is_power2_fraction(0.015626))
-
-
-class TestMaxValues(unittest.TestCase):
-    def test_max_values(self):
-        self.assertEqual(list(op.max_values(np.ma.empty(0, dtype=np.float64), np.empty(0, dtype=np.bool))), [])
-        self.assertEqual(list(op.max_values(np.ma.zeros(1, dtype=np.float64), np.zeros(1, dtype=np.bool))), [])
-        self.assertEqual(list(op.max_values(np.ma.zeros(1, dtype=np.float64), np.ones(1, dtype=np.bool))), [(0, 0)])
-        self.assertEqual(list(op.max_values(np.ma.ones(1, dtype=np.float64), np.zeros(1, dtype=np.bool))), [])
-        self.assertEqual(list(op.max_values(np.ma.ones(1, dtype=np.float64), np.ones(1, dtype=np.bool))), [(0, 1)])
-        arr = np.ma.arange(10, dtype=np.float64)
-        matching = np.zeros(10, dtype=np.bool)
-        self.assertEqual(list(op.max_values(arr, matching)), [])
-        matching[0] = True
-        self.assertEqual(list(op.max_values(arr, matching)), [(0, 0)])
-        matching[1] = True
-        self.assertEqual(list(op.max_values(arr, matching)), [(1, 1)])
-        matching[3] = True
-        self.assertEqual(list(op.max_values(arr, matching)), [(1, 1), (3, 3)])
-        matching[7:] = True
-        self.assertEqual(list(op.max_values(arr, matching)), [(1, 1), (3, 3), (9, 9)])
-        arr[1] = np.ma.masked
-        self.assertEqual(list(op.max_values(arr, matching)), [(0, 0), (3, 3), (9, 9)])
-        arr[0] = np.ma.masked
-        self.assertEqual(list(op.max_values(arr, matching)), [(3, 3), (9, 9)])
-
-
 class TestNearestSlice(unittest.TestCase):
 
     def test_nearest_slice(self):
@@ -319,37 +270,37 @@ class TestUnpackLittleEndian(unittest.TestCase):
         self.assertEqual(hexlify(np.asarray(op.unpack_little_endian(b'\x24\x70\x5C\x12\x34\x56')).tostring()), b'47025c0023015604')
 
 
-class TestArrayValueIdx(unittest.TestCase):
+class TestValueIdx(unittest.TestCase):
     def test_array_value_idx(self):
-        self.assertEqual(op.array_value_idx[np.uint16_t](np.empty(0, dtype=np.uint16), 10), cy.NONE_IDX)
-        self.assertEqual(op.array_value_idx[np.uint16_t](np.array([2,4,6,8], dtype=np.uint16), 10), cy.NONE_IDX)
-        self.assertEqual(op.array_value_idx[np.uint16_t](np.array([10], dtype=np.uint16), 10), 0)
-        self.assertEqual(op.array_value_idx[np.uint16_t](np.array([2,4,6,8,10], dtype=np.uint16), 10), 4)
+        self.assertEqual(op.value_idx[np.uint16_t](np.empty(0, dtype=np.uint16), 10), None)
+        self.assertEqual(op.value_idx[np.uint16_t](np.array([2,4,6,8], dtype=np.uint16), 10), None)
+        self.assertEqual(op.value_idx[np.uint16_t](np.array([10], dtype=np.uint16), 10), 0)
+        self.assertEqual(op.value_idx[np.uint16_t](np.array([2,4,6,8,10], dtype=np.uint16), 10), 4)
 
 
-class TestIndexOfSubarrayUint8(unittest.TestCase):
-    def test_index_of_subarray_uint8(self):
+class TestSubarrayIdxUint8(unittest.TestCase):
+    def test_subarray_idx_uint8(self):
         arr = np.zeros(16, dtype=np.uint8)
         subarr = np.arange(1, 5, dtype=np.uint8)
-        self.assertEqual(op.index_of_subarray_uint8(arr, subarr), -1)
-        self.assertEqual(op.index_of_subarray_uint8(arr, subarr, start=5), -1)
+        self.assertEqual(op.subarray_idx_uint8(arr, subarr), None)
+        self.assertEqual(op.subarray_idx_uint8(arr, subarr, start=5), None)
         arr[0] = 1
         arr[1] = 2
         arr[2] = 3
         arr[3] = 4
-        self.assertEqual(op.index_of_subarray_uint8(arr, subarr), 0)
-        self.assertEqual(op.index_of_subarray_uint8(arr, subarr, start=1), -1)
+        self.assertEqual(op.subarray_idx_uint8(arr, subarr), 0)
+        self.assertEqual(op.subarray_idx_uint8(arr, subarr, start=1), None)
         arr[1] = 5
-        self.assertEqual(op.index_of_subarray_uint8(arr, subarr), -1)
+        self.assertEqual(op.subarray_idx_uint8(arr, subarr), None)
         arr[12] = 1
         arr[13] = 2
         arr[14] = 3
         arr[15] = 4
-        self.assertEqual(op.index_of_subarray_uint8(arr, subarr), 12)
-        self.assertEqual(op.index_of_subarray_uint8(arr, subarr, start=10), 12)
-        self.assertEqual(op.index_of_subarray_uint8(arr, subarr, start=14), -1)
-        self.assertEqual(op.index_of_subarray_uint8(subarr, arr), -1)
-        self.assertEqual(op.index_of_subarray_uint8(subarr, arr, start=10000), -1)
+        self.assertEqual(op.subarray_idx_uint8(arr, subarr), 12)
+        self.assertEqual(op.subarray_idx_uint8(arr, subarr, start=10), 12)
+        self.assertEqual(op.subarray_idx_uint8(arr, subarr, start=14), None)
+        self.assertEqual(op.subarray_idx_uint8(subarr, arr), None)
+        self.assertEqual(op.subarray_idx_uint8(subarr, arr, start=10000), None)
 
 
 class TestSubarrayExistsUint8(unittest.TestCase):
@@ -375,7 +326,6 @@ class TestSubarrayExistsUint8(unittest.TestCase):
         self.assertEqual(op.subarray_exists_uint8(arr, subarr, start=14), False)
         self.assertEqual(op.subarray_exists_uint8(subarr, arr), False)
         self.assertEqual(op.subarray_exists_uint8(subarr, arr, start=10000), False)
-
 
 
 class TestTwosComplement(unittest.TestCase):

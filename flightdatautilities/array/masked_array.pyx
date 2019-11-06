@@ -3,6 +3,7 @@
 Masked array-specific functions.
 '''
 cimport cython
+from libc.math cimport fabs
 from libc.stdio cimport fprintf, stderr
 import numpy as np
 cimport numpy as np
@@ -23,76 +24,76 @@ cdef np.uint8_t[:] getmaskarray1d(array):
     return cy.zeros_uint8(len(array)) if np.PyArray_CheckScalar(array.mask) else array.mask.view(np.uint8)
 
 
-cpdef prev_unmasked_value(array, Py_ssize_t idx, Py_ssize_t start_idx=0):
-    return cy.array_idx_value(array, cy.prev_idx(getmaskarray1d(array), idx, match=False, start_idx=start_idx))
+cpdef prev_unmasked_value(array, Py_ssize_t idx, Py_ssize_t start=0):
+    return cy.array_idx_value(array, cy.prev_idx(getmaskarray1d(array), idx, match=False, start=start))
 
 
-cpdef next_unmasked_value(array, Py_ssize_t idx, Py_ssize_t stop_idx=cy.NONE_IDX):
-    return cy.array_idx_value(array, cy.next_idx(getmaskarray1d(array), idx, match=False, stop_idx=stop_idx))
+cpdef next_unmasked_value(array, Py_ssize_t idx, Py_ssize_t stop=cy.NONE_IDX):
+    return cy.array_idx_value(array, cy.next_idx(getmaskarray1d(array), idx, match=False, stop=stop))
 
 
-cpdef nearest_unmasked_value(array, Py_ssize_t idx, Py_ssize_t start_idx=0, Py_ssize_t stop_idx=cy.NONE_IDX):
-    return cy.array_idx_value(array, cy.nearest_idx(getmaskarray1d(array), idx, match=False, start_idx=start_idx,
-                                                    stop_idx=stop_idx))
+cpdef nearest_unmasked_value(array, Py_ssize_t idx, Py_ssize_t start=0, Py_ssize_t stop=cy.NONE_IDX):
+    return cy.array_idx_value(array, cy.nearest_idx(getmaskarray1d(array), idx, match=False, start=start,
+                                                    stop=stop))
 
 
 @cython.wraparound(False)
-cdef void fill_range_unsafe(cy.np_types[:] data, np.uint8_t[:] mask, cy.np_types value, Py_ssize_t start_idx,
-                            Py_ssize_t stop_idx) nogil:
+cdef void fill_range_unsafe(cy.np_types[:] data, np.uint8_t[:] mask, cy.np_types value, Py_ssize_t start,
+                            Py_ssize_t stop) nogil:
     '''
     Fill a section of a masked_array's data and mask with a value and unmask. Invalid and negative indices are unsafe.
     '''
     cdef Py_ssize_t idx
-    for idx in range(start_idx, stop_idx):
+    for idx in range(start, stop):
         data[idx] = value
         mask[idx] = 0
 
 
 @cython.wraparound(False)
-cdef void fill_range(cy.np_types[:] data, np.uint8_t[:] mask, cy.np_types value, Py_ssize_t start_idx, Py_ssize_t stop_idx) nogil:
+cdef void fill_range(cy.np_types[:] data, np.uint8_t[:] mask, cy.np_types value, Py_ssize_t start, Py_ssize_t stop) nogil:
     '''
     Fill a section of a masked_array's data and mask with a value and unmask.
     '''
-    if not cy.lengths_mismatch(data.shape[0], mask.shape[0]):
+    if not cy.lengths_match(data.shape[0], mask.shape[0]):
         return
-    fill_range_unsafe(data, mask, value, cy.array_wraparound_idx(start_idx, data.shape[0]),
-                      cy.array_wraparound_idx(stop_idx, data.shape[0]))
+    fill_range_unsafe(data, mask, value, cy.array_wraparound_idx(start, data.shape[0]),
+                      cy.array_wraparound_idx(stop, data.shape[0]))
 
 
 @cython.cdivision(True)
 @cython.wraparound(False)
-cdef void interpolate_range_unsafe(np.float64_t[:] data, np.uint8_t[:] mask, Py_ssize_t start_idx, Py_ssize_t stop_idx) nogil:
+cdef void interpolate_range_unsafe(np.float64_t[:] data, np.uint8_t[:] mask, Py_ssize_t start, Py_ssize_t stop) nogil:
     '''
     Fill a section of a float64 masked_array's data and mask with values interpolated between start and stop indices
     and unmask. Invalid and negative indices are unsafe.
     '''
     cdef:
-        np.float64_t gradient = (data[stop_idx] - data[start_idx]) / (stop_idx - start_idx)
+        np.float64_t gradient = (data[stop] - data[start]) / (stop - start)
         Py_ssize_t idx
-    for idx in range(start_idx + 1, stop_idx):
-        data[idx] = data[start_idx] + ((idx - start_idx) * gradient)
+    for idx in range(start + 1, stop):
+        data[idx] = data[start] + ((idx - start) * gradient)
         mask[idx] = 0
 
 
 @cython.wraparound(False)
-cdef void interpolate_range(np.float64_t[:] data, np.uint8_t[:] mask, Py_ssize_t start_idx, Py_ssize_t stop_idx) nogil:
+cdef void interpolate_range(np.float64_t[:] data, np.uint8_t[:] mask, Py_ssize_t start, Py_ssize_t stop) nogil:
     '''
     Fill a section of a float64 masked_array's data and mask with values interpolated between start and stop indices
     and unmask.
     '''
-    if not cy.lengths_mismatch(data.shape[0], mask.shape[0]):
+    if not cy.lengths_match(data.shape[0], mask.shape[0]):
         return
 
-    start_idx = cy.array_wraparound_idx(start_idx, data.shape[0])
-    stop_idx = cy.array_wraparound_idx(stop_idx, data.shape[0])
-    if start_idx <= stop_idx:
+    start = cy.array_wraparound_idx(start, data.shape[0])
+    stop = cy.array_wraparound_idx(stop, data.shape[0])
+    if start <= stop:
         return  # avoid divide by zero
 
-    if mask[start_idx] or mask[stop_idx]:
-        fprintf(stderr, 'interpolate_range cannot interpolate between masked values (%ld and %ld)\n', start_idx, stop_idx)
+    if mask[start] or mask[stop]:
+        fprintf(stderr, 'interpolate_range cannot interpolate between masked values (%ld and %ld)\n', start, stop)
         return
 
-    interpolate_range_unsafe(data, mask, start_idx, stop_idx)
+    interpolate_range_unsafe(data, mask, start, stop)
 
 
 @cython.wraparound(False)
@@ -101,7 +102,7 @@ cdef void repair_data_mask(np.float64_t[:] data, np.uint8_t[:] mask, RepairMetho
     '''
     Repairs data and mask memoryviews in-place with a specified RepairMethod.
     '''
-    if not cy.lengths_mismatch(data.shape[0], mask.shape[0]):
+    if not cy.lengths_match(data.shape[0], mask.shape[0]):
         return
 
     # XXX: unable to call this function via repair_data_mask[np.float64_t](...) when data is cy.np_types fused type:
@@ -165,3 +166,71 @@ cdef repair_mask(array, RepairMethod method=RepairMethod.INTERPOLATE, repair_dur
 
     repair_data_mask(array.data, array.mask.view(np.uint8), method, repair_samples, extrapolate=extrapolate)
     return array.astype(dtype, copy=False)
+
+
+################################################################################
+# Aggregation
+
+def aggregate_values(Aggregate mode, np.float64_t[:] data, np.uint8_t[:] mask, np.uint8_t[:] matching):
+    if data.shape[0] != mask.shape[0] or data.shape[0] != matching.shape[0]:
+        raise ValueError('array lengths do not match')
+
+    cdef:
+        Py_ssize_t idx, value_idx = -1
+        np.float64_t value
+        bint matching_section = False, update_value = False
+
+    for idx in range(matching.shape[0]):
+        if matching[idx]:
+            if not matching_section:
+                matching_section = True
+            if not mask[idx]:
+                update_value = False
+                if value_idx == -1:
+                    update_value = True
+                elif mode == MAX:
+                    if data[idx] > value:
+                        update_value = True
+                elif mode == MIN:
+                    if data[idx] < value:
+                        update_value = True
+                elif mode == MAX_ABS:
+                    if fabs(data[idx]) > fabs(data[idx]):
+                        update_value = True
+                elif mode == MIN_ABS:
+                    if fabs(data[idx]) < fabs(data[idx]):
+                        update_value = True
+                if update_value:
+                    value = data[idx]
+                    value_idx = idx
+        else:
+            if matching_section:
+                if value_idx != -1:
+                    yield value_idx, value
+                    value_idx = -1
+                matching_section = False
+
+    if matching_section and value_idx != -1:
+        yield value_idx, value
+
+
+cdef _aggregate_values(Aggregate mode, array, matching):
+    return aggregate_values(
+        mode, cy.astype(array, np.float64), getmaskarray1d(array), matching.view(np.uint8))
+
+
+cpdef max_values(array, matching):
+    return _aggregate_values(Aggregate.MAX, array, matching)
+
+
+cpdef min_values(array, matching):
+    return _aggregate_values(Aggregate.MIN, array, matching)
+
+
+cpdef max_abs_values(array, matching):
+    return _aggregate_values(Aggregate.MAX_ABS, array, matching)
+
+
+cpdef min_abs_values(array, matching):
+    return _aggregate_values(Aggregate.MIN_ABS, array, matching)
+

@@ -145,3 +145,30 @@ class TestFillRange(unittest.TestCase):
         ##self.assertTrue(mask[5])
         ##self.assertFalse(np.any(mask[6:]))
 
+
+################################################################################
+# Aggregation
+
+# TODO: fix crash
+#class TestMaxValues(unittest.TestCase):
+    #def test_max_values(self):
+        #self.assertEqual(list(ma.max_values(np.ma.empty(0, dtype=np.float64), np.empty(0, dtype=np.bool))), [])
+        #self.assertEqual(list(ma.max_values(np.ma.zeros(1, dtype=np.float64), np.zeros(1, dtype=np.bool))), [])
+        #self.assertEqual(list(ma.max_values(np.ma.zeros(1, dtype=np.float64), np.ones(1, dtype=np.bool))), [(0, 0)])
+        #self.assertEqual(list(ma.max_values(np.ma.ones(1, dtype=np.float64), np.zeros(1, dtype=np.bool))), [])
+        #self.assertEqual(list(ma.max_values(np.ma.ones(1, dtype=np.float64), np.ones(1, dtype=np.bool))), [(0, 1)])
+        #arr = np.ma.arange(10, dtype=np.float64)
+        #matching = np.zeros(10, dtype=np.bool)
+        #self.assertEqual(list(ma.max_values(arr, matching)), [])
+        #matching[0] = True
+        #self.assertEqual(list(ma.max_values(arr, matching)), [(0, 0)])
+        #matching[1] = True
+        #self.assertEqual(list(ma.max_values(arr, matching)), [(1, 1)])
+        #matching[3] = True
+        #self.assertEqual(list(ma.max_values(arr, matching)), [(1, 1), (3, 3)])
+        #matching[7:] = True
+        #self.assertEqual(list(ma.max_values(arr, matching)), [(1, 1), (3, 3), (9, 9)])
+        #arr[1] = np.ma.masked
+        #self.assertEqual(list(ma.max_values(arr, matching)), [(0, 0), (3, 3), (9, 9)])
+        #arr[0] = np.ma.masked
+        #self.assertEqual(list(ma.max_values(arr, matching)), [(3, 3), (9, 9)])

@@ -40,6 +40,8 @@ ctypedef fused np_types:
 
 cdef Py_ssize_t NONE_IDX
 
+################################################################################
+# Memory Allocation
 cdef np.int32_t[:] empty_int32(np.npy_intp psize)
 cdef np.int32_t[:, :] empty2d_int32(np.npy_intp x, np.npy_intp y)
 cdef np.int32_t[:] zeros_int32(np.npy_intp psize)
@@ -73,25 +75,36 @@ cdef np.float64_t[:] empty_float64(np.npy_intp size)
 cdef np.float64_t[:, :] empty2d_float64(np.npy_intp x, np.npy_intp y)
 cdef np.float64_t[:] zeros_float64(np.npy_intp size)
 cdef np.float64_t[:, :] zeros2d_float64(np.npy_intp x, np.npy_intp y)
-cdef np.uint16_t read_uint16_le(np.uint8_t[:] data, Py_ssize_t idx) nogil
-cdef np.uint16_t read_uint16_be(np.uint8_t[:] data, Py_ssize_t idx) nogil
-cdef np.uint32_t read_uint32_le(np.uint8_t[:] data, Py_ssize_t idx) nogil
-cdef np.uint32_t read_uint32_be(np.uint8_t[:] data, Py_ssize_t idx) nogil
-cdef bint lengths_mismatch(Py_ssize_t x, Py_ssize_t y) nogil
+################################################################################
+# Unpacking data types
+cdef np.uint16_t unpack_uint16_le_unsafe(const np.uint8_t[:] data, Py_ssize_t idx) nogil
+cdef np.uint16_t unpack_uint16_le(const np.uint8_t[:] data, Py_ssize_t idx) nogil
+cdef np.uint16_t unpack_uint16_be_unsafe(const np.uint8_t[:] data, Py_ssize_t idx) nogil
+cdef np.uint16_t unpack_uint16_be(const np.uint8_t[:] data, Py_ssize_t idx) nogil
+cdef np.uint32_t unpack_uint32_le_unsafe(const np.uint8_t[:] data, Py_ssize_t idx) nogil
+cdef np.uint32_t unpack_uint32_le(const np.uint8_t[:] data, Py_ssize_t idx) nogil
+cdef np.uint32_t unpack_uint32_be_unsafe(const np.uint8_t[:] data, Py_ssize_t idx) nogil
+cdef np.uint32_t unpack_uint32_be(const np.uint8_t[:] data, Py_ssize_t idx) nogil
+################################################################################
+# Array helpers
+cdef astype(data, dtype, copy=?)
+cdef bint lengths_match(Py_ssize_t x, Py_ssize_t y) nogil
+cdef bint within_bounds(Py_ssize_t idx, Py_ssize_t length) nogil
 cdef idx_none(Py_ssize_t idx)
 cdef Py_ssize_t none_idx(idx)
-cdef Py_ssize_t array_wraparound_idx(Py_ssize_t idx, Py_ssize_t length) nogil
-cdef Py_ssize_t array_idx(Py_ssize_t idx, Py_ssize_t length) nogil
+cdef Py_ssize_t array_wraparound_idx(Py_ssize_t idx, Py_ssize_t length, bint stop=?) nogil
 cdef array_idx_value(Py_ssize_t idx, array)
-cdef Py_ssize_t array_stop_idx(Py_ssize_t stop_idx, Py_ssize_t length) nogil
-cdef Py_ssize_t prev_idx_unsafe(const np.uint8_t[:] array, Py_ssize_t idx, bint match=?, Py_ssize_t start_idx=?) nogil
-cdef Py_ssize_t prev_idx(const np.uint8_t[:] array, Py_ssize_t idx, bint match=?, Py_ssize_t start_idx=?) nogil
-cdef Py_ssize_t next_idx_unsafe(const np.uint8_t[:] array, Py_ssize_t idx=?, bint match=?, Py_ssize_t stop_idx=?) nogil
-cdef Py_ssize_t next_idx(const np.uint8_t[:] array, Py_ssize_t idx=?, bint match=?, Py_ssize_t stop_idx=?) nogil
-cdef Py_ssize_t nearest_idx_unsafe(np.uint8_t[:] array, Py_ssize_t idx, bint match=?, Py_ssize_t start_idx=?,
-                                   Py_ssize_t stop_idx=?) nogil
-cdef Py_ssize_t nearest_idx(np.uint8_t[:] array, Py_ssize_t idx, bint match=?, Py_ssize_t start_idx=?,
-                            Py_ssize_t stop_idx=?) nogil
+################################################################################
+# Array index finders
+cdef Py_ssize_t prev_idx_unsafe(const np.uint8_t[:] array, Py_ssize_t idx, bint match=?, Py_ssize_t start=?) nogil
+cdef Py_ssize_t prev_idx(const np.uint8_t[:] array, Py_ssize_t idx, bint match=?, Py_ssize_t start=?) nogil
+cdef Py_ssize_t next_idx_unsafe(const np.uint8_t[:] array, Py_ssize_t idx=?, bint match=?, Py_ssize_t stop=?) nogil
+cdef Py_ssize_t next_idx(const np.uint8_t[:] array, Py_ssize_t idx=?, bint match=?, Py_ssize_t stop=?) nogil
+cdef Py_ssize_t nearest_idx_unsafe(np.uint8_t[:] array, Py_ssize_t idx, bint match=?, Py_ssize_t start=?, Py_ssize_t stop=?) nogil
+cdef Py_ssize_t nearest_idx(np.uint8_t[:] array, Py_ssize_t idx, bint match=?, Py_ssize_t start=?, Py_ssize_t stop=?) nogil
+cdef Py_ssize_t subarray_idx_uint8(const np.uint8_t[:] array, const np.uint8_t[:] subarray, Py_ssize_t start=?) nogil
+cdef Py_ssize_t value_idx(np_types[:] array, np_types value) nogil
+################################################################################
+# Array operations
 cdef np.uint8_t[:] contract_runs(np.uint8_t[:] data, Py_ssize_t size, bint match=?) nogil
-cdef np.uint8_t[:] remove_small_runs(np.uint8_t[:] data, float seconds, float hz=?, bint match=?) nogil
-cdef Py_ssize_t index_of_subarray_uint8(const np.uint8_t[:] array, const np.uint8_t[:] subarray, Py_ssize_t start=?) nogil
+cdef np.uint8_t[:] remove_small_runs(np.uint8_t[:] data, np.float64_t seconds, np.float64_t hz=?, bint match=?) nogil

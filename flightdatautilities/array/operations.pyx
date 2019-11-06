@@ -85,14 +85,8 @@ import cython
 import numpy as np
 cimport numpy as np
 
-from libc.math cimport fabs
-
 from flightdatautilities.array import Value
-from flightdatautilities.array cimport cython as cy, masked_array as ma
-
-
-cdef np.uint64_t saturated_value(np.uint64_t bit_length) nogil:
-    return (2 ** bit_length) - 1
+from flightdatautilities.array cimport cython as cy, scalar as sc
 
 
 cpdef bint any_array(array):
@@ -140,10 +134,9 @@ cpdef bint entirely_unmasked(array):
 
 
 cpdef nearest_slice(array, Py_ssize_t idx, bint match=True):
-    cdef:
-        np.uint8_t[:] data = array.view(np.uint8)
-        Py_ssize_t start_idx, stop_idx, nearest_idx = cy.nearest_idx(data, idx, match=match)
-
+    cdef np.uint8_t[:] data = array.view(np.uint8)
+    idx = cy.array_wraparound_idx(idx, data.shape[0])
+    cdef Py_ssize_t start_idx, stop_idx, nearest_idx = cy.nearest_idx_unsafe(data, idx, match=match)
     if nearest_idx == cy.NONE_IDX:
         return None
 
@@ -193,70 +186,6 @@ cpdef Py_ssize_t longest_section(cy.np_types[:] data, cy.np_types value=0) nogil
         else:
             current_samples += 1
     return max_samples if max_samples > current_samples else current_samples
-
-
-def aggregate_values(Aggregate mode, np.float64_t[:] data, np.uint8_t[:] mask, np.uint8_t[:] matching):
-    if data.shape[0] != mask.shape[0] or data.shape[0] != matching.shape[0]:
-        raise ValueError('array lengths do not match')
-
-    cdef:
-        Py_ssize_t idx, value_idx = -1
-        np.float64_t value
-        bint matching_section = False, update_value = False
-
-    for idx in range(matching.shape[0]):
-        if matching[idx]:
-            if not matching_section:
-                matching_section = True
-            if not mask[idx]:
-                update_value = False
-                if value_idx == -1:
-                    update_value = True
-                elif mode == MAX:
-                    if data[idx] > value:
-                        update_value = True
-                elif mode == MIN:
-                    if data[idx] < value:
-                        update_value = True
-                elif mode == MAX_ABS:
-                    if fabs(data[idx]) > fabs(data[idx]):
-                        update_value = True
-                elif mode == MIN_ABS:
-                    if fabs(data[idx]) < fabs(data[idx]):
-                        update_value = True
-                if update_value:
-                    value = data[idx]
-                    value_idx = idx
-        else:
-            if matching_section:
-                if value_idx != -1:
-                    yield value_idx, value
-                    value_idx = -1
-                matching_section = False
-
-    if matching_section and value_idx != -1:
-        yield value_idx, value
-
-
-cdef _aggregate_values(Aggregate mode, array, matching):
-    return aggregate_values(
-        mode, array.data.astype(np.float64, copy=False), ma.getmaskarray1d(array), matching.view(np.uint8))
-
-
-cpdef max_values(array, matching):
-    return _aggregate_values(Aggregate.MAX, array, matching)
-
-
-cpdef min_values(array, matching):
-    return _aggregate_values(Aggregate.MIN, array, matching)
-
-
-cpdef max_abs_values(array, matching):
-    return _aggregate_values(Aggregate.MAX_ABS, array, matching)
-
-
-cpdef min_abs_values(array, matching):
-    return _aggregate_values(Aggregate.MIN_ABS, array, matching)
 
 
 cpdef slices_to_array(Py_ssize_t size, slices):
@@ -331,7 +260,7 @@ cpdef section_overlap(a, b):
     return np.asarray(out).view(np.bool)
 
 
-cpdef remove_small_runs(array, float seconds=10, float hz=1, bint match=True):
+cpdef remove_small_runs(array, np.float64_t seconds=10, np.float64_t hz=1, bint match=True):
     '''
     Remove small runs of matching values from a boolean array.
     '''
@@ -517,15 +446,15 @@ cpdef bytes key_value(const np.uint8_t[:] array, const np.uint8_t[:] key, const 
     :returns: The value for the key if found, else None.
     :rtype: str or None
     '''
-    key_idx = cy.index_of_subarray_uint8(array, key, start=start)
+    key_idx = cy.subarray_idx_uint8(array, key, start=start)
     if key_idx == cy.NONE_IDX:
         return None
-    start_idx = cy.index_of_subarray_uint8(array, delimiter, start=key_idx) + len(delimiter)
-    stop_idx = cy.index_of_subarray_uint8(array, separator, start=start_idx)
+    start_idx = cy.subarray_idx_uint8(array, delimiter, start=key_idx) + len(delimiter)
+    stop_idx = cy.subarray_idx_uint8(array, separator, start=start_idx)
     return bytes(array[start_idx:stop_idx]).strip()
 
 
-cpdef index_of_subarray_uint8(const np.uint8_t[:] array, const np.uint8_t[:] subarray, Py_ssize_t start=0):
+cpdef subarray_idx_uint8(const np.uint8_t[:] array, const np.uint8_t[:] subarray, Py_ssize_t start=0):
     '''
     Find the first index of a subarray within an array of dtype uint8.
 
@@ -534,7 +463,7 @@ cpdef index_of_subarray_uint8(const np.uint8_t[:] array, const np.uint8_t[:] sub
     :param start: start index to search within array (positive integer or 0)
     :returns:
     '''
-    return cy.idx_none(cy.index_of_subarray_uint8(array, subarray, start=start))
+    return cy.idx_none(cy.subarray_idx_uint8(array, subarray, start=start))
 
 
 cpdef bint subarray_exists_uint8(const np.uint8_t[:] array, const np.uint8_t[:] subarray, Py_ssize_t start=0) nogil:
@@ -543,11 +472,11 @@ cpdef bint subarray_exists_uint8(const np.uint8_t[:] array, const np.uint8_t[:] 
 
     TODO: change to cy.np_types fused type once Cython supports const with fused types
     '''
-    return cy.index_of_subarray_uint8(array, subarray, start=start) != cy.NONE_IDX
+    return cy.subarray_idx_uint8(array, subarray, start=start) != cy.NONE_IDX
 
 
 @cython.wraparound(False)
-cpdef Py_ssize_t array_value_idx(cy.np_types[:] array, cy.np_types value) nogil:
+cpdef value_idx(cy.np_types[:] array, cy.np_types value):
     '''
     Return the first array index which matches value.
 
@@ -560,11 +489,7 @@ cpdef Py_ssize_t array_value_idx(cy.np_types[:] array, cy.np_types value) nogil:
     >>> %timeit array_index_uint16(1, x) != -1
     10000 loops, best of 3: 64.2 µs per loop
     '''
-    cdef Py_ssize_t idx
-    for idx in range(array.shape[0]):
-        if value == array[idx]:
-            return idx
-    return cy.NONE_IDX
+    return cy.idx_none(cy.value_idx(array, value))
 
 
 cpdef merge_masks(masks):
@@ -581,6 +506,51 @@ cpdef merge_masks(masks):
     for mask in masks[1:]:
         merged_mask = np.ma.mask_or(merged_mask, mask)
     return merged_mask
+
+
+@cython.cdivision(True)
+@cython.wraparound(False)
+cpdef np.uint8_t[:] merge_masks_upsample_uint8(masks):
+    '''
+    opt: upsampling 10 memoryviews to 10,000 elements: ~5x faster than merge_masks(upsample_arrays(masks))
+    '''
+    lengths = [len(m) for m in masks]
+    cdef:
+        # can't use generator in max - "closures inside cpdef functions not yet supported"
+        Py_ssize_t max_length = max(lengths), min_length = min(lengths), output_idx
+        np.uint8_t[:] mask, output = cy.zeros_uint8(max_length)
+        np.float64_t step
+
+    for mask in masks:
+        if mask.shape[0] == max_length:  # opt: ~5x faster than applying step
+            for output_idx in range(output.shape[0]):
+                output[output_idx] |= mask[output_idx]
+        elif mask.shape[0] % min_length:
+            raise ValueError('mask lengths should be multiples of the shortest')
+        else:
+            step = <np.float64_t>mask.shape[0] / <np.float64_t>max_length
+            for output_idx in range(output.shape[0]):
+                output[output_idx] |= mask[<Py_ssize_t>(output_idx * step)]
+
+    return output
+
+
+@cython.cdivision(True)
+@cython.wraparound(False)
+cpdef np.uint8_t[:] merge_masks_uint8(masks):
+    '''
+    opt: for 10 arrays of 10,000 elements: ~8x faster than merge_masks(masks), ~5x faster than np.vstack(masks).any(0)
+    '''
+    cdef:
+        np.uint8_t[:] mask, output = cy.zeros_uint8(len(masks[0]))
+        Py_ssize_t idx
+
+    for mask in masks:
+        for idx in range(output.shape[0]):
+            output[idx] |= mask[idx]
+
+    return output
+
 
 
 cpdef mask_ratio(mask):
@@ -621,6 +591,8 @@ cpdef sum_arrays(arrays):
 cpdef downsample_arrays(arrays):
     '''
     Return arrays downsampled to the size of the smallest.
+
+    opt: this approach is efficient since it slices the arrays and therefore the data is not copied
 
     :param arrays: Arrays to downsample.
     :type arrays: iterable of np.ndarray or np.ma.masked_array
@@ -747,37 +719,10 @@ cpdef load_compressed(path):
         raise NotImplementedError(f'Unknown array type with {array_count} components.')
     return array
 
-
-cpdef bint is_power2(number):
-    """
-    Whether or not a number is a power of two. Forces floats to int.
-    Ref: http://code.activestate.com/recipes/577514-chek-if-a-number-is-a-power-of-two/
-
-    ~4x faster than pure python version
-    """
-    if number % 1:
-        return False
-    cdef int num = <int>number
-    return num > 0 and ((num & (num - 1)) == 0)
-
-
-cpdef is_power2_fraction(number):
-    '''
-    Whether or not a number is a power of two or one divided by a power of two.
-
-    :type number: int or float
-    :returns: if the number is either a power of 2 or a fraction, e.g. 4, 2, 1, 0.5, 0.25
-    :rtype: bool
-    '''
-    if 0 < number < 1:
-        number = 1 / number
-    return is_power2(number)
-
-
 cpdef np.ndarray twos_complement(np.ndarray array, np.uint64_t bit_length):
     '''
     Convert the values from "sign bit" notation to "two's complement".
     '''
-    array[array > saturated_value(bit_length - 1)] -= saturated_value(bit_length) + 1
+    array[array > sc.saturated_value(bit_length - 1)] -= sc.saturated_value(bit_length) + 1
     return array
 

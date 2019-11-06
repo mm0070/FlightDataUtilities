@@ -97,8 +97,8 @@ cdef class ByteAligner:
         :param idx: byte index of the word within the buffer
         :returns: word value at byte index
         '''
-        return (cy.read_uint16_le(self._buff, idx) if self.little_endian else cy.read_uint16_be(self._buff, idx)) \
-            & 0xfff
+        return (cy.unpack_uint16_le_unsafe(self._buff, idx) if self.little_endian else \
+            cy.unpack_uint16_be_unsafe(self._buff, idx)) & 0xfff
 
     @cython.cdivision(True)
     @cython.wraparound(False)

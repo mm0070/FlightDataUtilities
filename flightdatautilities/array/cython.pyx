@@ -23,6 +23,9 @@ Unix.
 NONE_IDX = LLONG_MIN
 
 
+################################################################################
+# Memory Allocation
+
 @cython.wraparound(False)
 cdef np.int32_t[:] empty_int32(np.npy_intp size):
     '''
@@ -435,43 +438,128 @@ cdef np.float64_t[:, :] zeros2d_float64(np.npy_intp x, np.npy_intp y):
     return np.PyArray_ZEROS(2, shape, np.NPY_FLOAT64, False)
 
 
+################################################################################
+# Unpacking data types
+
 @cython.wraparound(False)
-cdef np.uint16_t read_uint16_le(np.uint8_t[:] data, Py_ssize_t idx) nogil:
+cdef np.uint16_t unpack_uint16_le_unsafe(const np.uint8_t[:] data, Py_ssize_t idx) nogil:
     '''
     Read a little-endian unsigned short from an unsigned byte array.
+
+    Unsafe:
+    - idx must be within array bounds and non-negative
     '''
     return (data[idx + 1] << 8) + data[idx]
 
 
 @cython.wraparound(False)
-cdef np.uint16_t read_uint16_be(np.uint8_t[:] data, Py_ssize_t idx) nogil:
+cdef np.uint16_t unpack_uint16_le(const np.uint8_t[:] data, Py_ssize_t idx) nogil:
+    '''
+    Read a little-endian unsigned short from an unsigned byte array.
+    '''
+    idx = array_wraparound_idx(idx, data.shape[0])
+    if not within_bounds(idx, data.shape[0] - sizeof(np.uint16_t) + 1):
+        return 0
+    return unpack_uint16_le_unsafe(data, idx)
+
+
+@cython.wraparound(False)
+cdef np.uint16_t unpack_uint16_be_unsafe(const np.uint8_t[:] data, Py_ssize_t idx) nogil:
     '''
     Read a big-endian unsigned short from an unsigned byte array.
+
+    Unsafe:
+    - idx must be within array bounds and non-negative
     '''
     return (data[idx] << 8) + data[idx + 1]
 
 
 @cython.wraparound(False)
-cdef np.uint32_t read_uint32_le(np.uint8_t[:] data, Py_ssize_t idx) nogil:
+cdef np.uint16_t unpack_uint16_be(const np.uint8_t[:] data, Py_ssize_t idx) nogil:
+    '''
+    Read a little-endian unsigned short from an unsigned byte array.
+    '''
+    idx = array_wraparound_idx(idx, data.shape[0])
+    if not within_bounds(idx, data.shape[0] - sizeof(np.uint16_t) + 1):
+        return 0
+    return unpack_uint16_be_unsafe(data, idx)
+
+
+@cython.wraparound(False)
+cdef np.uint32_t unpack_uint32_le_unsafe(const np.uint8_t[:] data, Py_ssize_t idx) nogil:
     '''
     Read a little-endian unsigned integer from an unsigned byte array.
+
+    Unsafe:
+    - idx must be within array bounds and non-negative
     '''
     return (data[idx + 3] << 24) + (data[idx + 2] << 16) + (data[idx + 1] << 8) + data[idx]
 
 
 @cython.wraparound(False)
-cdef np.uint32_t read_uint32_be(np.uint8_t[:] data, Py_ssize_t idx) nogil:
+cdef np.uint32_t unpack_uint32_le(const np.uint8_t[:] data, Py_ssize_t idx) nogil:
+    '''
+    Read a little-endian unsigned short from an unsigned byte array.
+    '''
+    idx = array_wraparound_idx(idx, data.shape[0])
+    if not within_bounds(idx, data.shape[0] - sizeof(np.uint32_t) + 1):
+        return 0
+    return unpack_uint32_le_unsafe(data, idx)
+
+
+@cython.wraparound(False)
+cdef np.uint32_t unpack_uint32_be_unsafe(const np.uint8_t[:] data, Py_ssize_t idx) nogil:
     '''
     Read a big-endian unsigned integer from an unsigned byte array.
+
+    Unsafe:
+    - idx must be within array bounds and non-negative
     '''
     return (data[idx] << 24) + (data[idx + 1] << 16) + (data[idx + 2] << 8) + data[idx + 3]
 
 
-cdef bint lengths_mismatch(Py_ssize_t x, Py_ssize_t y) nogil:
+@cython.wraparound(False)
+cdef np.uint32_t unpack_uint32_be(const np.uint8_t[:] data, Py_ssize_t idx) nogil:
+    '''
+    Read a little-endian unsigned short from an unsigned byte array.
+    '''
+    idx = array_wraparound_idx(idx, data.shape[0])
+    if not within_bounds(idx, data.shape[0] - sizeof(np.uint32_t) + 1):
+        return 0
+    return unpack_uint32_be_unsafe(data, idx)
+
+
+################################################################################
+# Array helpers
+
+
+cdef astype(data, dtype, copy=False):
+    '''
+    Casts array or memoryview as dtype.
+    '''
+    return np.asarray(data).astype(dtype, copy=copy)
+
+
+cdef bint lengths_match(Py_ssize_t x, Py_ssize_t y) nogil:
+    '''
+    Returns whether or not two array lengths match. To be called from nogil contexts where the array lengths are
+    expected to match, e.g. data and mask of the same masked array, and a Python exception cannot be raised.
+    '''
     if x == y:
         return True
     else:
-        fprintf(stderr, 'array length mismatch (%ld != %ld)\n', x, y)
+        fprintf(stderr, 'array length mismatch: %ld != %ld\n', x, y)
+        return False
+
+
+cdef bint within_bounds(Py_ssize_t idx, Py_ssize_t length) nogil:
+    '''
+    Returns whether or not an index is within the bounds of an array length.
+    '''
+    if 0 <= idx < length:
+        return True
+    else:
+        fprintf(stderr, 'idx %ld outside of bounds for length %ld\n', idx, length)
         return False
 
 
@@ -489,28 +577,18 @@ cdef Py_ssize_t none_idx(idx):
     return NONE_IDX if idx is None else idx
 
 
-cdef Py_ssize_t array_wraparound_idx(Py_ssize_t idx, Py_ssize_t length) nogil:
+cdef Py_ssize_t array_wraparound_idx(Py_ssize_t idx, Py_ssize_t length, bint stop=False) nogil:
     '''
     Return the array idx within the length of an array converting negative indices to positive to safely turn off Cython
     wraparound indexing checks. Behaviour for invalid zero or negative lengths is undefined.
     '''
     if idx == NONE_IDX or idx >= length:
-        idx = length - 1  # NONE_IDX is assumed to be a stop idx as default start idx is 0
+        idx = length
+        if not stop:
+            idx -= 1  # NONE_IDX is assumed to be a stop idx as default start idx is 0
     elif idx < 0:
         idx = length + idx if idx > -length else 0
     return idx
-
-
-cdef Py_ssize_t array_idx(Py_ssize_t idx, Py_ssize_t length) nogil:
-    '''
-    Return an index truncated to the bounds of an array. Negative indices are ignored and return 0.
-    '''
-    if idx <= 0:
-        return 0
-    elif idx >= length:
-        return length - 1
-    else:
-        return idx
 
 
 cdef array_idx_value(Py_ssize_t idx, array):
@@ -520,64 +598,69 @@ cdef array_idx_value(Py_ssize_t idx, array):
     return Value(None, None) if idx == -1 else Value(idx, array[idx])
 
 
-cdef Py_ssize_t array_stop_idx(Py_ssize_t stop_idx, Py_ssize_t length) nogil:
-    '''
-    Return an array stop index truncated to the length of the array. Ignores negative indices.
-    '''
-    return length if stop_idx < 0 or stop_idx > length else stop_idx
-
+################################################################################
+# Array index finders
 
 @cython.wraparound(False)
-cdef Py_ssize_t prev_idx_unsafe(const np.uint8_t[:] array, Py_ssize_t idx, bint match=True, Py_ssize_t start_idx=0) nogil:
+cdef Py_ssize_t prev_idx_unsafe(const np.uint8_t[:] array, Py_ssize_t idx, bint match=True, Py_ssize_t start=0) nogil:
     '''
     Return the previous index within the array which matches a value or -1 if the value is not found.
     '''
     cdef Py_ssize_t prev_idx
-    for prev_idx in range(idx - 1, start_idx - 1, -1):
+    for prev_idx in range(idx - 1, start - 1, -1):
         if array[prev_idx] == match:
             return prev_idx
     return NONE_IDX
 
 
 @cython.wraparound(False)
-cdef Py_ssize_t prev_idx(const np.uint8_t[:] array, Py_ssize_t idx, bint match=True, Py_ssize_t start_idx=0) nogil:
+cdef Py_ssize_t prev_idx(const np.uint8_t[:] array, Py_ssize_t idx, bint match=True, Py_ssize_t start=0) nogil:
     '''
     Return the previous index within the array which matches a value or -1 if the value is not found.
     '''
     return prev_idx_unsafe(array, array_wraparound_idx(idx, array.shape[0]), match=match,
-                           start_idx=array_wraparound_idx(start_idx, array.shape[0]))
+                           start=array_wraparound_idx(start, array.shape[0]))
 
 
 @cython.wraparound(False)
-cdef Py_ssize_t next_idx_unsafe(const np.uint8_t[:] array, Py_ssize_t idx=0, bint match=True, Py_ssize_t stop_idx=NONE_IDX) nogil:
+cdef Py_ssize_t next_idx_unsafe(const np.uint8_t[:] array, Py_ssize_t idx=0, bint match=True,
+                                Py_ssize_t stop=NONE_IDX) nogil:
     '''
     Return the next index within the array which matches a value or -1 if the value is not found.
     '''
     cdef Py_ssize_t next_idx
-    for next_idx in range(idx, stop_idx):
+    for next_idx in range(idx, array.shape[0] if stop == NONE_IDX else stop):
         if array[next_idx] == match:
             return next_idx
     return NONE_IDX
 
 
 @cython.wraparound(False)
-cdef Py_ssize_t next_idx(const np.uint8_t[:] array, Py_ssize_t idx=0, bint match=True, Py_ssize_t stop_idx=NONE_IDX) nogil:
+cdef Py_ssize_t next_idx(const np.uint8_t[:] array, Py_ssize_t idx=0, bint match=True, Py_ssize_t stop=NONE_IDX) nogil:
     '''
     Return the next index within the array which matches a value or -1 if the value is not found.
     '''
     return next_idx_unsafe(array, array_wraparound_idx(idx, array.shape[0]), match=match,
-           stop_idx=array_wraparound_idx(stop_idx, array.shape[0]))
+                           stop=array_wraparound_idx(stop, array.shape[0], stop=True))
 
 
 @cython.wraparound(False)
-cdef Py_ssize_t nearest_idx_unsafe(np.uint8_t[:] array, Py_ssize_t idx, bint match=True, Py_ssize_t start_idx=0,
-                                   Py_ssize_t stop_idx=NONE_IDX) nogil:
+cdef Py_ssize_t nearest_idx_unsafe(np.uint8_t[:] array, Py_ssize_t idx, bint match=True, Py_ssize_t start=0,
+                                   Py_ssize_t stop=NONE_IDX) nogil:
+    stop = array_wraparound_idx(stop, array.shape[0], stop=True)
     if not array.shape[0]:
         return NONE_IDX
+    if start > idx:
+        fprintf(stderr, 'warning: nearest_idx_unsafe start %ld > idx %ld\n', start, idx)
+        return NONE_IDX
+    if stop <= idx:
+        fprintf(stderr, 'warning: nearest_idx_unsafe stop %ld <= idx %ld\n', stop, idx)
+        return NONE_IDX
+
     if array[idx] == match:
         return idx
 
-    cdef Py_ssize_t fwd_range = stop_idx - idx, rev_range = idx - start_idx, shift
+    cdef Py_ssize_t fwd_range = (array.shape[0] if stop == NONE_IDX else stop) - idx, rev_range = idx - start, shift
 
     for shift in range(1, (fwd_range if fwd_range >= rev_range else rev_range) + 1):
         if shift < fwd_range and array[idx + shift] == match:
@@ -588,13 +671,59 @@ cdef Py_ssize_t nearest_idx_unsafe(np.uint8_t[:] array, Py_ssize_t idx, bint mat
 
 
 @cython.wraparound(False)
-cdef Py_ssize_t nearest_idx(np.uint8_t[:] array, Py_ssize_t idx, bint match=True, Py_ssize_t start_idx=0,
-                            Py_ssize_t stop_idx=NONE_IDX) nogil:
+cdef Py_ssize_t nearest_idx(np.uint8_t[:] array, Py_ssize_t idx, bint match=True, Py_ssize_t start=0,
+                            Py_ssize_t stop=NONE_IDX) nogil:
 
     return nearest_idx_unsafe(array, array_wraparound_idx(idx, array.shape[0]), match=match,
-                              start_idx=array_wraparound_idx(start_idx, array.shape[0]),
-                              stop_idx=array_wraparound_idx(stop_idx, array.shape[0]))
+                              start=array_wraparound_idx(start, array.shape[0]), stop=stop)
 
+
+@cython.wraparound(False)
+cdef Py_ssize_t subarray_idx_uint8(const np.uint8_t[:] array, const np.uint8_t[:] subarray,
+                                   Py_ssize_t start=0) nogil:
+    '''
+    Find the first index of a subarray within an array of dtype uint8.
+
+    TODO: change to cy.np_types fused type once Cython supports const with fused types
+    '''
+    if subarray.shape[0] > array.shape[0]:
+        return NONE_IDX  # this case is not automatically handled by range on Ubuntu 10.04 32-bit
+
+    cdef Py_ssize_t array_idx, subarray_idx
+    start = array_wraparound_idx(start, array.shape[0])
+
+    for array_idx in range(array_wraparound_idx(start, array.shape[0]), array.shape[0] - subarray.shape[0] + 1):
+        for subarray_idx in range(subarray.shape[0]):
+            if array[array_idx + subarray_idx] != subarray[subarray_idx]:
+                break
+        else:
+            return array_idx
+    return NONE_IDX
+
+
+@cython.wraparound(False)
+cdef Py_ssize_t value_idx(np_types[:] array, np_types value) nogil:
+    '''
+    Return the first array index which matches value.
+
+    Can be much faster than numpy operations which check the entire array.
+
+    >>> x = np.zeros(1000000000, dtype=np.uint16)
+    >>> x[100000] = 1
+    >>> %timeit np.any(x == 1)
+    1 loops, best of 3: 419 ms per loop
+    >>> %timeit array_index_uint16(1, x) != -1
+    10000 loops, best of 3: 64.2 µs per loop
+    '''
+    cdef Py_ssize_t idx
+    for idx in range(array.shape[0]):
+        if value == array[idx]:
+            return idx
+    return NONE_IDX
+
+
+################################################################################
+# Array operations
 
 cdef np.uint8_t[:] contract_runs(np.uint8_t[:] data, Py_ssize_t size, bint match=True) nogil:
     '''
@@ -623,7 +752,8 @@ cdef np.uint8_t[:] contract_runs(np.uint8_t[:] data, Py_ssize_t size, bint match
     return data
 
 
-cdef np.uint8_t[:] remove_small_runs(np.uint8_t[:] data, float seconds, float hz=1, bint match=True) nogil:
+cdef np.uint8_t[:] remove_small_runs(np.uint8_t[:] data, np.float64_t seconds, np.float64_t hz=1,
+                                     bint match=True) nogil:
     '''
     Remove small runs of matching values from a boolean array.
 
@@ -661,26 +791,4 @@ cdef np.uint8_t[:] remove_small_runs(np.uint8_t[:] data, float seconds, float hz
             data[fill_idx] = not match
 
     return data
-
-
-cdef Py_ssize_t index_of_subarray_uint8(const np.uint8_t[:] array, const np.uint8_t[:] subarray, Py_ssize_t start=0) nogil:
-    '''
-    Find the first index of a subarray within an array of dtype uint8.
-
-    TODO: change to cy.np_types fused type once Cython supports const with fused types
-
-    :param start: start index to search within array
-    '''
-    if subarray.shape[0] > array.shape[0]:
-        return NONE_IDX  # this case is not automatically handled by range on Ubuntu 10.04 32-bit
-
-    cdef Py_ssize_t array_idx, subarray_idx
-
-    for array_idx in range(array_wraparound_idx(start, array.shape[0]), array.shape[0] - subarray.shape[0] + 1):
-        for subarray_idx in range(subarray.shape[0]):
-            if array[array_idx + subarray_idx] != subarray[subarray_idx]:
-                break
-        else:
-            return array_idx
-    return NONE_IDX
 
