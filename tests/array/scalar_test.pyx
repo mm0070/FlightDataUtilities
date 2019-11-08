@@ -1,8 +1,13 @@
 # cython: language_level=3, boundscheck=False
 import unittest
 
+from libc.math cimport M_PI
+
 from flightdatautilities.array cimport scalar as sc
 
+
+################################################################################
+# Power of 2
 
 class TestIsPower2(unittest.TestCase):
     def test_is_power2(self):
@@ -10,23 +15,6 @@ class TestIsPower2(unittest.TestCase):
                          [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024])
         self.assertFalse(sc.is_power2(-2))
         self.assertFalse(sc.is_power2(2.2))
-
-
-class TestIsPower2Fraction(unittest.TestCase):
-    def test_is_power2_fraction(self):
-        self.assertEqual([i for i in range(2000) if sc.is_power2_fraction(i)],
-                         [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024])
-        self.assertFalse(sc.is_power2_fraction(-2))
-        self.assertFalse(sc.is_power2_fraction(2.2))
-        self.assertTrue(sc.is_power2_fraction(0.5))
-        self.assertTrue(sc.is_power2_fraction(0.25))
-        self.assertTrue(sc.is_power2_fraction(0.125))
-        self.assertTrue(sc.is_power2_fraction(0.0625))
-        self.assertTrue(sc.is_power2_fraction(0.03125))
-        self.assertTrue(sc.is_power2_fraction(0.015625))
-        self.assertFalse(sc.is_power2_fraction(0.75))
-        self.assertFalse(sc.is_power2_fraction(0.2))
-        self.assertFalse(sc.is_power2_fraction(0.015626))
 
 
 class TestIsPower2Fraction(unittest.TestCase):
@@ -46,6 +34,9 @@ class TestIsPower2Fraction(unittest.TestCase):
         self.assertFalse(sc.is_power2_fraction(0.015626))
 
 
+################################################################################
+# Random
+
 class TestRandint(unittest.TestCase):
     def test_randint(self):
         self.assertEqual(sc.randint(0, 0), 0)
@@ -60,6 +51,9 @@ class TestRandint(unittest.TestCase):
             self.assertTrue(x <= sc.randint(x, 1000) <= 1000)
 
 
+################################################################################
+# Bits
+
 class TestSaturatedValue(unittest.TestCase):
     def test_saturated_value(self):
         self.assertEqual(sc.saturated_value(0), 0)
@@ -67,3 +61,23 @@ class TestSaturatedValue(unittest.TestCase):
         self.assertEqual(sc.saturated_value(2), 3)
         self.assertEqual(sc.saturated_value(3), 7)
         self.assertEqual(sc.saturated_value(4), 15)
+
+
+################################################################################
+# Unit conversion
+
+class TestDegreesToRadians(unittest.TestCase):
+    def test_degrees_to_radians(self):
+        self.assertEqual(sc.degrees_to_radians(0), 0)
+        self.assertEqual(sc.degrees_to_radians(180), M_PI)
+        self.assertEqual(sc.degrees_to_radians(90), M_PI / 2)
+        self.assertEqual(sc.degrees_to_radians(360), M_PI * 2)
+        self.assertEqual(sc.degrees_to_radians(1000), 17.453292519943297)
+
+
+class TestRadiansToDegrees(unittest.TestCase):
+    def test_radians_to_degrees(self):
+        self.assertEqual(sc.radians_to_degrees(0), 0)
+        self.assertEqual(sc.radians_to_degrees(1), 57.29577951308232)
+        self.assertEqual(sc.radians_to_degrees(1.5), 85.94366926962348)
+

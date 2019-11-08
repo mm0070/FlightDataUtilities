@@ -235,7 +235,9 @@ cdef np.uint8_t[:] ones_uint8(np.npy_intp size):
     '''
     cdef np.npy_intp shape[1]
     shape[0] = size
-    return np.PyArray_ZEROS(1, shape, np.NPY_UINT8, False) + 1
+    cdef np.uint8_t[:] data = np.PyArray_ZEROS(1, shape, np.NPY_UINT8, False)
+    data[...] = 1
+    return data
 
 
 @cython.wraparound(False)
