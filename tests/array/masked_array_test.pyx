@@ -14,31 +14,106 @@ from flightdatautilities.array cimport masked_array as ma
 from flightdatautilities.read import reader
 
 
-class TestFillRange(unittest.TestCase):
-    def test_fill_range(self):
+class TestFillRangeUnsafe(unittest.TestCase):
+    def test_fill_range_unsafe(self):
         data = np.arange(5, dtype=np.float64)
         mask = np.ones(5, dtype=np.uint8)
-        ma.fill_range[np.float64_t](data, mask, 5, 0, 0)
+        ma.fill_range_unsafe[np.float64_t](data, mask, 5, 0, 0)
         expected_data = list(range(5))
         expected_mask = [1] * 5
         self.assertEqual(data.tolist(), expected_data)
         self.assertEqual(mask.tolist(), expected_mask)
-        ma.fill_range[np.float64_t](data, mask, 5, 2, 2)
+        ma.fill_range_unsafe[np.float64_t](data, mask, 5, 2, 2)
         self.assertEqual(data.tolist(), expected_data)
         self.assertEqual(mask.tolist(), expected_mask)
-        ma.fill_range[np.float64_t](data, mask, 5, 2, 0)
+        ma.fill_range_unsafe[np.float64_t](data, mask, 5, 2, 0)
         self.assertEqual(data.tolist(), expected_data)
         self.assertEqual(mask.tolist(), expected_mask)
-        ma.fill_range[np.float64_t](data, mask, 5, 0, 1)
+        ma.fill_range_unsafe[np.float64_t](data, mask, 5, 0, 1)
         expected_data[0] = 5
         expected_mask[0] = 0
         self.assertEqual(data.tolist(), expected_data)
         self.assertEqual(mask.tolist(), expected_mask)
-        ma.fill_range[np.float64_t](data, mask, 7, 2, 4)
+        ma.fill_range_unsafe[np.float64_t](data, mask, 7, 2, 4)
         expected_data[2:4] = [7] * 2
         expected_mask[2:4] = [0] * 2
         self.assertEqual(data.tolist(), expected_data)
         self.assertEqual(mask.tolist(), expected_mask)
+
+
+class TestInterpolateRangeUnsafe(unittest.TestCase):
+    def test_interpolate_range_unsafe(self):
+        data = np.zeros(10, dtype=np.float64)
+        mask = np.zeros(10, dtype=np.uint8)
+        for start, stop in ((0, 0), (2, 4), (0, 9)):
+            ma.interpolate_range_unsafe[np.float64_t](data, mask, start, stop)
+            self.assertEqual(data.tolist(), [0] * 10)
+            self.assertEqual(mask.tolist(), [0] * 10)
+        data[9] = 9
+        ma.interpolate_range_unsafe[np.float64_t](data, mask, 0, 9)
+        self.assertEqual(data.tolist(), list(range(10)))
+        self.assertEqual(mask.tolist(), [0] * 10)
+        data = np.zeros(10, dtype=np.float64)
+        data[9] = -9
+        ma.interpolate_range_unsafe[np.float64_t](data, mask, 0, 9)
+        self.assertEqual(data.tolist(), list(range(0, -10, -1)))
+        self.assertEqual(mask.tolist(), [0] * 10)
+        data = np.zeros(10, dtype=np.float64)
+        data[9] = -9
+        ma.interpolate_range_unsafe[np.float64_t](data, mask, 0, 9)
+        self.assertEqual(data.tolist(), list(range(0, -10, -1)))
+        self.assertEqual(mask.tolist(), [0] * 10)
+        data = np.zeros(10, dtype=np.float64)
+        data[2] = 2
+        data[6] = 28
+        mask[1:3] = True
+        mask[8:10] = True
+        ma.interpolate_range_unsafe[np.float64_t](data, mask, 2, 6)
+        self.assertEqual(data.tolist(), [0, 0, 2, 8.5, 15, 21.5, 28, 0, 0, 0])
+        self.assertEqual(mask.tolist(), [0, 1, 1, 0, 0, 0, 0, 0, 1, 1])
+
+
+class TestInterpolateRange(unittest.TestCase):
+    def test_interpolate_range(self):
+        data = np.zeros(10, dtype=np.float64)
+        mask = np.zeros(10, dtype=np.uint8)
+        for start, stop in ((0, 0), (2, 4), (0, 9), (0, 12), (0, -1), (-5, -3)):
+            ma.interpolate_range[np.float64_t](data, mask, start, stop)
+            self.assertEqual(data.tolist(), [0] * 10)
+            self.assertEqual(mask.tolist(), [0] * 10)
+        data[9] = 9
+        data_copy, mask_copy = data.copy(), mask.copy()
+        ma.interpolate_range[np.float64_t](data_copy, mask_copy, 0, 9)
+        self.assertEqual(data_copy.tolist(), list(range(10)))
+        self.assertEqual(mask_copy.tolist(), [0] * 10)
+        data_copy, mask_copy = data.copy(), mask.copy()
+        ma.interpolate_range[np.float64_t](data_copy, mask_copy, 0, 12)
+        self.assertEqual(data_copy.tolist(), list(range(10)))
+        self.assertEqual(mask_copy.tolist(), [0] * 10)
+        data = np.zeros(10, dtype=np.float64)
+        data[9] = -9
+        ma.interpolate_range[np.float64_t](data, mask, 0, 9)
+        self.assertEqual(data.tolist(), list(range(0, -10, -1)))
+        self.assertEqual(mask.tolist(), [0] * 10)
+        data = np.zeros(10, dtype=np.float64)
+        data[2] = 2
+        data[6] = 28
+        mask[1] = True
+        mask[3:5] = True
+        mask[8:10] = True
+        data_copy, mask_copy = data.copy(), mask.copy()
+        ma.interpolate_range[np.float64_t](data_copy, mask_copy, 2, 6)
+        self.assertEqual(data_copy.tolist(), [0, 0, 2, 8.5, 15, 21.5, 28, 0, 0, 0])
+        self.assertEqual(mask_copy.tolist(), [0, 1, 0, 0, 0, 0, 0, 0, 1, 1])
+        data_copy, mask_copy = data.copy(), mask.copy()
+        ma.interpolate_range[np.float64_t](data_copy, mask_copy, -8, -4)
+        self.assertEqual(data_copy.tolist(), [0, 0, 2, 8.5, 15, 21.5, 28, 0, 0, 0])
+        self.assertEqual(mask_copy.tolist(), [0, 1, 0, 0, 0, 0, 0, 0, 1, 1])
+        # cannot interpolate using masked start value, but cannot raise due to nogil
+        mask[2] = True
+        ma.interpolate_range[np.float64_t](data, mask, 2, 6)
+        self.assertEqual(data.tolist(), [0, 0, 2, 0, 0, 0, 28, 0, 0, 0])
+        self.assertEqual(mask.tolist(), [0, 1, 1, 1, 1, 0, 0, 0, 1, 1])
 
 
 # TODO: change to next_unmasked_value

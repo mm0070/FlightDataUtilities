@@ -339,3 +339,18 @@ class TestValueIdx(unittest.TestCase):
         self.assertEqual(cy.value_idx[np.uint16_t](np.array([10], dtype=np.uint16), 10), 0)
         self.assertEqual(cy.value_idx[np.uint16_t](np.array([2,4,6,8,10], dtype=np.uint16), 10), 4)
 
+
+################################################################################
+# Array operations
+
+class TestArraysContinuousValue(unittest.TestCase):
+    def test_arrays_continuous_value(self):
+        data1 = np.arange(10, dtype=np.float64)
+        data2 = np.arange(20, 25, dtype=np.float64)
+        self.assertEqual(cy.arrays_continuous_value[np.float64_t](data1, data2, 0), 0)
+        self.assertEqual(cy.arrays_continuous_value[np.float64_t](data1, data2, 1), 1)
+        self.assertEqual(cy.arrays_continuous_value[np.float64_t](data1, data2, 5), 5)
+        self.assertEqual(cy.arrays_continuous_value[np.float64_t](data1, data2, 10), 20)
+        self.assertEqual(cy.arrays_continuous_value[np.float64_t](data1, data2, 12), 22)
+        self.assertEqual(cy.arrays_continuous_value[np.float64_t](data1, data2, 14), 24)
+

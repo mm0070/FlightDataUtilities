@@ -448,7 +448,7 @@ cpdef downsample_arrays(arrays):
     '''
     Return arrays downsampled to the size of the smallest.
 
-    opt: this approach is efficient since it slices the arrays and therefore the data is not copied
+    OPT: this approach is efficient since it slices the arrays and therefore the data is not copied
 
     :param arrays: Arrays to downsample.
     :type arrays: iterable of np.ndarray or np.ma.masked_array
@@ -513,7 +513,7 @@ cpdef np.uint8_t[:] pack(const np.uint8_t[:] unpacked):
     '''
     Pack 'unpacked' flight data into packed format.
 
-    opt: ~8x faster than numpy array version
+    OPT: ~8x faster than numpy array version
     '''
     cdef:
         np.uint8_t[:] packed = cy.empty_uint8(unpacked.shape[0] // 4 * 3)
@@ -534,7 +534,7 @@ cpdef np.uint8_t[:] unpack(const np.uint8_t[:] packed):
     '''
     Unpack 'packed' flight data into unpacked (byte-aligned) format.
 
-    opt: ~3x faster than numpy array version
+    OPT: ~3x faster than numpy array version
     '''
     cdef:
         np.uint8_t[:] unpacked = cy.empty_uint8(packed.shape[0] // 3 * 4)

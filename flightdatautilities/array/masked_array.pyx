@@ -4,7 +4,7 @@ Masked array-specific functions.
 '''
 cimport cython
 from libc.math cimport fabs
-from libc.stdio cimport fprintf, stderr
+from libc.stdio cimport fprintf, stderr, printf
 import numpy as np
 cimport numpy as np
 
@@ -22,7 +22,7 @@ cdef np.uint8_t[:] getmaskarray1d(array):
           mask. If creating a masked array with a mutable mask is required, pass mask=False into np.ma.masked_array() which
           overrides the default nomask constant.
 
-    opt: ~3x faster than np.ma.getmaskarray() when mask is a scalar, ~10% faster when mask is an array
+    OPT: ~3x faster than np.ma.getmaskarray() when mask is a scalar, ~10% faster when mask is an array
     '''
     return cy.zeros_uint8(len(array)) if np.PyArray_CheckScalar(array.mask) else array.mask.view(np.uint8)
 
@@ -72,7 +72,7 @@ cpdef merge_masks(masks):
 @cython.wraparound(False)
 cpdef np.uint8_t[:] merge_masks_uint8(masks):
     '''
-    opt: for 10 arrays of 10,000 elements: ~8x faster than merge_masks(masks), ~5x faster than np.vstack(masks).any(0)
+    OPT: for 10 arrays of 10,000 elements: ~8x faster than merge_masks(masks), ~5x faster than np.vstack(masks).any(0)
     '''
     cdef:
         np.uint8_t[:] mask, output = cy.zeros_uint8(len(masks[0]))
@@ -89,7 +89,7 @@ cpdef np.uint8_t[:] merge_masks_uint8(masks):
 @cython.wraparound(False)
 cpdef np.uint8_t[:] merge_masks_upsample_uint8(masks):
     '''
-    opt: upsampling 10 memoryviews to 10,000 elements: ~5x faster than merge_masks(upsample_arrays(masks))
+    OPT: upsampling 10 memoryviews to 10,000 elements: ~5x faster than merge_masks(upsample_arrays(masks))
     '''
     lengths = [len(m) for m in masks]
     cdef:
@@ -99,7 +99,7 @@ cpdef np.uint8_t[:] merge_masks_upsample_uint8(masks):
         np.float64_t step
 
     for mask in masks:
-        if mask.shape[0] == max_length:  # opt: ~5x faster than applying step
+        if mask.shape[0] == max_length:  # OPT: ~5x faster than applying step
             for output_idx in range(output.shape[0]):
                 output[output_idx] |= mask[output_idx]
         elif mask.shape[0] % min_length:
@@ -135,7 +135,10 @@ cpdef nearest_unmasked_value(array, Py_ssize_t idx, Py_ssize_t start=0, Py_ssize
 cdef void fill_range_unsafe(cy.np_types[:] data, np.uint8_t[:] mask, cy.np_types value, Py_ssize_t start,
                             Py_ssize_t stop) nogil:
     '''
-    Fill a section of a masked_array's data and mask with a value and unmask. Invalid and negative indices are unsafe.
+    Fill a section of a masked_array's data and mask with a value and unmask.
+
+    Unsafe:
+    - start and stop must be within array bounds and non-negative.
     '''
     cdef Py_ssize_t idx
     for idx in range(start, stop):
@@ -159,13 +162,19 @@ cdef void fill_range(cy.np_types[:] data, np.uint8_t[:] mask, cy.np_types value,
 
 @cython.cdivision(True)
 @cython.wraparound(False)
-cdef void interpolate_range_unsafe(np.float64_t[:] data, np.uint8_t[:] mask, Py_ssize_t start, Py_ssize_t stop) nogil:
+cdef void interpolate_range_unsafe(cy.np_types[:] data, np.uint8_t[:] mask, Py_ssize_t start, Py_ssize_t stop) nogil:
     '''
     Fill a section of a float64 masked_array's data and mask with values interpolated between start and stop indices
-    and unmask. Invalid and negative indices are unsafe.
+    and unmask.
+
+    OPT: fused type isn't used so that gradient can be calculated once, also interpolation is most useful for
+         np.float64_t arrays
+
+    Unsafe:
+    - start and stop must be within array bounds and non-negative.
     '''
     cdef:
-        np.float64_t gradient = (data[stop] - data[start]) / (stop - start)
+        cy.np_types gradient = (data[stop] - data[start]) / (stop - start)
         Py_ssize_t idx
     for idx in range(start + 1, stop):
         data[idx] = data[start] + ((idx - start) * gradient)
@@ -173,7 +182,7 @@ cdef void interpolate_range_unsafe(np.float64_t[:] data, np.uint8_t[:] mask, Py_
 
 
 @cython.wraparound(False)
-cdef void interpolate_range(np.float64_t[:] data, np.uint8_t[:] mask, Py_ssize_t start, Py_ssize_t stop) nogil:
+cdef void interpolate_range(cy.np_types[:] data, np.uint8_t[:] mask, Py_ssize_t start, Py_ssize_t stop) nogil:
     '''
     Fill a section of a float64 masked_array's data and mask with values interpolated between start and stop indices
     and unmask.
@@ -183,7 +192,7 @@ cdef void interpolate_range(np.float64_t[:] data, np.uint8_t[:] mask, Py_ssize_t
 
     start = cy.array_wraparound_idx(start, data.shape[0])
     stop = cy.array_wraparound_idx(stop, data.shape[0])
-    if start <= stop:
+    if start >= stop:
         return  # avoid divide by zero
 
     if mask[start] or mask[stop]:

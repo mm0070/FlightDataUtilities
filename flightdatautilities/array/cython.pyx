@@ -31,7 +31,7 @@ cdef np.int32_t[:] empty_int32(np.npy_intp size):
     '''
     Return a new one-dimensional np.int32 memoryview of given size, without initializing entries.
 
-    opt: ~2.5x faster than creating a memoryview from np.empty
+    OPT: ~2.5x faster than creating a memoryview from np.empty
     '''
     cdef np.npy_intp shape[1]
     shape[0] = size
@@ -43,7 +43,7 @@ cdef np.int32_t[:, :] empty2d_int32(np.npy_intp x, np.npy_intp y):
     '''
     Return a new two-dimensional np.int32 memoryview of given size, without initializing entries.
 
-    opt: ~2.5x faster than creating a memoryview from np.empty
+    OPT: ~2.5x faster than creating a memoryview from np.empty
     '''
     cdef np.npy_intp shape[2]
     shape[0] = x
@@ -56,7 +56,7 @@ cdef np.int32_t[:] zeros_int32(np.npy_intp size):
     '''
     Return a new one-dimensional np.int32 memoryview of given size, filled with zeros.
 
-    opt: ~2.5x faster than creating a memoryview from np.zeros
+    OPT: ~2.5x faster than creating a memoryview from np.zeros
     '''
     cdef np.npy_intp shape[1]
     shape[0] = size
@@ -68,7 +68,7 @@ cdef np.int32_t[:, :] zeros2d_int32(np.npy_intp x, np.npy_intp y):
     '''
     Return a new two-dimensional np.int32 memoryview of given size, filled with zeros.
 
-    opt: ~2.5x faster than creating a memoryview from np.empty (Python call).
+    OPT: ~2.5x faster than creating a memoryview from np.empty (Python call).
     '''
     cdef np.npy_intp shape[2]
     shape[0] = x
@@ -81,7 +81,7 @@ cdef np.int64_t[:] empty_int64(np.npy_intp size):
     '''
     Return a new one-dimensional np.int64 memoryview of given size, without initializing entries.
 
-    opt: ~2.5x faster than creating a memoryview from np.empty
+    OPT: ~2.5x faster than creating a memoryview from np.empty
     '''
     cdef np.npy_intp shape[1]
     shape[0] = size
@@ -93,7 +93,7 @@ cdef np.int64_t[:, :] empty2d_int64(np.npy_intp x, np.npy_intp y):
     '''
     Return a new two-dimensional np.int64 memoryview of given size, without initializing entries.
 
-    opt: ~2.5x faster than creating a memoryview from np.empty
+    OPT: ~2.5x faster than creating a memoryview from np.empty
     '''
     cdef np.npy_intp shape[2]
     shape[0] = x
@@ -106,7 +106,7 @@ cdef np.int64_t[:] zeros_int64(np.npy_intp size):
     '''
     Return a new one-dimensional np.int64 memoryview of given size, filled with zeros.
 
-    opt: ~2.5x faster than creating a memoryview from np.zeros
+    OPT: ~2.5x faster than creating a memoryview from np.zeros
     '''
     cdef np.npy_intp shape[1]
     shape[0] = size
@@ -118,7 +118,7 @@ cdef np.int64_t[:, :] zeros2d_int64(np.npy_intp x, np.npy_intp y):
     '''
     Return a new two-dimensional np.int64 memoryview of given size, filled with zeros.
 
-    opt: ~2.5x faster than creating a memoryview from np.empty (Python call).
+    OPT: ~2.5x faster than creating a memoryview from np.empty (Python call).
     '''
     cdef np.npy_intp shape[2]
     shape[0] = x
@@ -131,7 +131,7 @@ cdef np.intp_t[:] empty_intp(np.npy_intp size):
     '''
     Return a new one-dimensional np.intp memoryview of given size, without initializing entries.
 
-    opt: ~2.5x faster than creating a memoryview from np.empty
+    OPT: ~2.5x faster than creating a memoryview from np.empty
     '''
     cdef np.npy_intp shape[1]
     shape[0] = size
@@ -143,7 +143,7 @@ cdef np.intp_t[:, :] empty2d_intp(np.npy_intp x, np.npy_intp y):
     '''
     Return a new two-dimensional np.intp memoryview of given size, without initializing entries.
 
-    opt: ~2.5x faster than creating a memoryview from np.empty
+    OPT: ~2.5x faster than creating a memoryview from np.empty
     '''
     cdef np.npy_intp shape[2]
     shape[0] = x
@@ -156,7 +156,7 @@ cdef np.intp_t[:] zeros_intp(np.npy_intp size):
     '''
     Return a new one-dimensional np.intp memoryview of given size, filled with zeros.
 
-    opt: ~2.5x faster than creating a memoryview from np.zeros
+    OPT: ~2.5x faster than creating a memoryview from np.zeros
     '''
     cdef np.npy_intp shape[1]
     shape[0] = size
@@ -168,7 +168,7 @@ cdef np.intp_t[:, :] zeros2d_intp(np.npy_intp x, np.npy_intp y):
     '''
     Return a new two-dimensional np.intp memoryview of given size, filled with zeros.
 
-    opt: ~2.5x faster than creating a memoryview from np.zeros
+    OPT: ~2.5x faster than creating a memoryview from np.zeros
     '''
     cdef np.npy_intp shape[2]
     shape[0] = x
@@ -181,7 +181,7 @@ cdef np.uint8_t[:] empty_uint8(np.npy_intp size):
     '''
     Return a new one-dimensional np.uint8 memoryview of given size, without initializing entries.
 
-    opt: ~2.5x faster than creating a memoryview from np.empty
+    OPT: ~2.5x faster than creating a memoryview from np.empty
     '''
     cdef np.npy_intp shape[1]
     shape[0] = size
@@ -193,7 +193,7 @@ cdef np.uint8_t[:, :] empty2d_uint8(np.npy_intp x, np.npy_intp y):
     '''
     Return a new two-dimensional np.uint8 memoryview of given size, without initializing entries.
 
-    opt: ~2.5x faster than creating a memoryview from np.empty
+    OPT: ~2.5x faster than creating a memoryview from np.empty
     '''
     cdef np.npy_intp shape[2]
     shape[0] = x
@@ -206,7 +206,7 @@ cdef np.uint8_t[:] zeros_uint8(np.npy_intp size):
     '''
     Return a new one-dimensional np.uint8 memoryview of given size, filled with zeros.
 
-    opt: ~2.5x faster than creating a memoryview from np.zeros
+    OPT: ~2.5x faster than creating a memoryview from np.zeros
     '''
     cdef np.npy_intp shape[1]
     shape[0] = size
@@ -218,7 +218,7 @@ cdef np.uint8_t[:, :] zeros2d_uint8(np.npy_intp x, np.npy_intp y):
     '''
     Return a new two-dimensional np.uint8 memoryview of given size, filled with zeros.
 
-    opt: ~2.5x faster than creating a memoryview from np.zeros
+    OPT: ~2.5x faster than creating a memoryview from np.zeros
     '''
     cdef np.npy_intp shape[2]
     shape[0] = x
@@ -231,7 +231,7 @@ cdef np.uint8_t[:] ones_uint8(np.npy_intp size):
     '''
     Return a new one-dimensional np.uint8 memoryview of given size, filled with ones.
 
-    opt: ~2.5x faster than creating a memoryview from np.ones
+    OPT: ~2.5x faster than creating a memoryview from np.ones
     '''
     cdef np.npy_intp shape[1]
     shape[0] = size
@@ -245,7 +245,7 @@ cdef np.uint16_t[:] empty_uint16(np.npy_intp size):
     '''
     Return a new one-dimensional np.uint16 memoryview of given size, without initializing entries.
 
-    opt: ~2.5x faster than creating a memoryview from np.empty
+    OPT: ~2.5x faster than creating a memoryview from np.empty
     '''
     cdef np.npy_intp shape[1]
     shape[0] = size
@@ -257,7 +257,7 @@ cdef np.uint16_t[:, :] empty2d_uint16(np.npy_intp x, np.npy_intp y):
     '''
     Return a new two-dimensional np.uint16 memoryview of given size, without initializing entries.
 
-    opt: ~2.5x faster than creating a memoryview from np.empty
+    OPT: ~2.5x faster than creating a memoryview from np.empty
     '''
     cdef np.npy_intp shape[2]
     shape[0] = x
@@ -270,7 +270,7 @@ cdef np.uint16_t[:] zeros_uint16(np.npy_intp size):
     '''
     Return a new one-dimensional np.uint16 memoryview of given size, filled with zeros.
 
-    opt: ~2.5x faster than creating a memoryview from np.zeros
+    OPT: ~2.5x faster than creating a memoryview from np.zeros
     '''
     cdef np.npy_intp shape[1]
     shape[0] = size
@@ -282,7 +282,7 @@ cdef np.uint16_t[:, :] zeros2d_uint16(np.npy_intp x, np.npy_intp y):
     '''
     Return a new two-dimensional np.uint16 memoryview of given size, filled with zeros.
 
-    opt: ~2.5x faster than creating a memoryview from np.empty
+    OPT: ~2.5x faster than creating a memoryview from np.empty
     '''
     cdef np.npy_intp shape[2]
     shape[0] = x
@@ -295,7 +295,7 @@ cdef np.uint32_t[:] empty_uint32(np.npy_intp size):
     '''
     Return a new one-dimensional np.uint32 memoryview of given size, without initializing entries.
 
-    opt: ~2.5x faster than creating a memoryview from np.empty
+    OPT: ~2.5x faster than creating a memoryview from np.empty
     '''
     cdef np.npy_intp shape[1]
     shape[0] = size
@@ -307,7 +307,7 @@ cdef np.uint32_t[:, :] empty2d_uint32(np.npy_intp x, np.npy_intp y):
     '''
     Return a new two-dimensional np.uint32 memoryview of given size, without initializing entries.
 
-    opt: ~2.5x faster than creating a memoryview from np.empty``
+    OPT: ~2.5x faster than creating a memoryview from np.empty``
     '''
     cdef np.npy_intp shape[2]
     shape[0] = x
@@ -320,7 +320,7 @@ cdef np.uint32_t[:] zeros_uint32(np.npy_intp size):
     '''
     Return a new one-dimensional np.uint32 memoryview of given size, filled with zeros.
 
-    opt: ~2.5x faster than creating a memoryview from np.zeros
+    OPT: ~2.5x faster than creating a memoryview from np.zeros
     '''
     cdef np.npy_intp shape[1]
     shape[0] = size
@@ -332,7 +332,7 @@ cdef np.uint32_t[:, :] zeros2d_uint32(np.npy_intp x, np.npy_intp y):
     '''
     Return a new two-dimensional np.uint32 memoryview of given size, filled with zeros.
 
-    opt: ~2.5x faster than creating a memoryview from np.empty
+    OPT: ~2.5x faster than creating a memoryview from np.empty
     '''
     cdef np.npy_intp shape[2]
     shape[0] = x
@@ -345,7 +345,7 @@ cdef np.uint64_t[:] empty_uint64(np.npy_intp size):
     '''
     Return a new one-dimensional np.uint64 memoryview of given size, without initializing entries.
 
-    opt: ~2.5x faster than creating a memoryview from np.empty
+    OPT: ~2.5x faster than creating a memoryview from np.empty
     '''
     cdef np.npy_intp shape[1]
     shape[0] = size
@@ -357,7 +357,7 @@ cdef np.uint64_t[:, :] empty2d_uint64(np.npy_intp x, np.npy_intp y):
     '''
     Return a new two-dimensional np.uint64 memoryview of given size, without initializing entries.
 
-    opt: ~2.5x faster than creating a memoryview from np.empty``
+    OPT: ~2.5x faster than creating a memoryview from np.empty``
     '''
     cdef np.npy_intp shape[2]
     shape[0] = x
@@ -370,7 +370,7 @@ cdef np.uint64_t[:] zeros_uint64(np.npy_intp size):
     '''
     Return a new one-dimensional np.uint64 memoryview of given size, filled with zeros.
 
-    opt: ~2.5x faster than creating a memoryview from np.zeros
+    OPT: ~2.5x faster than creating a memoryview from np.zeros
     '''
     cdef np.npy_intp shape[1]
     shape[0] = size
@@ -382,7 +382,7 @@ cdef np.uint64_t[:, :] zeros2d_uint64(np.npy_intp x, np.npy_intp y):
     '''
     Return a new two-dimensional np.uint64 memoryview of given size, filled with zeros.
 
-    opt: ~2.5x faster than creating a memoryview from np.empty
+    OPT: ~2.5x faster than creating a memoryview from np.empty
     '''
     cdef np.npy_intp shape[2]
     shape[0] = x
@@ -395,7 +395,7 @@ cdef np.float64_t[:] empty_float64(np.npy_intp size):
     '''
     Return a new one-dimensional np.float64 memoryview of given size, without initializing entries.
 
-    opt: ~2.5x faster than creating a memoryview from np.empty
+    OPT: ~2.5x faster than creating a memoryview from np.empty
     '''
     cdef np.npy_intp shape[1]
     shape[0] = size
@@ -407,7 +407,7 @@ cdef np.float64_t[:, :] empty2d_float64(np.npy_intp x, np.npy_intp y):
     '''
     Return a new one-dimensional np.float64 memoryview of given size, without initializing entries.
 
-    opt: ~2.5x faster than creating a memoryview from np.empty
+    OPT: ~2.5x faster than creating a memoryview from np.empty
     '''
     cdef np.npy_intp shape[2]
     shape[0] = x
@@ -420,7 +420,7 @@ cdef np.float64_t[:] zeros_float64(np.npy_intp size):
     '''
     Return a new one-dimensional np.float64 memoryview of given size, filled with zeros.
 
-    opt: ~2.5x faster than creating a memoryview from np.zeros
+    OPT: ~2.5x faster than creating a memoryview from np.zeros
     '''
     cdef np.npy_intp shape[1]
     shape[0] = size
@@ -432,7 +432,7 @@ cdef np.float64_t[:, :] zeros2d_float64(np.npy_intp x, np.npy_intp y):
     '''
     Return a new two-dimensional np.float64 memoryview of given size, filled with zeros.
 
-    opt: ~2.5x faster than creating a memoryview from np.zeros
+    OPT: ~2.5x faster than creating a memoryview from np.zeros
     '''
     cdef np.npy_intp shape[2]
     shape[0] = x
@@ -726,6 +726,20 @@ cdef Py_ssize_t value_idx(np_types[:] array, np_types value) nogil:
 
 ################################################################################
 # Array operations
+
+
+@cython.wraparound(False)
+cdef np_types arrays_continuous_value(np_types[:] data1, np_types[:] data2, Py_ssize_t idx) nogil:
+    '''
+    Get the value of an index within the two arrays as if they were concatenated.
+
+    :param data1: first array
+    :param data2: second array concatenated after the first
+    :param idx: index within the concatenated array
+    :returns: value sampled from idx within the concatenated array
+    '''
+    return data2[idx - data1.shape[0]] if idx >= data1.shape[0] else data1[idx]
+
 
 cdef np.uint8_t[:] contract_runs(np.uint8_t[:] data, Py_ssize_t size, bint match=True) nogil:
     '''

@@ -17,7 +17,7 @@ cpdef bint is_power2(number):
     Whether or not a number is a power of two. Forces floats to int.
     Ref: http://code.activestate.com/recipes/577514-chek-if-a-number-is-a-power-of-two/
 
-    opt: ~4x faster than pure python version
+    OPT: ~4x faster than pure python version
     '''
     if number % 1:
         return False
