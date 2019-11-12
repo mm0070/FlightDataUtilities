@@ -727,7 +727,6 @@ cdef Py_ssize_t value_idx(np_types[:] array, np_types value) nogil:
 ################################################################################
 # Array operations
 
-
 @cython.wraparound(False)
 cdef np_types arrays_continuous_value(np_types[:] data1, np_types[:] data2, Py_ssize_t idx) nogil:
     '''
@@ -743,7 +742,7 @@ cdef np_types arrays_continuous_value(np_types[:] data1, np_types[:] data2, Py_s
 
 cdef np.uint8_t[:] contract_runs(np.uint8_t[:] data, Py_ssize_t size, bint match=True) nogil:
     '''
-    Contract runs of matching values within an array, e.g.
+    Contract runs of matching values within an array modifying data in-place, e.g.
     contract_runs([False, True, True, True], 1) == [False, False, True, False]
     '''
     if not size:
@@ -771,7 +770,7 @@ cdef np.uint8_t[:] contract_runs(np.uint8_t[:] data, Py_ssize_t size, bint match
 cdef np.uint8_t[:] remove_small_runs(np.uint8_t[:] data, np.float64_t seconds, np.float64_t hz=1,
                                      bint match=True) nogil:
     '''
-    Remove small runs of matching values from a boolean array.
+    Remove small runs of matching values from a boolean array modifying data in-place.
 
     Optimised version of slices_remove_small_slices (330 times faster):
 >>> from analysis_engine.library import runs_of_ones, slices_remove_small_gaps
