@@ -324,8 +324,7 @@ def aggregate_values(Aggregate mode, np.float64_t[:] data, np.uint8_t[:] mask, n
 
 
 cdef _aggregate_values(Aggregate mode, array, matching):
-    return aggregate_values(
-        mode, cy.astype(array, np.float64), getmaskarray1d(array), matching.view(np.uint8))
+    return aggregate_values(mode, cy.astype(array), getmaskarray1d(array), matching.view(np.uint8))
 
 
 cpdef max_values(array, matching):

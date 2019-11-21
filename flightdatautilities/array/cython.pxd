@@ -87,7 +87,7 @@ cdef np.uint32_t unpack_uint32_be_unsafe(const np.uint8_t[:] data, Py_ssize_t id
 cdef np.uint32_t unpack_uint32_be(const np.uint8_t[:] data, Py_ssize_t idx) nogil
 ################################################################################
 # Array helpers
-cdef astype(data, dtype, copy=?)
+cdef astype(data, dtype=?, copy=?)
 cdef bint lengths_match(Py_ssize_t x, Py_ssize_t y) nogil
 cdef bint within_bounds(Py_ssize_t idx, Py_ssize_t length) nogil
 cdef idx_none(Py_ssize_t idx)

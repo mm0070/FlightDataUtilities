@@ -535,7 +535,7 @@ cdef np.uint32_t unpack_uint32_be(const np.uint8_t[:] data, Py_ssize_t idx) nogi
 # Array helpers
 
 
-cdef astype(data, dtype, copy=False):
+cdef astype(data, dtype=np.float64, copy=False):
     '''
     Casts array or memoryview as dtype.
     '''
