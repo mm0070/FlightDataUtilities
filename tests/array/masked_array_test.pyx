@@ -14,6 +14,44 @@ from flightdatautilities.array cimport masked_array as ma
 from flightdatautilities.read import reader
 
 
+################################################################################
+# Utility functions
+
+class TestGetmaskarray1d(unittest.TestCase):
+    def test_getmaskarray1d(self):
+        array = np.ma.zeros(5)
+        self.assertEqual(list(ma.getmaskarray1d(np.ma.zeros(5))), [0] * 5)  # scalar mask
+        array.mask = True
+        self.assertEqual(list(ma.getmaskarray1d(array)), [1] * 5)  # array mask
+        array = np.ma.zeros(5)
+        array[1] = np.ma.masked
+        self.assertEqual(list(ma.getmaskarray1d(array)), [0, 1, 0, 0, 0])  # array mask
+
+
+################################################################################
+# Mask ratio/percentage
+
+class TestMaskRatio(unittest.TestCase):
+    def test_mask_ratio(self):
+        self.assertEqual(ma.mask_ratio(np.True_), 1)
+        self.assertEqual(ma.mask_ratio(np.False_), 0)
+        self.assertEqual(ma.mask_ratio(np.zeros(1, dtype=np.bool)), 0)
+        self.assertEqual(ma.mask_ratio(np.ones(1, dtype=np.bool)), 1)
+        self.assertEqual(ma.mask_ratio(np.array([0, 1], dtype=np.bool)), 0.5)
+
+
+class TestPercentMasked(unittest.TestCase):
+    def test_percent_masked(self):
+        self.assertEqual(ma.percent_unmasked(np.True_), 0)
+        self.assertEqual(ma.percent_unmasked(np.False_), 100)
+        self.assertEqual(ma.percent_unmasked(np.zeros(1, dtype=np.bool)), 100)
+        self.assertEqual(ma.percent_unmasked(np.ones(1, dtype=np.bool)), 0)
+        self.assertEqual(ma.percent_unmasked(np.array([0, 1], dtype=np.bool)), 50)
+
+
+################################################################################
+# Fill range
+
 class TestFillRangeUnsafe(unittest.TestCase):
     def test_fill_range_unsafe(self):
         data = np.arange(5, dtype=np.float64)
@@ -40,6 +78,9 @@ class TestFillRangeUnsafe(unittest.TestCase):
         self.assertEqual(data.tolist(), expected_data)
         self.assertEqual(mask.tolist(), expected_mask)
 
+
+################################################################################
+# Interpolate range
 
 class TestInterpolateRangeUnsafe(unittest.TestCase):
     def test_interpolate_range_unsafe(self):
@@ -139,6 +180,8 @@ class TestInterpolateRange(unittest.TestCase):
         #self.assertEqual(op.last_valid_sample(np.ma.array(data, mask=[0,0,0,1])), (2, 13))
 
 
+################################################################################
+# Repair mask
 
 #class TestRepairMask(unittest.TestCase):
     #def setUp(self):
@@ -222,7 +265,7 @@ class TestInterpolateRange(unittest.TestCase):
 
 
 ################################################################################
-# Aggregate functions
+# Aggregation
 
 # TODO: fix crash
 #class TestMaxValues(unittest.TestCase):
@@ -247,3 +290,15 @@ class TestInterpolateRange(unittest.TestCase):
         #self.assertEqual(list(ma.max_values(arr, matching)), [(0, 0), (3, 3), (9, 9)])
         #arr[0] = np.ma.masked
         #self.assertEqual(list(ma.max_values(arr, matching)), [(3, 3), (9, 9)])
+
+
+################################################################################
+# Alignment
+
+class TestAlign(unittest.TestCase):
+    def test_align_basic(self):
+        aligned = ma.align(np.ma.arange(0, 5), 1, 1, 4, 0.5)
+        np.testing.assert_array_equal(
+            aligned,
+            [0, 0, 0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.25, 2.5, 2.75, 3, 3.25, 3.5, 3.75, 4, 4],
+        )

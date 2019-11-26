@@ -49,3 +49,11 @@ cpdef max_values(array, matching)
 cpdef min_values(array, matching)
 cpdef max_abs_values(array, matching)
 cpdef min_abs_values(array, matching)
+################################################################################
+# Alignment
+cpdef align(array, np.float64_t slave_frequency, np.float64_t slave_offset, np.float64_t master_frequency,
+            np.float64_t master_offset=?)
+cpdef align_interpolate(array, np.float64_t slave_frequency, np.float64_t slave_offset, np.float64_t master_frequency,
+                        np.float64_t master_offset=?)
+cpdef align_nearest(array, np.float64_t slave_frequency, np.float64_t slave_offset, np.float64_t master_frequency,
+                    np.float64_t master_offset=?)

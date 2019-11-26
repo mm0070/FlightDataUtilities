@@ -444,6 +444,7 @@ cpdef subarray_idx_uint8(const np.uint8_t[:] array, const np.uint8_t[:] subarray
 ################################################################################
 # Resample operations
 
+
 cpdef downsample_arrays(arrays):
     '''
     Return arrays downsampled to the size of the smallest.

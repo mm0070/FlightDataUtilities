@@ -537,7 +537,7 @@ cdef np.uint32_t unpack_uint32_be(const np.uint8_t[:] data, Py_ssize_t idx) nogi
 
 cdef astype(data, dtype=np.float64, copy=False):
     '''
-    Casts array or memoryview as dtype.
+    Casts array or memoryview as dtype. Default dtype is np.float64.
     '''
     return np.asarray(data).astype(dtype, copy=copy)
 

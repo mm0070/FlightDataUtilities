@@ -3,7 +3,7 @@
 Masked array-specific functions.
 '''
 cimport cython
-from libc.math cimport fabs
+from libc.math cimport ceil, fabs, floor
 from libc.stdio cimport fprintf, stderr, printf
 import numpy as np
 cimport numpy as np
@@ -18,13 +18,16 @@ cdef np.uint8_t[:] getmaskarray1d(array):
     '''
     Return the mask memoryview from a np.ma.masked_array in a Cython-compatible dtype. Assumes scalar mask is False.
 
-    Note: If mask is a scalar then a new mask array will be created and modifications will not affect the original masked array's
-          mask. If creating a masked array with a mutable mask is required, pass mask=False into np.ma.masked_array() which
-          overrides the default nomask constant.
+    Note: If mask is a scalar then a new mask array will be created and modifications will not affect the original
+          masked array's mask (as is the case with np.ma.getmaskarray()). If creating a masked array with a mutable mask
+          is required, pass mask=False into np.ma.masked_array() which overrides the default nomask constant.
 
     OPT: ~3x faster than np.ma.getmaskarray() when mask is a scalar, ~10% faster when mask is an array
     '''
-    return cy.zeros_uint8(len(array)) if np.PyArray_CheckScalar(array.mask) else array.mask.view(np.uint8)
+    if array.mask is np.False_:  # np.PyArray_CheckScalar(array.mask): # FIXME: used to be faster, but now segfaults
+        return cy.zeros_uint8(len(array))
+    else:
+        return array.mask.view(np.uint8)
 
 
 ################################################################################
@@ -34,10 +37,9 @@ cpdef mask_ratio(mask):
     '''
     Ratio of masked data (1 == all masked).
     '''
-    # Handle scalars.
-    if np.all(mask):
+    if np.all(mask):  # True scalar
         return 1
-    elif not np.any(mask):
+    elif not np.any(mask):  # False scalar
         return 0
     return mask.sum() / float(len(mask))
 
@@ -342,3 +344,91 @@ cpdef max_abs_values(array, matching):
 cpdef min_abs_values(array, matching):
     return _aggregate_values(Aggregate.MIN_ABS, array, matching)
 
+
+################################################################################
+# Alignment
+
+
+cpdef align(array, np.float64_t slave_frequency, np.float64_t slave_offset, np.float64_t master_frequency,
+            np.float64_t master_offset=0):
+    return np.ma.masked_array(*
+        (align_nearest(array, slave_frequency, slave_offset, master_frequency, master_offset)
+         if np.PyArray_ISINTEGER(array.data) else
+         align_interpolate(array, slave_frequency, slave_offset, master_frequency, master_offset)))
+
+
+@cython.cdivision(True)
+@cython.wraparound(False)
+cpdef align_interpolate(array, np.float64_t slave_frequency, np.float64_t slave_offset, np.float64_t master_frequency,
+                        np.float64_t master_offset=0):
+    if slave_frequency <= 0 or master_frequency <= 0:
+        raise ValueError('frequencies must be greater than 0')
+
+    cdef:
+        np.float64_t[:] array_data = cy.astype(array.data)
+        np.uint8_t[:] array_mask = np.ma.getmaskarray(array).view(np.uint8)  # FIXME: find out why getmaskarray1d(array) segfaults!?
+
+    if slave_frequency == master_frequency and slave_offset == master_offset:
+        return array_data, array_mask
+
+    cdef:
+        np.float64_t array_pos, idx_multiplier = slave_frequency / master_frequency, \
+            frequency_multiplier = master_frequency / slave_frequency, \
+            offset = frequency_multiplier * (slave_offset - master_offset)
+        Py_ssize_t array_prev_idx, array_next_idx, output_idx, \
+            output_size = <Py_ssize_t>(array_data.shape[0] * frequency_multiplier)
+        np.float64_t[:] output_data = cy.zeros_float64(output_size)
+        np.uint8_t[:] output_mask = cy.zeros_uint8(output_size)
+
+    for output_idx in range(output_data.shape[0]):
+        array_pos = (output_idx * idx_multiplier) + offset
+        array_next_idx = <Py_ssize_t>ceil(array_pos)
+        if array_pos < 0 or array_next_idx >= array_data.shape[0]:
+            output_mask[output_idx] = True
+            continue
+        array_prev_idx = <Py_ssize_t>floor(array_pos)
+        if array_prev_idx == array_pos:
+            if array_mask[array_prev_idx]:
+                output_mask[output_idx] = True
+            else:
+                output_data[output_idx] = array_data[array_prev_idx]
+        elif array_mask[array_prev_idx] or array_mask[array_next_idx]:
+            output_mask[output_idx] = True
+        else:
+            output_data[output_idx] = array_data[array_prev_idx] + (
+                (array_data[array_next_idx] - array_data[array_prev_idx]) * array_pos - array_prev_idx)
+
+    return output_data, output_mask
+
+
+@cython.cdivision(True)
+@cython.wraparound(False)
+cpdef align_nearest(array, np.float64_t slave_frequency, np.float64_t slave_offset, np.float64_t master_frequency,
+                    np.float64_t master_offset=0):
+    if slave_frequency <= 0 or master_frequency <= 0:
+        raise ValueError('frequencies must be greater than 0')
+
+    cdef:
+        np.uint32_t[:] array_data = cy.astype(array.data, np.uint32)
+        np.uint8_t[:] array_mask = np.ma.getmaskarray(array).view(np.uint8)  # FIXME: find out why getmaskarray1d(array) segfaults!?
+
+    if slave_frequency == master_frequency and fabs(slave_offset - master_offset) * slave_frequency < 0.5:
+        return array_data, array_mask
+
+    cdef:
+        np.float64_t idx_multiplier = slave_frequency / master_frequency, \
+            frequency_multiplier = master_frequency / slave_frequency, \
+            offset = frequency_multiplier * (slave_offset - master_offset)
+        Py_ssize_t array_idx, output_idx, output_size = <Py_ssize_t>(array_data.shape[0] * frequency_multiplier)
+        np.uint32_t[:] output_data = cy.zeros_uint32(output_size)
+        np.uint8_t[:] output_mask = cy.empty_uint8(output_size)
+
+    for output_idx in range(output_data.shape[0]):
+        array_idx = <Py_ssize_t>floor(0.5 + ((output_idx * idx_multiplier) + offset))
+        if array_idx < 0 or array_idx >= array_data.shape[0]:
+            output_mask[output_idx] = True
+        else:
+            output_data[output_idx] = array_data[array_idx]
+            output_mask[output_idx] = array_mask[array_idx]
+
+    return output_data, output_mask
