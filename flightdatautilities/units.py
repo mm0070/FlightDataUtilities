@@ -827,6 +827,7 @@ UNIT_CORRECTIONS = {
     'RPM': RPM,
     'Rpm': RPM,
     # Temperature:
+    b'\xb0C': CELSIUS,
     '\xb0C': CELSIUS,
     b'\xf8C': CELSIUS,
     'DEGC': CELSIUS,
