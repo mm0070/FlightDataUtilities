@@ -109,7 +109,7 @@ class TestConfInformation(unittest.TestCase):
         # All detents must be strings:
         self.assertTrue(all(isinstance(d, str) for d in detents))
         # We expect all values to be in the available set:
-        available = at.constants.AVAILABLE_CONF_STATES.values()
+        available = at.constants.AVAILABLE_CONF_STATES['Airbus'].values()
         self.assertLessEqual(set(detents), set(available))
         # Must have a value for the retracted state:
         self.assertIn('0', detents)
@@ -159,7 +159,7 @@ class TestConfInformation(unittest.TestCase):
                 self.assertTrue(all(2 <= len(v) <= 3 for v in x.values()))
                 self.assertEqual(len(set(len(v) for v in x.values())), 1)
                 # Ensure all states are in the available conf states constant:
-                available = at.constants.AVAILABLE_CONF_STATES.values()
+                available = at.constants.AVAILABLE_CONF_STATES['Airbus'].values()
                 self.assertLessEqual(set(x.keys()), set(available))
                 # Ensure that the angles are found in related mappings:
                 length = len(next(six.itervalues(x)))
