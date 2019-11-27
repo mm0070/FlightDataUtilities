@@ -224,7 +224,7 @@ def get_aileron_map(model=None, series=None, family=None):
     raise KeyError(message % keys)
 
 
-def get_conf_map(model=None, series=None, family=None):
+def get_conf_map(model=None, series=None, family=None, manufacturer='Airbus'):
     '''
     Accessor for fetching conf mapping parameters.
 
@@ -238,13 +238,15 @@ def get_conf_map(model=None, series=None, family=None):
     :type series: string
     :param family: Aircraft family e.g. A340
     :type family: string
+    :param manufacturer: Aircraft manufacturer e.g. Airbus
+    :type manufacturer: string
     :raises: KeyError if no mapping found
     :returns: mapping of detent to state values
     :rtype: dict
     '''
     keys = model, series, family
     maps = mi.CONF_MODEL_MAP, mi.CONF_SERIES_MAP, mi.CONF_FAMILY_MAP
-    conf = constants.AVAILABLE_CONF_STATES.items()
+    conf = constants.AVAILABLE_CONF_STATES.get(manufacturer, {}).items()
 
     for k, m in zip(keys, maps):
         if k in m:
@@ -299,7 +301,7 @@ def get_lever_map(model=None, series=None, family=None):
 # surface values.
 
 
-def get_conf_angles(model=None, series=None, family=None, key='state'):
+def get_conf_angles(model=None, series=None, family=None, manufacturer='Airbus', key='state'):
     '''
     Accessor for fetching conf mapping parameters.
 
@@ -318,6 +320,8 @@ def get_conf_angles(model=None, series=None, family=None, key='state'):
     :type series: string
     :param family: Aircraft family e.g. A340
     :type family: string
+    :param manufacturer: Aircraft manufacturer e.g. Airbus
+    :type manufacturer: string
     :param key: Key to be provided in the mapping (both, state or value)
     :type key: str
     :raises: KeyError if no mapping found
@@ -329,7 +333,7 @@ def get_conf_angles(model=None, series=None, family=None, key='state'):
 
     keys = model, series, family
     maps = mi.CONF_MODEL_MAP, mi.CONF_SERIES_MAP, mi.CONF_FAMILY_MAP
-    conf = constants.AVAILABLE_CONF_STATES.items()
+    conf = constants.AVAILABLE_CONF_STATES.get(manufacturer, {}).items()
 
     for k, m in zip(keys, maps):
         if k not in m:
