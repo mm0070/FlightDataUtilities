@@ -16,23 +16,33 @@
 
 # Mapping of value to configuration states (for use by Airbus and similar aircraft):
 AVAILABLE_CONF_STATES = {
-    0: '0',
-    10: '1',
-    12: '1(T/O)', # Detailed in A330 Flight Crew Operating Manual REV 004
-    13: '1+F',
-    16: '1*',
-    20: '2',
-    26: '2*',
-    30: '3',
-    33: '3+S',
-    40: '4',
-    50: '5',
-    90: 'Full',
+    'Airbus': {
+        0: '0',
+        10: '1',
+        12: '1(T/O)', # Detailed in A330 Flight Crew Operating Manual REV 004
+        13: '1+F',
+        16: '1*',
+        20: '2',
+        26: '2*',
+        30: '3',
+        33: '3+S',
+        40: '4',
+        50: '5',
+        90: 'Full',
+    },
+    'Embraer': {
+        1:  '0',
+        2:  '1',
+        4:  '2',
+        8:  '3',
+        16: '4',
+        32: '5',
+        64: 'Full',
+    }
 }
 
-
 # Reverse mapping of value to configuration states (for use by Airbus and similar aircraft):
-AVAILABLE_CONF_STATES_REV = {v: k for k, v in AVAILABLE_CONF_STATES.items()}
+AVAILABLE_CONF_STATES_REV = {i: {v: k for k, v in j.items()} for i, j in AVAILABLE_CONF_STATES.items()}
 
 
 # Mapping of value to lever positions (for use by Airbus and similar aircraft):
