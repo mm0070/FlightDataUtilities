@@ -16,7 +16,8 @@ from builtins import map, zip
 from itertools import chain, count, groupby, islice, takewhile, tee
 from operator import itemgetter
 
-from flightdatautilities.type import as_dtype, byte_size, is_array_like, is_data
+from flightdatautilities.array.buffer import chunk
+from flightdatautilities.type import as_dtype, byte_size, is_array, is_data
 
 
 ##############################################################################
@@ -75,10 +76,16 @@ def join(chunks, dtype=None):
     :returns: Chunks of data joined into a single object.
     :rtype: str or np.ndarray
     '''
-    chunks = tuple(iter_data(chunks))
-    if chunks:
-        joined = np.concatenate(chunks) if is_array_like(chunks[0]) else b''.join(chunks)
-        return as_dtype(joined, dtype, cast=True) if dtype else joined
+    memviews = tuple(memoryview(c) for c in iter_data(chunks))
+    if memviews:
+        joined = np.concatenate(memviews)
+        if dtype:
+            return joined.astype(dtype, copy=False)
+        elif is_array(chunks[0]):
+            return joined
+        else:
+            return joined.tostring()
+        #return as_dtype(joined, dtype, cast=True) if dtype else joined
     else:
         return np.empty(0, dtype=dtype) if dtype else b''
 
@@ -114,7 +121,7 @@ def iter_data(data_gen):
     return (d for d in data_gen if is_data(d))
 
 
-def iter_data_start_idx(data_gen, start, count=None, byte=False):
+def iter_data_start_idx(data_gen, start, count=None, byte=False, dtype=None):
     '''
     Start a generator at a index into the data it is yielding.
 
@@ -123,7 +130,7 @@ def iter_data_start_idx(data_gen, start, count=None, byte=False):
     :rtype: generator
     '''
     if start == 0:
-        return chunk(data_gen, count, flush=True) if count else data_gen
+        return chunk(data_gen, count, flush=True, dtype=dtype) if count else data_gen
 
     size = byte_size if byte else len
     pos = 0
@@ -158,7 +165,7 @@ def iter_data_start_idx(data_gen, start, count=None, byte=False):
             start_gen = chain([data], data_gen)
 
             if count:
-                start_gen = chunk(start_gen, (count * itemsize) if convert else count, flush=True)
+                start_gen = chunk(start_gen, (count * itemsize) if convert else count, flush=True, dtype=dtype)
 
             if convert:  # convert back into original dtype
                 start_gen = iter_dtype(start_gen, dtype, skip_incompatible=True)

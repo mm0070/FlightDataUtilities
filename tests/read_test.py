@@ -2,7 +2,7 @@ import numpy as np
 import os
 import unittest
 
-from flightdatautilities.iterext import chunk
+from flightdatautilities.array.buffer import chunk
 from flightdatautilities.read import data_reader, file_reader, generator_reader, reader
 
 from flightdataprocessing.common.test import TEST_DATA_PATH

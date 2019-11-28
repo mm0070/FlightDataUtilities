@@ -2,30 +2,66 @@
 from collections import deque
 
 import numpy as np
+#cimport numpy as np
+
+
+#cdef class WriteBufferUint16:
+    #def __init__(self, Py_ssize_t size):
+        #self._buffer = cy.empty_uint16(size)
+
+    #cpdef bint write(self, np.uint16_t[:] data):
+        #cdef Py_ssize_t idx
+        #for idx in range(data.shape[0]):
+            #self._buffer[self.size + idx] = data[idx]
+        #self.size += data.shape[0]
+        #return self.size == self._buffer.shape[0]
+
+    #cpdef np.uint16_t[:] read(self):
+        #cdef np.uint16_t[:] data = self._buffer[size]
+        #self.size = 0
+        #return data
 
 
 cdef class Buffer:
+    '''
+    Buffer optimised for adding megabytes of data and reading smaller sizes repeatedly.
 
+    Can store arrays, memoryviews or bytes. bytes are stored as memoryviews internally for copy-less slicing.
+    '''
     def __init__(self, dtype=None):
         self._array = bool(dtype)
         self._empty = np.zeros(0, dtype=dtype) if self._array else b''
         self._chunks = deque()
 
     cdef _join(self, chunks):
+        '''
+        Join chunks as either bytes or a numpy array depending on dtype.
+        '''
         return np.concatenate(chunks) if self._array else b''.join(chunks)
 
     cpdef clear(self):
+        '''
+        Clear the buffer of all chunks.
+        '''
         self._chunks.clear()
         self.size = 0
 
     cpdef add(self, data):
+        '''
+        Add data to theend of the buffer.
+
+        :type data: np.ndarray, memoryview or bytes
+        '''
         cdef Py_ssize_t data_size = len(data)
         if not data_size:
             return
         self.size += data_size
-        self._chunks.append(data)
+        self._chunks.append(data if self._array else memoryview(data))
 
     cpdef truncate(self, Py_ssize_t size):
+        '''
+        Remove size of data from the buffer.
+        '''
         if size <= 0 or not self.size:
             return
         elif size >= self.size:
@@ -45,6 +81,9 @@ cdef class Buffer:
                 break
 
     cpdef peek(self, Py_ssize_t size):
+        '''
+        Peek data from the start of the buffer.
+        '''
         if size <= 0 or not self.size:
             return self._empty
         elif size >= self.size:
@@ -73,6 +112,9 @@ cdef class Buffer:
         return self._join(peek_chunks)
 
     cpdef read(self, Py_ssize_t size):
+        '''
+        Read data from the start of the buffer (also truncates).
+        '''
         if size <= 0 or not self.size:
             return self._empty
         elif size >= self.size:
@@ -115,7 +157,7 @@ def chunk(data_gen, Py_ssize_t size, dtype=None, slices=None, bint flush=False):
     :type data_gen: generator or iterable
     :param size: Size to chunk the data into.
     :param slices: Slices to apply to each chunk, e.g. header and footer data.
-    :type slices: iterable or slice or None
+    :type slices: iterable of slice or slice or None
     :param flush: Flush remaining data. Will result in incomplete slices.
     :yields: List of sliced data chunks if slices else entire data chunks based on size.
     '''
@@ -137,3 +179,4 @@ def chunk(data_gen, Py_ssize_t size, dtype=None, slices=None, bint flush=False):
 
     if flush and buff.size:
         yield output(buff.read(size))
+

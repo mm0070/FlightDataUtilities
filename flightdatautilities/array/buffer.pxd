@@ -1,4 +1,12 @@
 # cython: language_level=3, boundscheck=False
+#cdef class WriteBuffer:
+    #cdef:
+        #np.uint16_t[:] _buffer
+        #public Py_ssize_t size
+        #cpdef bint write(self, np.uint16_t[:] data)
+        #cpdef np.uint16_t[:] read(self)
+
+
 cdef class Buffer:
     cdef:
         bint _array

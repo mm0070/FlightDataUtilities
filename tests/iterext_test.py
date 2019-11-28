@@ -82,21 +82,21 @@ class TestIterDataStartIdx(unittest.TestCase):
         self.assertEqual(list(iterext.iter_data_start_idx((d for d in data), 2)), [b'c'])
         self.assertEqual(list(iterext.iter_data_start_idx((d for d in data), 3)), [])
         data = [np.array([1, 2]), np.array([3, 4, 5])]
-        self.assertEqual(list(iterext.iter_data_start_idx((d for d in data), 0)), data)
+        self.assertEqual(list(iterext.iter_data_start_idx((d for d in data), 0, dtype=np.int64)), data)
         expected = [[1, 2], [3, 4], [5]]
-        self.assertEqual([x.tolist() for x in iterext.iter_data_start_idx((d for d in data), 0, count=2)], expected)
-        self.assertEqual([x.tolist() for x in iterext.iter_data_start_idx((d for d in data), 0, count=2, byte=True)], expected)
+        self.assertEqual([x.tolist() for x in iterext.iter_data_start_idx((d for d in data), 0, count=2, dtype=np.int64)], expected)
+        self.assertEqual([x.tolist() for x in iterext.iter_data_start_idx((d for d in data), 0, count=2, byte=True, dtype=np.int64)], expected)
         expected = [[2], [3, 4, 5]]
-        self.assertEqual([x.tolist() for x in iterext.iter_data_start_idx((d for d in data), 1)], expected)
-        self.assertEqual([x.tolist() for x in iterext.iter_data_start_idx((d.astype(np.uint8) for d in data), 1, byte=True)], expected)
-        self.assertEqual([x.tolist() for x in iterext.iter_data_start_idx((d.astype(np.uint32) for d in data), 4, byte=True)], expected)
+        self.assertEqual([x.tolist() for x in iterext.iter_data_start_idx((d for d in data), 1, dtype=np.int64)], expected)
+        self.assertEqual([x.tolist() for x in iterext.iter_data_start_idx((d.astype(np.uint8) for d in data), 1, byte=True, dtype=np.int64)], expected)
+        self.assertEqual([x.tolist() for x in iterext.iter_data_start_idx((d.astype(np.uint32) for d in data), 4, byte=True, dtype=np.int64)], expected)
         expected = [[2, 3], [4, 5]]
-        self.assertEqual([x.tolist() for x in iterext.iter_data_start_idx((d.astype(np.uint32) for d in data), 4, count=2, byte=True)], expected)
+        self.assertEqual([x.tolist() for x in iterext.iter_data_start_idx((d.astype(np.uint32) for d in data), 4, count=2, byte=True, dtype=np.int64)], expected)
         self.assertEqual([x.tolist() for x in iterext.iter_data_start_idx((d for d in data), 1, count=2)], expected)
-        self.assertEqual([x.tolist() for x in iterext.iter_data_start_idx((d.astype(np.uint32) for d in data), 16, count=2, byte=True)], [[5]])
+        self.assertEqual([x.tolist() for x in iterext.iter_data_start_idx((d.astype(np.uint32) for d in data), 16, count=2, byte=True, dtype=np.int64)], [[5]])
         # starting at a non-itemsize byte offset effectively byte shifts
-        self.assertEqual([x.tolist() for x in iterext.iter_data_start_idx((d.astype(np.uint32) for d in data), 3, count=2, byte=True)], [[512, 768], [1024, 1280]])
-        self.assertRaises(ValueError, iterext.iter_data_start_idx, (d.astype(np.uint32) for d in data), 3, byte=True)
+        self.assertEqual([x.tolist() for x in iterext.iter_data_start_idx((d.astype(np.uint32) for d in data), 3, count=2, byte=True, dtype=np.int64)], [[512, 768], [1024, 1280]])
+        self.assertRaises(ValueError, iterext.iter_data_start_idx, (d.astype(np.uint32) for d in data), 3, byte=True, dtype=np.int64)
 
 
 class TestIterDataStopIdx(unittest.TestCase):

@@ -68,13 +68,10 @@ def byte_size(data):
     '''
     Size in bytes of data.
 
-    :type data: bytes or np.ndarray
+    :type data: bytes, memoryview or np.ndarray
     :rtype: int
     '''
-    length = len(data)
-    if is_array_like(data):
-        length *= data.dtype.itemsize
-    return length
+    return data.nbytes if is_array_like(data) else len(data)
 
 
 def is_array(obj):
