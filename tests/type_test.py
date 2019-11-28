@@ -17,7 +17,7 @@ class TestAsDtype(unittest.TestCase):
         self.assertEqual(as_dtype(data), data)
         self.assertEqual(as_dtype(data, dtype=None), data)
         dtype = np.uint8
-        self.assertTrue(np.all(as_dtype(data, dtype=dtype) == np.fromstring(data, dtype=dtype)))
+        self.assertTrue(np.all(as_dtype(data, dtype=dtype) == np.frombuffer(data, dtype=dtype)))
         data = np.arange(3)
         self.assertEqual(as_dtype(data), data.tostring())
         self.assertEqual(as_dtype(data, dtype=None), data.tostring())

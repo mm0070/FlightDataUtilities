@@ -54,52 +54,6 @@ def batch(start, stop, step):
         yield (last, stop)
 
 
-def chunk(data_gen, size, slices=None, flush=False):
-    '''
-    Split the data into even size chunks. Optionally slice within the data. Convenient, but not efficient.
-
-    TODO: Possibly create a Chunk generator class which stores the args and kwargs as attributes to avoid re-chunking and unnecessary copying.
-
-    :param data_gen: Generator yielding data.
-    :type data_gen: generator or iterable
-    :param size: Size to chunk the data into.
-    :type size: int
-    :param slices: Slices to apply to each chunk, e.g. header and footer data.
-    :type slices: iterable or slice or None
-    :param flush: Flush remaining data. Will result in incomplete slices.
-    :type flush: bool
-    :yields: List of sliced data chunks if slices else entire data chunks based on size.
-    '''
-    if slices is None:
-        output = lambda x: x  # return data unchanged
-    elif isinstance(slices, slice):
-        output = lambda x: x[slices]  # return slice
-    else:
-        output = lambda x: [x[s] for s in slices]  # return list of slices
-
-    prev_data = None
-    for data in data_gen:
-
-        if prev_data is not None:
-            data = join((prev_data, data))
-
-        if len(data) < size:
-            prev_data = data
-            continue
-
-        for idx in range(0, len(data), size):
-            if (len(data) - idx) < size:
-                prev_data = data[idx:]
-                break
-
-            yield output(data[idx:idx + size])
-        else:
-            prev_data = None
-
-    if flush and prev_data is not None:
-        yield output(prev_data)
-
-
 def droplast(n, iterable):
     '''
     Drops the last n items from the provided iterable.

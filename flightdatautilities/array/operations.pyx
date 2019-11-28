@@ -259,7 +259,7 @@ cpdef swap_bytes(array):
     '''
     Swap byte-order endianness.
 
-    >>> swap_bytes(np.fromstring(b'\x12\x34\x56\x78')).tostring()
+    >>> swap_bytes(np.frombuffer(b'\x12\x34\x56\x78')).tostring()
     b'\x34\x12\x78\x56'
 
     :param array: Array to be byte-swapped.

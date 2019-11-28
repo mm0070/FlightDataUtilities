@@ -3,9 +3,9 @@ import numpy as np
 import zipfile
 from collections import Iterator
 
+from flightdatautilities.array.buffer import chunk
 from flightdatautilities.compression import open_compressed
 from flightdatautilities.iterext import (
-    chunk,
     join,
     iter_data_start_idx,
     iter_data_stop_idx,
@@ -133,7 +133,7 @@ class generator_reader(abstract_reader):
         if self.stop is not None:
             self.data_gen = iter_data_stop_idx(self.data_gen, self.stop - self.pos, byte=True)
         if self.count:
-            self.data_gen = chunk(self.data_gen, self.count, flush=True)
+            self.data_gen = chunk(self.data_gen, self.count, dtype=self.dtype, flush=True)
         return self
 
     def __next__(self):

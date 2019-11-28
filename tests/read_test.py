@@ -65,7 +65,7 @@ class TestDataReader(ReaderImplementationTest, unittest.TestCase):
     def setUp(self):
         super(TestDataReader, self).setUp()
         self.cls = data_reader
-        self.input = np.fromstring(self.data)
+        self.input = np.frombuffer(self.data)
 
 
 class TestGeneratorReader(ReaderImplementationTest, unittest.TestCase):
