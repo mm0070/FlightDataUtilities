@@ -1,12 +1,8 @@
 include LICENSE
-include README.rst
-include *.py
-include requirements*.txt
-exclude .git
-exclude build
-exclude dist
-exclude .coverage
-exclude coverage.xml
-exclude nosetests.xml
-
-# Project specific
+include MANIFEST.in
+include pyproject.toml
+include *.rst
+graft flightdatautilities
+graft tests
+global-exclude __pycache__
+global-exclude *.py[cdo]
