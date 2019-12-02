@@ -133,30 +133,12 @@ cpdef nearest_unmasked_value(array, Py_ssize_t idx, Py_ssize_t start=0, Py_ssize
 ################################################################################
 # Fill range
 
-@cython.wraparound(False)
-cdef void fill_range_unsafe(cy.np_types[:] data, np.uint8_t[:] mask, cy.np_types value, Py_ssize_t start,
-                            Py_ssize_t stop) nogil:
-    '''
-    Fill a section of a masked_array's data and mask with a value and unmask.
-
-    Unsafe:
-    - start and stop must be within array bounds and non-negative.
-    '''
-    cdef Py_ssize_t idx
-    for idx in range(start, stop):
-        data[idx] = value
-        mask[idx] = 0
-
-
-@cython.wraparound(False)
 cdef void fill_range(cy.np_types[:] data, np.uint8_t[:] mask, cy.np_types value, Py_ssize_t start, Py_ssize_t stop) nogil:
     '''
     Fill a section of a masked_array's data and mask with a value and unmask.
     '''
-    if not cy.lengths_match(data.shape[0], mask.shape[0]):
-        return
-    fill_range_unsafe(data, mask, value, cy.array_wraparound_idx(start, data.shape[0]),
-                      cy.array_wraparound_idx(stop, data.shape[0]))
+    data[start:stop] = value
+    mask[start:stop] = 0
 
 
 ################################################################################
@@ -231,20 +213,20 @@ cdef void repair_data_mask(np.float64_t[:] data, np.uint8_t[:] mask, RepairMetho
 
                 if last_valid_idx == -1:
                     if (extrapolate or method == FILL_STOP) and (max_samples == -1 or idx <= max_samples):
-                        fill_range_unsafe(data, mask, data[idx], 0, idx)
+                        fill_range(data, mask, data[idx], 0, idx)
                 else:
                     if max_samples == -1 or idx - last_valid_idx <= max_samples:
                         #if cy.np_types is np.float64_t:  # cannot create more complex condition, otherwise code is not pruned
                         if method == RepairMethod.INTERPOLATE:
                             interpolate_range_unsafe(data, mask, last_valid_idx, idx)
                         else:  #if method == RepairMethod.FILL_START or method == RepairMethod.FILL_STOP:
-                            fill_range_unsafe(data, mask, data[last_valid_idx] if method == FILL_START else data[idx],
-                                              last_valid_idx + 1, idx)
+                            fill_range(data, mask, data[last_valid_idx] if method == FILL_START else data[idx],
+                                       last_valid_idx + 1, idx)
 
             last_valid_idx = idx
 
     if (extrapolate or method == FILL_START) and last_valid_idx != -1 and last_valid_idx != idx and (max_samples == -1 or idx - last_valid_idx <= max_samples):
-        fill_range_unsafe(data, mask, data[last_valid_idx], last_valid_idx + 1, data.shape[0])
+        fill_range(data, mask, data[last_valid_idx], last_valid_idx + 1, data.shape[0])
 
 
 cdef repair_mask(array, RepairMethod method=RepairMethod.INTERPOLATE, repair_duration=10, np.float64_t frequency=1, bint copy=False,

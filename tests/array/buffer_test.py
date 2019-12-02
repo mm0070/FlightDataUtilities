@@ -91,6 +91,45 @@ class TestBuffer(unittest.TestCase):
         self.assertEqual(buff.size, 2)
 
 
+class TestDataBufferUint8(unittest.TestCase):
+    def test_data_buffer_uint8(self):
+        buff = bf.DataBufferUint8()
+        self.assertEqual(buff.size, 0)
+        data = buff.read(10)
+        self.assertEqual(len(data), 0)
+        buff.add(np.zeros(0, dtype=np.uint8))
+        self.assertEqual(buff.size, 0)
+        buff.add(np.array([5], dtype=np.uint8))
+        self.assertEqual(buff.size, 1)
+        self.assertEqual(list(buff.peek(1)), [5])
+        self.assertEqual(buff.size, 1)
+        self.assertEqual(list(buff.read(1)), [5])
+        self.assertEqual(buff.size, 0)
+        buff.add(np.array([3], dtype=np.uint8))
+        buff.add(np.array([8], dtype=np.uint8))
+        self.assertEqual(buff.size, 2)
+        buff.truncate(0)
+        self.assertEqual(buff.size, 2)
+        buff.truncate(1)
+        self.assertEqual(buff.size, 1)
+        buff.truncate(5)
+        self.assertEqual(buff.size, 0)
+        buff.add(np.arange(0, 7, dtype=np.uint8))
+        buff.add(np.arange(20, 23, dtype=np.uint8))
+        buff.add(np.arange(30, 36, dtype=np.uint8))
+        self.assertEqual(buff.size, 16)
+        self.assertEqual(list(buff.peek(2)), [0, 1])
+        self.assertEqual(buff.size, 16)
+        self.assertEqual(list(buff.read(2)), [0, 1])
+        self.assertEqual(buff.size, 14)
+        buff.truncate(7)
+        self.assertEqual(buff.size, 7)
+        self.assertEqual(list(buff.peek(5)), [22, 30, 31, 32, 33])
+        self.assertEqual(buff.size, 7)
+        self.assertEqual(list(buff.read(5)), [22, 30, 31, 32, 33])
+        self.assertEqual(buff.size, 2)
+
+
 class TestChunk(unittest.TestCase):
     def test_chunk_bytes_without_slices(self):
         data = [b'123', b'45', b'6', b'', b'789']

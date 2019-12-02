@@ -208,10 +208,40 @@ cpdef align_arrays(slave_array, master_array):
         return slave_array[0::int(1 // ratio)]
 
 
+cpdef concatenate(memviews):
+    # TODO: change sum to generator once supported
+    concatenated = np.empty(sum([len(m) for m in memviews]), dtype=getattr(memviews[0], 'dtype', np.uint8))
+    idx = 0
+    for memview in memviews:
+        concatenated[idx:idx + len(memview)] = memview
+        idx += len(memview)
+    return concatenated
+
+
 @cython.wraparound(False)
 cpdef bint is_constant(cy.np_types[:] data) nogil:
     '''
     Return whether or not an array is constant in value.
+    '''
+    if data.shape[0] <= 1:
+        return True
+
+    cdef Py_ssize_t idx
+
+    for idx in range(1, data.shape[0]):
+        if data[idx] != data[0]:
+            return False
+    return True
+
+
+@cython.wraparound(False)
+cpdef bint is_constant_uint8(const np.uint8_t[:] data) nogil:
+    '''
+    Return whether or not a memoryview of type uint8 is constant in value.
+
+    TODO: This duplicate implementation is currently required for memoryviews representing bytes as the const keyword
+          does not work with fused types - https://github.com/silx-kit/silx/issues/2717.
+          Once Cython supports this, change all references to is_constant and remove.
     '''
     if data.shape[0] <= 1:
         return True

@@ -77,14 +77,24 @@ cdef np.float64_t[:] zeros_float64(np.npy_intp size)
 cdef np.float64_t[:, :] zeros2d_float64(np.npy_intp x, np.npy_intp y)
 ################################################################################
 # Unpacking data types
-cdef np.uint16_t unpack_uint16_le_unsafe(const np.uint8_t[:] data, Py_ssize_t idx) nogil
-cdef np.uint16_t unpack_uint16_le(const np.uint8_t[:] data, Py_ssize_t idx) nogil
-cdef np.uint16_t unpack_uint16_be_unsafe(const np.uint8_t[:] data, Py_ssize_t idx) nogil
-cdef np.uint16_t unpack_uint16_be(const np.uint8_t[:] data, Py_ssize_t idx) nogil
-cdef np.uint32_t unpack_uint32_le_unsafe(const np.uint8_t[:] data, Py_ssize_t idx) nogil
-cdef np.uint32_t unpack_uint32_le(const np.uint8_t[:] data, Py_ssize_t idx) nogil
-cdef np.uint32_t unpack_uint32_be_unsafe(const np.uint8_t[:] data, Py_ssize_t idx) nogil
-cdef np.uint32_t unpack_uint32_be(const np.uint8_t[:] data, Py_ssize_t idx) nogil
+cdef np.uint16_t unpack_uint16_le_unsafe(const np.uint8_t[:] data, Py_ssize_t idx=?) nogil
+cdef np.uint16_t unpack_uint16_le(const np.uint8_t[:] data, Py_ssize_t idx=?) nogil
+cdef np.uint16_t unpack_uint16_be_unsafe(const np.uint8_t[:] data, Py_ssize_t idx=?) nogil
+cdef np.uint16_t unpack_uint16_be(const np.uint8_t[:] data, Py_ssize_t idx=?) nogil
+cdef np.uint32_t unpack_uint32_le_unsafe(const np.uint8_t[:] data, Py_ssize_t idx=?) nogil
+cdef np.uint32_t unpack_uint32_le(const np.uint8_t[:] data, Py_ssize_t idx=?) nogil
+cdef np.uint32_t unpack_uint32_be_unsafe(const np.uint8_t[:] data, Py_ssize_t idx=?) nogil
+cdef np.uint32_t unpack_uint32_be(const np.uint8_t[:] data, Py_ssize_t idx=?) nogil
+################################################################################
+# Packing data types
+cdef void pack_uint32_be_unsafe(np.uint8_t[:] data, np.uint32_t value, Py_ssize_t idx=?) nogil
+################################################################################
+# Endianness
+cdef np.uint16_t byteswap_uint16(np.uint16_t value) nogil
+cdef np.int16_t byteswap_int16(np.uint16_t value) nogil
+cdef np.uint32_t byteswap_uint32(np.uint32_t value) nogil
+cdef np.int32_t byteswap_int32(np.uint32_t value) nogil
+cdef np.float32_t byteswap_float32(np.float32_t value) nogil
 ################################################################################
 # Array helpers
 cdef astype(data, dtype=?, copy=?)
@@ -109,3 +119,6 @@ cdef Py_ssize_t value_idx(np_types[:] array, np_types value) nogil
 cdef np_types arrays_continuous_value(np_types[:] data1, np_types[:] data2, Py_ssize_t idx) nogil
 cdef np.uint8_t[:] contract_runs(np.uint8_t[:] data, Py_ssize_t size, bint match=?) nogil
 cdef np.uint8_t[:] remove_small_runs(np.uint8_t[:] data, np.float64_t seconds, np.float64_t hz=?, bint match=?) nogil
+################################################################################
+# Concatenation
+cdef np.uint8_t[:] concatenate_uint8(memviews)

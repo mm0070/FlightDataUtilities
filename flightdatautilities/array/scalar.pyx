@@ -66,3 +66,4 @@ cdef np.float64_t degrees_to_radians(np.float64_t degrees) nogil:
 
 cdef np.float64_t radians_to_degrees(np.float64_t radians) nogil:
     return radians * (180.0 / PI)
+

@@ -189,40 +189,47 @@ class TestZeros2dFloat64(unittest.TestCase):
 class TestUnpackUint(unittest.TestCase):
     def test_unpack_uint16_le(self):
         data = np.zeros(4, dtype=np.uint8)
-        self.assertEqual(cy.unpack_uint16_le(data, 0), 0)
+        self.assertEqual(cy.unpack_uint16_le(data), 0)
         self.assertEqual(cy.unpack_uint16_le(data, 1), 0)
         self.assertEqual(cy.unpack_uint16_le(data, 2), 0)
         data = np.arange(1, 5, dtype=np.uint8)
+        self.assertEqual(cy.unpack_uint16_le(data), 513)
         self.assertEqual(cy.unpack_uint16_le(data, 0), 513)
         self.assertEqual(cy.unpack_uint16_le(data, 1), 770)
         self.assertEqual(cy.unpack_uint16_le(data, 2), 1027)
 
     def test_unpack_uint16_be(self):
         data = np.zeros(4, dtype=np.uint8)
+        self.assertEqual(cy.unpack_uint16_be(data), 0)
         self.assertEqual(cy.unpack_uint16_be(data, 0), 0)
         self.assertEqual(cy.unpack_uint16_be(data, 1), 0)
         self.assertEqual(cy.unpack_uint16_be(data, 2), 0)
         data = np.arange(1, 5, dtype=np.uint8)
+        self.assertEqual(cy.unpack_uint16_be(data), 258)
         self.assertEqual(cy.unpack_uint16_be(data, 0), 258)
         self.assertEqual(cy.unpack_uint16_be(data, 1), 515)
         self.assertEqual(cy.unpack_uint16_be(data, 2), 772)
 
     def test_unpack_uint32_le(self):
         data = np.zeros(6, dtype=np.uint8)
+        self.assertEqual(cy.unpack_uint32_le(data), 0)
         self.assertEqual(cy.unpack_uint32_le(data, 0), 0)
         self.assertEqual(cy.unpack_uint32_le(data, 1), 0)
         self.assertEqual(cy.unpack_uint32_le(data, 2), 0)
         data = np.arange(1, 7, dtype=np.uint8)
+        self.assertEqual(cy.unpack_uint32_le(data), 67305985)
         self.assertEqual(cy.unpack_uint32_le(data, 0), 67305985)
         self.assertEqual(cy.unpack_uint32_le(data, 1), 84148994)
         self.assertEqual(cy.unpack_uint32_le(data, 2), 100992003)
 
     def test_unpack_uint32_be(self):
         data = np.zeros(6, dtype=np.uint8)
+        self.assertEqual(cy.unpack_uint32_be(data), 0)
         self.assertEqual(cy.unpack_uint32_be(data, 0), 0)
         self.assertEqual(cy.unpack_uint32_be(data, 1), 0)
         self.assertEqual(cy.unpack_uint32_be(data, 2), 0)
         data = np.arange(1, 7, dtype=np.uint8)
+        self.assertEqual(cy.unpack_uint32_be(data), 16909060)
         self.assertEqual(cy.unpack_uint32_be(data, 0), 16909060)
         self.assertEqual(cy.unpack_uint32_be(data, 1), 33752069)
         self.assertEqual(cy.unpack_uint32_be(data, 2), 50595078)

@@ -76,9 +76,9 @@ def join(chunks, dtype=None):
     :returns: Chunks of data joined into a single object.
     :rtype: str or np.ndarray
     '''
-    memviews = tuple(memoryview(c) for c in iter_data(chunks))
-    if memviews:
-        joined = np.concatenate(memviews)
+    chunks = tuple(iter_data(chunks))
+    if chunks:
+        joined = np.concatenate([memoryview(c) for c in chunks])
         if dtype:
             return joined.astype(dtype, copy=False)
         elif is_array(chunks[0]):

@@ -52,27 +52,27 @@ class TestPercentMasked(unittest.TestCase):
 ################################################################################
 # Fill range
 
-class TestFillRangeUnsafe(unittest.TestCase):
-    def test_fill_range_unsafe(self):
+class TestFillRange(unittest.TestCase):
+    def test_fill_range(self):
         data = np.arange(5, dtype=np.float64)
         mask = np.ones(5, dtype=np.uint8)
-        ma.fill_range_unsafe[np.float64_t](data, mask, 5, 0, 0)
+        ma.fill_range[np.float64_t](data, mask, 5, 0, 0)
         expected_data = list(range(5))
         expected_mask = [1] * 5
         self.assertEqual(data.tolist(), expected_data)
         self.assertEqual(mask.tolist(), expected_mask)
-        ma.fill_range_unsafe[np.float64_t](data, mask, 5, 2, 2)
+        ma.fill_range[np.float64_t](data, mask, 5, 2, 2)
         self.assertEqual(data.tolist(), expected_data)
         self.assertEqual(mask.tolist(), expected_mask)
-        ma.fill_range_unsafe[np.float64_t](data, mask, 5, 2, 0)
+        ma.fill_range[np.float64_t](data, mask, 5, 2, 0)
         self.assertEqual(data.tolist(), expected_data)
         self.assertEqual(mask.tolist(), expected_mask)
-        ma.fill_range_unsafe[np.float64_t](data, mask, 5, 0, 1)
+        ma.fill_range[np.float64_t](data, mask, 5, 0, 1)
         expected_data[0] = 5
         expected_mask[0] = 0
         self.assertEqual(data.tolist(), expected_data)
         self.assertEqual(mask.tolist(), expected_mask)
-        ma.fill_range_unsafe[np.float64_t](data, mask, 7, 2, 4)
+        ma.fill_range[np.float64_t](data, mask, 7, 2, 4)
         expected_data[2:4] = [7] * 2
         expected_mask[2:4] = [0] * 2
         self.assertEqual(data.tolist(), expected_data)

@@ -29,9 +29,7 @@ cpdef next_unmasked_value(array, Py_ssize_t idx, Py_ssize_t stop=?)
 cpdef nearest_unmasked_value(array, Py_ssize_t idx, Py_ssize_t start=?, Py_ssize_t stop=?)
 ################################################################################
 # Fill range
-cdef void fill_range_unsafe(cy.np_types[:] data, np.uint8_t[:] mask, cy.np_types value, Py_ssize_t start,
-                            Py_ssize_t stop) nogil
-cdef void fill_range(cy.np_types[:] data, np.uint8_t[:] mask, cy.np_types value, Py_ssize_t start,  # TODO
+cdef void fill_range(cy.np_types[:] data, np.uint8_t[:] mask, cy.np_types value, Py_ssize_t start,
                      Py_ssize_t stop) nogil
 ################################################################################
 # Interpolate range

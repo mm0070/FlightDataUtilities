@@ -10,7 +10,9 @@ cpdef slices_to_array(Py_ssize_t size, slices)
 ################################################################################
 # Type-inspecific array operations
 cpdef align_arrays(slave_array, master_array)
+cpdef concatenate(memviews)
 cpdef bint is_constant(cy.np_types[:] data) nogil
+cpdef bint is_constant_uint8(const np.uint8_t[:] data) nogil
 cpdef Py_ssize_t longest_section(cy.np_types[:] data, cy.np_types value=?) nogil
 cpdef sum_arrays(arrays)
 cpdef swap_bytes(array)

@@ -444,9 +444,9 @@ cdef np.float64_t[:, :] zeros2d_float64(np.npy_intp x, np.npy_intp y):
 # Unpacking data types
 
 @cython.wraparound(False)
-cdef np.uint16_t unpack_uint16_le_unsafe(const np.uint8_t[:] data, Py_ssize_t idx) nogil:
+cdef np.uint16_t unpack_uint16_le_unsafe(const np.uint8_t[:] data, Py_ssize_t idx=0) nogil:
     '''
-    Read a little-endian unsigned short from an unsigned byte array.
+    Unpack a little-endian unsigned short from an unsigned byte array.
 
     Unsafe:
     - idx must be within array bounds and non-negative
@@ -455,9 +455,9 @@ cdef np.uint16_t unpack_uint16_le_unsafe(const np.uint8_t[:] data, Py_ssize_t id
 
 
 @cython.wraparound(False)
-cdef np.uint16_t unpack_uint16_le(const np.uint8_t[:] data, Py_ssize_t idx) nogil:
+cdef np.uint16_t unpack_uint16_le(const np.uint8_t[:] data, Py_ssize_t idx=0) nogil:
     '''
-    Read a little-endian unsigned short from an unsigned byte array.
+    Unpack a little-endian unsigned short from an unsigned byte array.
     '''
     idx = array_wraparound_idx(idx, data.shape[0])
     if not within_bounds(idx, data.shape[0] - sizeof(np.uint16_t) + 1):
@@ -466,9 +466,9 @@ cdef np.uint16_t unpack_uint16_le(const np.uint8_t[:] data, Py_ssize_t idx) nogi
 
 
 @cython.wraparound(False)
-cdef np.uint16_t unpack_uint16_be_unsafe(const np.uint8_t[:] data, Py_ssize_t idx) nogil:
+cdef np.uint16_t unpack_uint16_be_unsafe(const np.uint8_t[:] data, Py_ssize_t idx=0) nogil:
     '''
-    Read a big-endian unsigned short from an unsigned byte array.
+    Unpack a big-endian unsigned short from an unsigned byte array.
 
     Unsafe:
     - idx must be within array bounds and non-negative
@@ -477,9 +477,9 @@ cdef np.uint16_t unpack_uint16_be_unsafe(const np.uint8_t[:] data, Py_ssize_t id
 
 
 @cython.wraparound(False)
-cdef np.uint16_t unpack_uint16_be(const np.uint8_t[:] data, Py_ssize_t idx) nogil:
+cdef np.uint16_t unpack_uint16_be(const np.uint8_t[:] data, Py_ssize_t idx=0) nogil:
     '''
-    Read a little-endian unsigned short from an unsigned byte array.
+    Unpack a little-endian unsigned short from an unsigned byte array.
     '''
     idx = array_wraparound_idx(idx, data.shape[0])
     if not within_bounds(idx, data.shape[0] - sizeof(np.uint16_t) + 1):
@@ -488,9 +488,9 @@ cdef np.uint16_t unpack_uint16_be(const np.uint8_t[:] data, Py_ssize_t idx) nogi
 
 
 @cython.wraparound(False)
-cdef np.uint32_t unpack_uint32_le_unsafe(const np.uint8_t[:] data, Py_ssize_t idx) nogil:
+cdef np.uint32_t unpack_uint32_le_unsafe(const np.uint8_t[:] data, Py_ssize_t idx=0) nogil:
     '''
-    Read a little-endian unsigned integer from an unsigned byte array.
+    Unpack a little-endian unsigned integer from an unsigned byte array.
 
     Unsafe:
     - idx must be within array bounds and non-negative
@@ -499,9 +499,9 @@ cdef np.uint32_t unpack_uint32_le_unsafe(const np.uint8_t[:] data, Py_ssize_t id
 
 
 @cython.wraparound(False)
-cdef np.uint32_t unpack_uint32_le(const np.uint8_t[:] data, Py_ssize_t idx) nogil:
+cdef np.uint32_t unpack_uint32_le(const np.uint8_t[:] data, Py_ssize_t idx=0) nogil:
     '''
-    Read a little-endian unsigned short from an unsigned byte array.
+    Unpack a little-endian unsigned short from an unsigned byte array.
     '''
     idx = array_wraparound_idx(idx, data.shape[0])
     if not within_bounds(idx, data.shape[0] - sizeof(np.uint32_t) + 1):
@@ -510,9 +510,9 @@ cdef np.uint32_t unpack_uint32_le(const np.uint8_t[:] data, Py_ssize_t idx) nogi
 
 
 @cython.wraparound(False)
-cdef np.uint32_t unpack_uint32_be_unsafe(const np.uint8_t[:] data, Py_ssize_t idx) nogil:
+cdef np.uint32_t unpack_uint32_be_unsafe(const np.uint8_t[:] data, Py_ssize_t idx=0) nogil:
     '''
-    Read a big-endian unsigned integer from an unsigned byte array.
+    Unpack a big-endian unsigned integer from an unsigned byte array.
 
     Unsafe:
     - idx must be within array bounds and non-negative
@@ -521,9 +521,9 @@ cdef np.uint32_t unpack_uint32_be_unsafe(const np.uint8_t[:] data, Py_ssize_t id
 
 
 @cython.wraparound(False)
-cdef np.uint32_t unpack_uint32_be(const np.uint8_t[:] data, Py_ssize_t idx) nogil:
+cdef np.uint32_t unpack_uint32_be(const np.uint8_t[:] data, Py_ssize_t idx=0) nogil:
     '''
-    Read a little-endian unsigned short from an unsigned byte array.
+    Unpack a little-endian unsigned short from an unsigned byte array.
     '''
     idx = array_wraparound_idx(idx, data.shape[0])
     if not within_bounds(idx, data.shape[0] - sizeof(np.uint32_t) + 1):
@@ -532,8 +532,60 @@ cdef np.uint32_t unpack_uint32_be(const np.uint8_t[:] data, Py_ssize_t idx) nogi
 
 
 ################################################################################
-# Array helpers
+# Packing data types
 
+@cython.wraparound(False)
+cdef void pack_uint32_be_unsafe(np.uint8_t[:] data, np.uint32_t value, Py_ssize_t idx=0) nogil:
+    '''
+    Pack a big-endian unsigned integer into an unsigned byte array.
+
+    Unsafe:
+    - idx must be within array bounds and non-negative
+    '''
+    cdef np.uint8_t* value_ptr = <np.uint8_t*>&value
+    data[idx] = value_ptr[3]
+    data[idx + 1] = value_ptr[2]
+    data[idx + 2] = value_ptr[1]
+    data[idx + 3] = value_ptr[0]
+
+
+################################################################################
+# Endianness
+
+cdef np.uint16_t byteswap_uint16(np.uint16_t value) nogil:
+    return ((value & 0xFF) << 8) + ((value & 0xFF00) >> 8)
+
+
+cdef np.int16_t byteswap_int16(np.uint16_t value) nogil:
+    return byteswap_uint16(value)
+
+
+cdef np.uint32_t byteswap_uint32(np.uint32_t value) nogil:
+    # XXX: ((value & 0xFF00000) >> 24) converts to Python int, possibly due to C & operator not being applied for values
+    #      greater than int32 maximum?
+    return ((value & 0xFF) << 24) + ((value & 0xFF00) << 8) + ((value & 0xFF0000) >> 8) + ((value >> 24) & 0xFF)
+
+
+cdef np.int32_t byteswap_int32(np.uint32_t value) nogil:
+    return byteswap_uint32(value)
+
+
+cdef np.float32_t byteswap_float32(np.float32_t value) nogil:
+    cdef:
+        np.float32_t swapped
+        char* value_char_ptr = <char*>&value
+        char* swapped_char_ptr = <char*>&swapped
+
+    swapped_char_ptr[0] = value_char_ptr[3]
+    swapped_char_ptr[1] = value_char_ptr[2]
+    swapped_char_ptr[2] = value_char_ptr[1]
+    swapped_char_ptr[3] = value_char_ptr[0]
+
+    return swapped
+
+
+################################################################################
+# Array helpers
 
 cdef astype(data, dtype=np.float64, copy=False):
     '''
@@ -807,3 +859,23 @@ cdef np.uint8_t[:] remove_small_runs(np.uint8_t[:] data, np.float64_t seconds, n
 
     return data
 
+
+################################################################################
+# Concatenate memoryviews
+
+cdef np.uint8_t[:] concatenate_uint8(memviews):
+    '''
+    OPT: np.concatenate is thousands of times slower for memoryviews as it falls back to Python iteration. Time for 10
+         memoryviews is equal to concatenating 10 arrays in numpy, whereas 1000 memoryviews takes twice as long as
+         numpy. The slowest part is casting each memoryview within the iterable.
+    '''
+    cdef:
+        np.uint8_t[:] concatenated = empty_uint8(sum(len(m) for m in memviews))
+        np.uint8_t[:] memview
+        Py_ssize_t idx = 0
+
+    for memview in memviews:
+        concatenated[idx:idx + memview.shape[0]] = memview
+        idx += memview.shape[0]
+
+    return concatenated
