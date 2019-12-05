@@ -4,7 +4,7 @@ import unittest
 
 import numpy as np
 
-from flightdatautilities.array cimport byte_align as ba, cython as cy
+from flightdatautilities.data cimport byte_align as ba, cython as cy
 from flightdatautilities.read import reader
 
 

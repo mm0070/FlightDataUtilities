@@ -3,7 +3,7 @@ import unittest
 from bz2 import decompress
 from io import BytesIO
 
-from flightdatautilities.write import file_writer, split_extension
+from flightdatautilities.data.write import file_writer, split_extension
 
 
 class TestSplitExtension(unittest.TestCase):

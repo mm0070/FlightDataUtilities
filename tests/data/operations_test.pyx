@@ -9,8 +9,8 @@ cimport numpy as np
 from numpy.ma.testutils import assert_array_equal
 
 from flightdatautilities import masked_array_testutils as ma_test
-from flightdatautilities.array cimport cython as cy, operations as op
-from flightdatautilities.array.operations import contract_runs, remove_small_runs, runs_of_ones
+from flightdatautilities.data cimport cython as cy, operations as op
+from flightdatautilities.data.operations import contract_runs, remove_small_runs, runs_of_ones
 from flightdatautilities.read import reader
 
 

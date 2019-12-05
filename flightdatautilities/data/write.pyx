@@ -1,19 +1,17 @@
-import numpy as np
+# cython: language_level=3, boundscheck=False
+from io import BufferedWriter
 import os
 
-from io import BufferedWriter
+import numpy as np
 
 from flightdatautilities.compression import (
     DEFAULT_COMPRESSION,
     FILE_CLASSES,
     iter_compress,
 )
-from flightdatautilities.iterext import iter_data, iter_dtype
-from flightdatautilities.type import (
-    is_array_like,
-    is_data,
-    is_split,
-)
+from flightdatautilities.data cimport types
+from flightdatautilities.data import iterate as it
+
 
 
 # Defines a standard postfix order for file metadata.
@@ -48,16 +46,10 @@ def decompressed_filepath(filepath):
 
 
 def write_data(fileobj, data):
-    if is_array_like(data):
-        data = np.asarray(data)  # convert memoryview if required
-        if isinstance(fileobj, BufferedWriter):
-            data.tofile(fileobj)
-        else:
-            fileobj.write(data.tostring())
-    elif isinstance(data, bytes):
-        fileobj.write(data)
+    if isinstance(data, np.ndarray) and isinstance(fileobj, BufferedWriter):
+        data.tofile(fileobj)
     else:
-        raise NotImplementedError('Cannot write object: %s' % data)
+        fileobj.write(data)
 
 
 def split_extension(metadata, metadata_keys=METADATA_KEYS):
@@ -82,7 +74,7 @@ def memory_writer(data_gen):
     '''
     Write data iterable to list.
     '''
-    return list(iter_data(data_gen))
+    return list(it.iter_data(data_gen))
 
 
 def file_writer(filelike, data_gen, compression=DEFAULT_COMPRESSION):
@@ -92,11 +84,11 @@ def file_writer(filelike, data_gen, compression=DEFAULT_COMPRESSION):
     if isinstance(filelike, str):
         filepath = decompressed_filepath(filelike)
         filepath, fileobj = open_writable_file(filepath, compression=compression)
-        for data in iter_data(data_gen):
+        for data in it.iter_data(data_gen):
             write_data(fileobj, data)
         return filepath
     else:
-        data_gen = iter_dtype(iter_data(data_gen), None)
+        data_gen = it.iter_as_dtype(it.iter_data(data_gen), None)
 
         if compression:
             data_gen = iter_compress(data_gen, compression)
@@ -119,7 +111,7 @@ def file_split_writer(filepath, data_gen, compression=DEFAULT_COMPRESSION):
         for data in data_gen:
             if data is None:
                 continue
-            elif is_split(data):
+            elif types.is_split(data):
                 metadata.update(data)
                 if file:
                     file['fileobj'].close()
@@ -127,7 +119,7 @@ def file_split_writer(filepath, data_gen, compression=DEFAULT_COMPRESSION):
                     file.clear()
                     metadata['split'] += 1
                 continue
-            elif not is_data(data):
+            elif not types.is_data(data):
                 iterate(data)
                 continue
 
@@ -157,14 +149,14 @@ def memory_split_writer(data_gen):
 
     def iterate(data_gen):
         for data in data_gen:
-            if is_split(data):
+            if types.is_split(data):
                 metadata.update(data)
                 if split['chunks']:
                     yield split['extension'], split['chunks']
                     metadata['split'] += 1
                     split['chunks'] = []
                 continue
-            elif is_data(data):
+            elif types.is_data(data):
                 if not split['chunks']:
                     split['extension'] = split_extension(metadata)
                 split['chunks'].append(data)

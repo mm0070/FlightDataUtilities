@@ -8,7 +8,7 @@ from libc.stdio cimport fprintf, stderr
 import numpy as np
 cimport numpy as np
 
-from flightdatautilities.array import Value
+from flightdatautilities.data import Value
 
 np.import_array()  # required for calling PyArray_* functions
 

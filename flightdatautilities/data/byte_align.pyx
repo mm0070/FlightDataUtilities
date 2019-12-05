@@ -12,7 +12,7 @@ cimport numpy as np
 
 from libc.math cimport ceil
 
-from flightdatautilities.array cimport cython as cy
+from flightdatautilities.data cimport cython as cy
 from flightdatautilities.type import as_dtype, is_data
 
 

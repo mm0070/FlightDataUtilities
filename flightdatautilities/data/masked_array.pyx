@@ -8,7 +8,7 @@ from libc.stdio cimport fprintf, stderr, printf
 import numpy as np
 cimport numpy as np
 
-from flightdatautilities.array cimport cython as cy, operations as op
+from flightdatautilities.data cimport cython as cy, operations as op
 
 
 ################################################################################

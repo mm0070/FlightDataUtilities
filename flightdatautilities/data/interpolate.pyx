@@ -3,7 +3,7 @@ import numpy as np
 cimport numpy as np
 import scipy
 
-from flightdatautilities.array cimport cython as cy
+from flightdatautilities.data cimport cython as cy
 
 
 cdef class Interpolator:

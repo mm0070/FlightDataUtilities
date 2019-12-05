@@ -1,8 +1,7 @@
 import unittest
 import numpy as np
 
-from flightdatautilities.array import buffer as bf
-from flightdatautilities import iterext
+from flightdatautilities.data import buffer as bf
 
 
 class TestBuffer(unittest.TestCase):
@@ -129,41 +128,3 @@ class TestDataBufferUint8(unittest.TestCase):
         self.assertEqual(list(buff.read(5)), [22, 30, 31, 32, 33])
         self.assertEqual(buff.size, 2)
 
-
-class TestChunk(unittest.TestCase):
-    def test_chunk_bytes_without_slices(self):
-        data = [b'123', b'45', b'6', b'', b'789']
-        self.assertRaises(ValueError, list, bf.chunk(data, 0))
-        self.assertEqual(list(bf.chunk(data, 1)), [b'1', b'2', b'3', b'4', b'5', b'6', b'7', b'8', b'9'])
-        self.assertEqual(list(bf.chunk(data, 2)), [b'12', b'34', b'56', b'78'])
-        self.assertEqual(list(bf.chunk(data, 2, flush=True)), [b'12', b'34', b'56', b'78', b'9'])
-        self.assertEqual(list(bf.chunk(data, 3)),  [b'123', b'456', b'789'])
-        self.assertEqual(list(bf.chunk(data, 3, flush=True)),  [b'123', b'456', b'789'])
-        self.assertEqual(list(bf.chunk(data, 20)), [])
-        self.assertEqual(list(bf.chunk(data, 20, flush=True)), [b''.join(data)])
-
-    def test_chunk_array_without_slices(self):
-        data = [np.array([1,2,3]), np.array([4,5]), np.array([6]), np.array([]), np.array([7,8,9])]
-        self.assertEqual(iterext.tolist(bf.chunk(data, 3, dtype=np.int64)), [[1,2,3], [4,5,6], [7,8,9]])
-        self.assertEqual(iterext.tolist(bf.chunk(data, 20, dtype=np.int64)), [])
-        self.assertEqual(iterext.tolist(bf.chunk(data, 20, dtype=np.int64, flush=True)), iterext.tolist([np.concatenate(data)]))
-
-    def test_chunk_bytes_with_slices(self):
-        data = [b'123', b'45', b'6', b'', b'789']
-        slices = [slice(0, 2), slice(2, 3)]
-        self.assertRaises(ValueError, list, bf.chunk(data, 0, slices=slices))
-        self.assertEqual(list(bf.chunk(data, 3, slices=slices)), [[b'12', b'3'], [b'45', b'6'], [b'78', b'9']])
-        self.assertEqual(list(bf.chunk(data, 3, slices=slices, flush=True)), [[b'12', b'3'], [b'45', b'6'], [b'78', b'9']])
-        self.assertEqual(list(bf.chunk(data, 8, slices=slices)), [[b'12', b'3']])
-        self.assertEqual(list(bf.chunk(data, 8, slices=slices, flush=True)), [[b'12', b'3'], [b'9', b'']])
-        self.assertEqual(list(bf.chunk(data, 20, slices=slices)), [])
-        self.assertEqual(list(bf.chunk(data, 20, slices=slices, flush=True)), [[b'12', b'3']])
-
-    def test_chunk_array_with_slices(self):
-        data = [np.array([1,2,3]), np.array([4,5]), np.array([6]), np.array([]), np.array([7,8,9])]
-        slices = [slice(0, 2), slice(2, 3)]
-        self.assertEqual(iterext.tolist(bf.chunk(data, 3, dtype=np.int64, slices=slices, flush=True)), [[[1,2], [3]], [[4,5], [6]], [[7,8], [9]]])
-        self.assertEqual(iterext.tolist(bf.chunk(data, 8, dtype=np.int64, slices=slices)), [[[1,2], [3]]])
-        self.assertEqual(iterext.tolist(bf.chunk(data, 8, dtype=np.int64, slices=slices, flush=True)), [[[1,2], [3]], [[9], []]])
-        self.assertEqual(iterext.tolist(bf.chunk(data, 20, dtype=np.int64, slices=slices)), [])
-        self.assertEqual(iterext.tolist(bf.chunk(data, 20, dtype=np.int64, slices=slices, flush=True)), [[[1,2], [3]]])

@@ -1,8 +1,6 @@
 # cython: language_level=3, boundscheck=False
 cimport numpy as np
 
-from flightdatautilities.array cimport cython as cy
-
 ################################################################################
 # Power of 2
 cpdef bint is_power2(number)

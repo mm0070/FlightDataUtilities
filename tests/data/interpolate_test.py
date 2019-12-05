@@ -3,7 +3,7 @@ import unittest
 
 import numpy as np
 
-from flightdatautilities.array import interpolate
+from flightdatautilities.data import interpolate
 
 
 class TestInterpolator(unittest.TestCase):

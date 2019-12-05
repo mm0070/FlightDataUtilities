@@ -9,8 +9,8 @@ cimport numpy as np
 from numpy.ma.testutils import assert_array_equal
 
 from flightdatautilities import masked_array_testutils as ma_test
-from flightdatautilities.array cimport masked_array as ma
-#from flightdatautilities.array.masked_array import repair_mask
+from flightdatautilities.data cimport masked_array as ma
+#from flightdatautilities.data.masked_array import repair_mask
 from flightdatautilities.read import reader
 
 

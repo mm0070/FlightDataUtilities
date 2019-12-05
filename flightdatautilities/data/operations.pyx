@@ -85,8 +85,8 @@ import cython
 import numpy as np
 cimport numpy as np
 
-from flightdatautilities.array import Value
-from flightdatautilities.array cimport cython as cy, scalar as sc
+from flightdatautilities.data import Value
+from flightdatautilities.data cimport cython as cy, scalar as sc
 
 
 ################################################################################

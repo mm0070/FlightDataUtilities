@@ -3,7 +3,7 @@ import unittest
 
 from libc.math cimport M_PI
 
-from flightdatautilities.array cimport scalar as sc
+from flightdatautilities.data cimport scalar as sc
 
 
 ################################################################################

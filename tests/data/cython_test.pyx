@@ -4,7 +4,7 @@ import unittest
 import numpy as np
 cimport numpy as np
 
-from flightdatautilities.array cimport cython as cy
+from flightdatautilities.data cimport cython as cy
 from flightdatautilities.type import is_memoryview
 
 

@@ -1,7 +1,7 @@
 # cython: language_level=3, boundscheck=False
 cimport numpy as np
 
-from flightdatautilities.array cimport cython as cy
+from flightdatautilities.data cimport cython as cy
 
 ################################################################################
 # Slice operations
