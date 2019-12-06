@@ -1,9 +1,13 @@
 import unittest
 
-from flightdatautilities import navaids
+from flightdatautilities.types import AIRAC, TACAN
 
 
-class TACANConversionTest(unittest.TestCase):
+class AIRACTest(unittest.TestCase):
+    pass
+
+
+class TACANTest(unittest.TestCase):
 
     def setUp(self):
         self.data = (
@@ -612,7 +616,7 @@ class TACANConversionTest(unittest.TestCase):
     def test_tacan_to_frequency(self):
         for channel, frequency, navaid in self.data:
             with self.subTest(channel=channel, navaid=navaid):
-                result = navaids.tacan_to_frequency(channel, navaid)
+                result = TACAN(channel).to_frequency(navaid)
                 if frequency is None:
                     self.assertIsNone(result)
                 else:
@@ -623,5 +627,5 @@ class TACANConversionTest(unittest.TestCase):
             if frequency is None:
                 continue
             with self.subTest(frequency=frequency):
-                result = navaids.frequency_to_tacan(frequency)
+                result = TACAN.from_frequency(frequency)
                 self.assertEqual(result, (channel, navaid))
