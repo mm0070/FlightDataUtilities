@@ -1,7 +1,8 @@
 import functools
 import re
-from datetime import date, datetime, timezone
+from datetime import date, datetime, time, timezone
 
+# TODO: Attempt to determine a formula? See https://aviation.stackexchange.com/q/42490
 LOCALIZER_TO_GLIDESLOPE_FREQUENCY_MAPPING = {
     108.10: 334.70,
     108.15: 334.55,
@@ -55,23 +56,27 @@ class AIRAC:
     __slots__ = ['timestamp']
 
     def __init__(self, value):
-        if isinstance(value, str):
+        if isinstance(value, date):
+            timestamp, extra = datetime.combine(value, time.min).replace(tzinfo=timezone.utc).timestamp(), None
+        elif isinstance(value, datetime):
+            timestamp, extra = value.timestamp(), None
+        elif isinstance(value, (int, float)) and not isinstance(value, bool):
+            timestamp, extra = value, None
+        elif isinstance(value, str):
             if not value.isdigit() or len(value) != 4:
-                raise ValueError(f'Invalid AIRAC identifier: {value}')
+                raise ValueError(f'Invalid AIRAC identifier: {value!r}')
             year, ordinal = int(value[:2]), int(value[2:])
             year += 2000 if year < 64 else 1900
             timestamp = datetime(year - 1, 12, 31, tzinfo=timezone.utc).timestamp()
             extra = ordinal * self.DELTA
-        elif isinstance(value, (date, datetime)):
-            timestamp, extra = value.timestamp(), None
         else:
-            timestamp, extra = value, None
+            raise TypeError(f'Invalid AIRAC identifier: {value!r}')
         if timestamp < self.BASE:
             raise ValueError('AIRAC identifiers were not defined before 1964-01-16.')
-        super().__setattr__('timestamp', timestamp + extra - (timestamp - self.BASE) % self.DELTA)
+        super().__setattr__('timestamp', timestamp + (extra or 0) - (timestamp - self.BASE) % self.DELTA)
         if extra is not None:
             if extra <= 0 or self.timestamp > datetime(year, 12, 31, tzinfo=timezone.utc).timestamp():
-                raise ValueError(f'Invalid AIRAC identifier: {value}')
+                raise ValueError(f'Invalid AIRAC identifier: {value!r}')
 
     @property
     def year(self):
@@ -90,7 +95,7 @@ class AIRAC:
         return f'{self.year:02d}{self.ordinal:02d}'
 
     def __setattr__(self, key, value):
-        raise Exception('AIRAC instances are immutable.')
+        raise TypeError('AIRAC objects are immutable.')
 
     def __repr__(self):
         return f'{self.__class__.__qualname__}({self.identifier!r})'
@@ -116,12 +121,14 @@ class TACAN:
     __slots__ = ['channel']
 
     def __init__(self, value):
-        if not isinstance(value, str) or not self.PATTERN.match(value):
-            raise ValueError(f'Invalid TACAN channel: {value}')
+        if not isinstance(value, str):
+            raise TypeError(f'Invalid TACAN channel: {value!r}')
+        elif not self.PATTERN.match(value):
+            raise ValueError(f'Invalid TACAN channel: {value!r}')
         super().__setattr__('channel', value)
 
     def __setattr__(self, key, value):
-        raise Exception('TACAN instances are immutable.')
+        raise TypeError('TACAN objects are immutable.')
 
     def __repr__(self):
         return f'{self.__class__.__qualname__}({self.channel!r})'
