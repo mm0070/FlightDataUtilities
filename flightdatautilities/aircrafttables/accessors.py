@@ -124,7 +124,7 @@ def get_lever_detents():
     '''
     detents = set(map(str, get_flap_detents()))  # initialise with flap detents
     for x in mi.LEVER_MODEL_MAP, mi.LEVER_SERIES_MAP, mi.LEVER_FAMILY_MAP:
-        detents.update(itertools.chain.from_iterable(k[1] for v in x.values() for k in v.keys()))
+        detents.update(itertools.chain(k[1] for v in x.values() for k in v.keys()))
     detents.update(constants.LEVER_STATES.values())  # include conf lever states
     return natsorted(detents)
 
