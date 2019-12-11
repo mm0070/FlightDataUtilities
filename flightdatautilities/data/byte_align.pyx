@@ -12,8 +12,7 @@ cimport numpy as np
 
 from libc.math cimport ceil
 
-from flightdatautilities.data cimport cython as cy
-from flightdatautilities.type import as_dtype, is_data
+from flightdatautilities.data cimport cython as cy, types
 
 
 WPS = (64, 128, 256, 512, 1024, 2048)
@@ -22,7 +21,7 @@ SYNC_PATTERNS = {
     '717': (0x247, 0x5B8, 0xA47, 0xDB8),
     'Custom 1': (0x0E0, 0x0E4, 0x0E8, 0x0EC),
 }
-MODES = SYNC_PATTERNS.keys()
+MODES = tuple(SYNC_PATTERNS.keys())
 STANDARD_MODES = ('573', '717')
 
 
@@ -179,13 +178,13 @@ cdef class ByteAligner:
         :type func: callable
         :yields: value returned by func for each frame
         '''
-        if is_data(data_gen):
+        if types.is_data(data_gen):
             data_gen = (data_gen,)
 
         cdef Py_ssize_t idx, next_frame_idx, remainder_idx
 
         for data in data_gen:
-            self._buff = np.concatenate((self._buff, as_dtype(data, np.uint8)))
+            self._buff = np.concatenate((self._buff, types.as_dtype(data, np.uint8)))
             idx = 0
             while True:
                 next_frame_idx = self._next_frame_idx(idx)
@@ -226,7 +225,7 @@ cdef class ByteAligner:
         elif stop is not None and stop <= 0:
             raise ValueError('negative or zero stop index not supported')
 
-        if is_data(data_gen):
+        if types.is_data(data_gen):
             data_gen = (data_gen,)
 
         cdef:
@@ -235,7 +234,7 @@ cdef class ByteAligner:
                 frame_stop = cy.NONE_IDX if stop is None else <Py_ssize_t>ceil(stop / 4.), next_frame_idx, remainder_idx
 
         for data in data_gen:
-            self._buff = np.concatenate((self._buff, as_dtype(data, np.uint8)))
+            self._buff = np.concatenate((self._buff, types.as_dtype(data, np.uint8)))
 
             while True:
                 next_frame_idx = self._next_frame_idx(idx)
