@@ -882,7 +882,7 @@ cdef np.uint8_t[:] concatenate_uint8(memviews):
     '''
     cdef:
         np.uint8_t[:] concatenated = empty_uint8(sum(len(m) for m in memviews))
-        np.uint8_t[:] memview
+        const np.uint8_t[:] memview
         Py_ssize_t idx = 0
 
     for memview in memviews:
