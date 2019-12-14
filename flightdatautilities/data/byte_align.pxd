@@ -1,11 +1,6 @@
 # cython: language_level=3, boundscheck=False
 cimport numpy as np
 
-cdef:
-    tuple WPS
-    dict SYNC_PATTERNS
-    tuple MODES
-    tuple STANDARD_MODES
 
 cdef np.uint16_t[:] sync_words_from_modes(modes)
 
