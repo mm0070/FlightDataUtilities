@@ -8,55 +8,79 @@ cimport numpy as np
 from flightdatautilities.data cimport cython as cy
 
 
-#cdef class WriteBufferUint16:
-    #def __init__(self, Py_ssize_t size):
-        #self._buffer = cy.empty_uint16(size)
+cdef class WriteBufferUint8:
+    def __cinit__(self, Py_ssize_t size):
+        if size <= 0:
+            raise ValueError('buffer size must be positive')
+        self.buffer = cy.empty_uint8(size)
+        self.size = 0
 
-    #cpdef bint write(self, np.uint16_t[:] data):
-        #cdef Py_ssize_t idx
-        #for idx in range(data.shape[0]):
-            #self._buffer[self.size + idx] = data[idx]
-        #self.size += data.shape[0]
-        #return self.size == self._buffer.shape[0]
+    cdef inline Py_ssize_t remaining_size(self) nogil:
+        return self.buffer.shape[0] - self.size
 
-    #cpdef np.uint16_t[:] read(self):
-        #cdef np.uint16_t[:] data = self._buffer[size]
-        #self.size = 0
-        #return data
+    cdef void write_uint8(self, const np.uint8_t[:] data) except *:
+        if data.shape[0] > self.remaining_size():
+            raise ValueError('data too large for remaining buffer')
+        self.buffer[self.size:self.size + data.shape[0]] = data
+        self.size += data.shape[0]
 
+    cdef np.uint8_t[:] writable_uint8(self, Py_ssize_t size):
+        if size > self.remaining_size():
+            raise ValueError('writable size too large for remaining buffer')
+        elif size <= 0:
+            raise ValueError('writable size must be positive')
+        self.size += size
+        return self.buffer[self.size - size:self.size]
 
-#cdef class OutputBufferUint16:
-    #'''
-
-    #'''
-
-    #def __init__(self):
-        #self._chunks = []
-
-    #cdef add(self, np.uint16_t[:] data):
-        #if not data.shape[0]:
-            #return
-        #self.size += data.shape[0]
-        #self._chunks.append(data)
-
-    #cdef flush(self):
-        #if self.size:
-            #data = np.concatenate(self._chunks)
-            #self._chunks = []
-            #self.size = 0
-            #return data
+    cdef np.uint8_t[:] flush(self) nogil:
+        cdef np.uint8_t[:] flushed_data = self.buffer[:self.size]
+        self.size = 0
+        return flushed_data
 
 
-#def output_buffer_uint16(data_gen, Py_ssize_t size=16 * 1024 * 1024):
-    #cdef:
-        #OutputBufferUint16 buff = OutputBufferUint16()
-    #for data in data_gen:
-        #buff.add(data)
-        #if buff.size >= size:
-            #yield buff.flush()
+cdef class WriteBufferUint16:
+    def __cinit__(self, Py_ssize_t size):
+        if size <= 0:
+            raise ValueError('buffer size must be positive')
+        self.buffer = cy.empty_uint16(size)
+        self.size = 0
 
-    #if buff.size:
-        #yield buff.flush()
+    cdef inline Py_ssize_t remaining_size(self) nogil:
+        return self.buffer.shape[0] - self.size
+
+    cdef void write_uint16(self, const np.uint16_t[:] data) except *:
+        if self.size + data.shape[0] > self.buffer.shape[0]:
+            raise ValueError('data too large for remaining buffer')
+        self.buffer[self.size:self.size + data.shape[0]] = data
+        self.size += data.shape[0]
+
+    @cython.cdivision(True)
+    @cython.wraparound(False)
+    cdef void write_uint8(self, const np.uint8_t[:] data, bint byteswap=False) except *:
+        if data.shape[0] % 2:
+            raise ValueError('data size must be a multiple of 2')
+        cdef Py_ssize_t short_size = data.shape[0] // 2
+        if self.size + short_size > self.buffer.shape[0]:
+            raise ValueError('data too large for remaining buffer')
+        cdef Py_ssize_t buffer_offset, data_idx
+        for buffer_offset in range(short_size):
+            data_idx = buffer_offset * 2
+            self.buffer[self.size + buffer_offset] = (data[data_idx] << 8 | data[data_idx + 1]) if byteswap else \
+                (data[data_idx + 1] << 8 | data[data_idx])
+        self.size += short_size
+
+    cdef np.uint16_t[:] writable_uint16(self, Py_ssize_t size):
+        if size > self.remaining_size():
+            raise ValueError('writable size too large for remaining buffer')
+        elif size <= 0:
+            raise ValueError('writable size must be positive')
+        self.size += size
+        return self.buffer[self.size - size:self.size]
+
+    cdef np.uint16_t[:] flush(self):
+        cdef np.uint16_t[:] flushed_data = self.buffer[:self.size]
+        self.size = 0
+        return flushed_data
 
 
 cdef class DataBufferUint8:
@@ -66,7 +90,7 @@ cdef class DataBufferUint8:
     OPT: By storing the head memoryview as a pointer within the extension class's struct, data can be read, peeked and
          truncated from the buffer without Python overhead. ~8x faster than non-pointer for reading 16 bytes at a time.
     '''
-    def __init__(self):
+    def __cinit__(self):
         self._chunks = deque()
 
     @cython.initializedcheck(False)
