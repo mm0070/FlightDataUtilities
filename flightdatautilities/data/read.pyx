@@ -10,11 +10,12 @@ from flightdatautilities.data cimport types
 from flightdatautilities.data import iterate as it
 
 
-cdef Py_ssize_t READ_SIZE = 16 * 1024 * 1024
+cdef Py_ssize_t READ_SIZE_C = 16 * 1024 * 1024
+READ_SIZE = READ_SIZE_C
 
 
 cdef class base_reader:
-    def __init__(self, dtype=False, Py_ssize_t count=READ_SIZE, Py_ssize_t start=0, Py_ssize_t stop=0, bint byte=True,
+    def __init__(self, dtype=False, Py_ssize_t count=-1, Py_ssize_t start=0, Py_ssize_t stop=0, bint byte=True,
                  callback=None, **kwargs):
         if start < 0:
             raise ValueError('start must be 0 (default) or positive')
@@ -22,11 +23,14 @@ cdef class base_reader:
             raise ValueError('stop must be 0 (default - continue until the end) or positive')
         if stop and stop <= start:
             raise ValueError('stop must be greater than start')
-        if count <= 0:
-            raise ValueError('count must be positive')
 
         self.dtype = dtype and np.dtype(dtype)
         self._itemsize = self.dtype.itemsize if dtype else 1
+
+        if count == -1:
+            count = READ_SIZE_C // self._itemsize
+        elif count <= 0:
+            raise ValueError('count must be positive')
 
         if self._itemsize != 1 and not byte:
             start *= self._itemsize
