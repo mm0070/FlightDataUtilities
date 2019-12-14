@@ -587,6 +587,17 @@ cdef np.float32_t byteswap_float32(np.float32_t value) nogil:
 ################################################################################
 # Array helpers
 
+
+cdef bytes array_to_bytes(const np.uint8_t[:] array):
+    '''
+    Convert a C char array of a specific length (which Cython incorrectly interprets as null-terminated) to bytes.
+
+    When converting char arrays to bytes (e.g. within structs), char arrays are interpreted as null-terminated strings
+    where the size of the array is ignored. Casting to a memoryview applies array length.
+    '''
+    return bytes(array)
+
+
 cdef astype(data, dtype=np.float64, copy=False):
     '''
     Casts array or memoryview as dtype. Default dtype is np.float64.

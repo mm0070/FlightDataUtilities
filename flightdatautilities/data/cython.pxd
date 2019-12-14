@@ -97,6 +97,7 @@ cdef np.int32_t byteswap_int32(np.uint32_t value) nogil
 cdef np.float32_t byteswap_float32(np.float32_t value) nogil
 ################################################################################
 # Array helpers
+cdef bytes array_to_bytes(const np.uint8_t[:] array)
 cdef astype(data, dtype=?, copy=?)
 cdef bint lengths_match(Py_ssize_t x, Py_ssize_t y) nogil
 cdef bint within_bounds(Py_ssize_t idx, Py_ssize_t length) nogil
