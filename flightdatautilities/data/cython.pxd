@@ -97,7 +97,6 @@ cdef np.int32_t byteswap_int32(np.uint32_t value) nogil
 cdef np.float32_t byteswap_float32(np.float32_t value) nogil
 ################################################################################
 # Array helpers
-cdef bytes array_to_bytes(const np.uint8_t[:] array)
 cdef astype(data, dtype=?, copy=?)
 cdef bint lengths_match(Py_ssize_t x, Py_ssize_t y) nogil
 cdef bint within_bounds(Py_ssize_t idx, Py_ssize_t length) nogil
@@ -115,9 +114,11 @@ cdef Py_ssize_t nearest_idx_unsafe(np.uint8_t[:] array, Py_ssize_t idx, bint mat
 cdef Py_ssize_t nearest_idx(np.uint8_t[:] array, Py_ssize_t idx, bint match=?, Py_ssize_t start=?, Py_ssize_t stop=?) nogil
 cdef Py_ssize_t subarray_idx_uint8(const np.uint8_t[:] array, const np.uint8_t[:] subarray, Py_ssize_t start=?) nogil
 cdef Py_ssize_t value_idx(np_types[:] array, np_types value) nogil
+cdef Py_ssize_t value_idx_uint8(const np.uint8_t[:] array, np.uint8_t value) nogil
 ################################################################################
 # Array operations
 cdef np_types arrays_continuous_value(np_types[:] data1, np_types[:] data2, Py_ssize_t idx) nogil
+cdef np.uint16_t[:] byteswap_array(const np.uint8_t[:] data)
 cdef np.uint8_t[:] contract_runs(np.uint8_t[:] data, Py_ssize_t size, bint match=?) nogil
 cdef np.uint8_t[:] remove_small_runs(np.uint8_t[:] data, np.float64_t seconds, np.float64_t hz=?, bint match=?) nogil
 ################################################################################

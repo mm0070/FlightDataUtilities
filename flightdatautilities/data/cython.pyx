@@ -12,13 +12,14 @@ from flightdatautilities.data import Value
 
 np.import_array()  # required for calling PyArray_* functions
 
+
 '''
-NONE_IDX is a C integer constant used to represent None/no index. This is used instead of Python None where performance is
-critical or the Global Interpreter Lock is turned off. While -1 would be the traditional value representing no index in C, since
-negative indexing is Pythonic the minimum value of Py_ssize_t (-9223372036854775808) is used as this is not a feasible index for
-any practical purpose (instantiating a char array of this size would require 8 exabytes of memory). The operating system
-independent C type corresponding to Py_ssize_t is long long as this is consistently 8 bytes (Py_ssize_t size) on both Windows and
-Unix.
+NONE_IDX is a C integer constant used to represent None/no index. This is used instead of Python None where performance
+is critical or the Global Interpreter Lock is turned off. While -1 would be the traditional value representing no index
+in C, since negative indexing is Pythonic the minimum value of Py_ssize_t (-9223372036854775808) is used as this is not
+a feasible index for any practical purpose (instantiating a char array of this size would require 8 exabytes of memory).
+The operating system independent C type corresponding to Py_ssize_t is long long as this is consistently 8 bytes
+(Py_ssize_t size) on both Windows and Unix.
 '''
 NONE_IDX = LLONG_MIN
 
@@ -444,7 +445,7 @@ cdef np.float64_t[:, :] zeros2d_float64(np.npy_intp x, np.npy_intp y):
 # Unpacking data types
 
 @cython.wraparound(False)
-cdef np.uint16_t unpack_uint16_le_unsafe(const np.uint8_t[:] data, Py_ssize_t idx=0) nogil:
+cdef inline np.uint16_t unpack_uint16_le_unsafe(const np.uint8_t[:] data, Py_ssize_t idx=0) nogil:
     '''
     Unpack a little-endian unsigned short from an unsigned byte array.
 
@@ -455,7 +456,7 @@ cdef np.uint16_t unpack_uint16_le_unsafe(const np.uint8_t[:] data, Py_ssize_t id
 
 
 @cython.wraparound(False)
-cdef np.uint16_t unpack_uint16_le(const np.uint8_t[:] data, Py_ssize_t idx=0) nogil:
+cdef inline np.uint16_t unpack_uint16_le(const np.uint8_t[:] data, Py_ssize_t idx=0) nogil:
     '''
     Unpack a little-endian unsigned short from an unsigned byte array.
     '''
@@ -466,7 +467,7 @@ cdef np.uint16_t unpack_uint16_le(const np.uint8_t[:] data, Py_ssize_t idx=0) no
 
 
 @cython.wraparound(False)
-cdef np.uint16_t unpack_uint16_be_unsafe(const np.uint8_t[:] data, Py_ssize_t idx=0) nogil:
+cdef inline np.uint16_t unpack_uint16_be_unsafe(const np.uint8_t[:] data, Py_ssize_t idx=0) nogil:
     '''
     Unpack a big-endian unsigned short from an unsigned byte array.
 
@@ -477,7 +478,7 @@ cdef np.uint16_t unpack_uint16_be_unsafe(const np.uint8_t[:] data, Py_ssize_t id
 
 
 @cython.wraparound(False)
-cdef np.uint16_t unpack_uint16_be(const np.uint8_t[:] data, Py_ssize_t idx=0) nogil:
+cdef inline np.uint16_t unpack_uint16_be(const np.uint8_t[:] data, Py_ssize_t idx=0) nogil:
     '''
     Unpack a little-endian unsigned short from an unsigned byte array.
     '''
@@ -488,7 +489,7 @@ cdef np.uint16_t unpack_uint16_be(const np.uint8_t[:] data, Py_ssize_t idx=0) no
 
 
 @cython.wraparound(False)
-cdef np.uint32_t unpack_uint32_le_unsafe(const np.uint8_t[:] data, Py_ssize_t idx=0) nogil:
+cdef inline np.uint32_t unpack_uint32_le_unsafe(const np.uint8_t[:] data, Py_ssize_t idx=0) nogil:
     '''
     Unpack a little-endian unsigned integer from an unsigned byte array.
 
@@ -499,7 +500,7 @@ cdef np.uint32_t unpack_uint32_le_unsafe(const np.uint8_t[:] data, Py_ssize_t id
 
 
 @cython.wraparound(False)
-cdef np.uint32_t unpack_uint32_le(const np.uint8_t[:] data, Py_ssize_t idx=0) nogil:
+cdef inline np.uint32_t unpack_uint32_le(const np.uint8_t[:] data, Py_ssize_t idx=0) nogil:
     '''
     Unpack a little-endian unsigned short from an unsigned byte array.
     '''
@@ -510,7 +511,7 @@ cdef np.uint32_t unpack_uint32_le(const np.uint8_t[:] data, Py_ssize_t idx=0) no
 
 
 @cython.wraparound(False)
-cdef np.uint32_t unpack_uint32_be_unsafe(const np.uint8_t[:] data, Py_ssize_t idx=0) nogil:
+cdef inline np.uint32_t unpack_uint32_be_unsafe(const np.uint8_t[:] data, Py_ssize_t idx=0) nogil:
     '''
     Unpack a big-endian unsigned integer from an unsigned byte array.
 
@@ -521,7 +522,7 @@ cdef np.uint32_t unpack_uint32_be_unsafe(const np.uint8_t[:] data, Py_ssize_t id
 
 
 @cython.wraparound(False)
-cdef np.uint32_t unpack_uint32_be(const np.uint8_t[:] data, Py_ssize_t idx=0) nogil:
+cdef inline np.uint32_t unpack_uint32_be(const np.uint8_t[:] data, Py_ssize_t idx=0) nogil:
     '''
     Unpack a little-endian unsigned short from an unsigned byte array.
     '''
@@ -551,6 +552,7 @@ cdef void pack_uint32_be_unsafe(np.uint8_t[:] data, np.uint32_t value, Py_ssize_
 
 ################################################################################
 # Endianness
+
 
 cdef np.uint16_t byteswap_uint16(np.uint16_t value) nogil:
     return ((value & 0xFF) << 8) + ((value & 0xFF00) >> 8)
@@ -586,16 +588,6 @@ cdef np.float32_t byteswap_float32(np.float32_t value) nogil:
 
 ################################################################################
 # Array helpers
-
-
-cdef bytes array_to_bytes(const np.uint8_t[:] array):
-    '''
-    Convert a C char array of a specific length (which Cython incorrectly interprets as null-terminated) to bytes.
-
-    When converting char arrays to bytes (e.g. within structs), char arrays are interpreted as null-terminated strings
-    where the size of the array is ignored. Casting to a memoryview applies array length.
-    '''
-    return bytes(array)
 
 
 cdef astype(data, dtype=np.float64, copy=False):
@@ -758,18 +750,40 @@ cdef Py_ssize_t subarray_idx_uint8(const np.uint8_t[:] array, const np.uint8_t[:
     start = array_wraparound_idx(start, array.shape[0])
 
     for array_idx in range(array_wraparound_idx(start, array.shape[0]), array.shape[0] - subarray.shape[0] + 1):
-        for subarray_idx in range(subarray.shape[0]):
-            if array[array_idx + subarray_idx] != subarray[subarray_idx]:
-                break
-        else:
-            return array_idx
+        if array[array_idx] == subarray[0]:  # OPT: only loop if first element matches
+            for subarray_idx in range(1, subarray.shape[0]):
+                if array[array_idx + subarray_idx] != subarray[subarray_idx]:
+                    break
+            else:
+                return array_idx
     return NONE_IDX
 
 
 @cython.wraparound(False)
 cdef Py_ssize_t value_idx(np_types[:] array, np_types value) nogil:
     '''
-    Return the first array index which matches value.
+    Return the first memoryview index which matches value.
+
+    Can be much faster than numpy operations which check the entire array.
+
+    >>> x = np.zeros(1000000000, dtype=np.uint16)
+    >>> x[100000] = 1
+    >>> %timeit np.any(x == 1)
+    1 loops, best of 3: 419 ms per loop
+    >>> %timeit array_index_uint16(1, x) != -1
+    10000 loops, best of 3: 64.2 µs per loop
+    '''
+    cdef Py_ssize_t idx
+    for idx in range(array.shape[0]):
+        if value == array[idx]:
+            return idx
+    return NONE_IDX
+
+
+@cython.wraparound(False)
+cdef Py_ssize_t value_idx_uint8(const np.uint8_t[:] array, np.uint8_t value) nogil:
+    '''
+    Return the first bytes-compatible uint8 memoryview index which matches value.
 
     Can be much faster than numpy operations which check the entire array.
 
@@ -801,6 +815,21 @@ cdef np_types arrays_continuous_value(np_types[:] data1, np_types[:] data2, Py_s
     :returns: value sampled from idx within the concatenated array
     '''
     return data2[idx - data1.shape[0]] if idx >= data1.shape[0] else data1[idx]
+
+
+@cython.cdivision(True)
+@cython.wraparound(False)
+cdef np.uint16_t[:] byteswap_array(const np.uint8_t[:] data):
+    cdef:
+        np.uint16_t[:] swapped = empty_uint16(data.shape[0] // 2)
+        Py_ssize_t data_idx, swapped_idx
+
+    for swapped_idx in range(swapped.shape[0]):
+        data_idx = swapped_idx * 2
+        swapped[swapped_idx] = (data[data_idx] << 8) | data[data_idx + 1]
+
+    return swapped
+
 
 
 cdef np.uint8_t[:] contract_runs(np.uint8_t[:] data, Py_ssize_t size, bint match=True) nogil:
