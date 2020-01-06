@@ -147,7 +147,7 @@ def iter_data_start_idx(data_iter, Py_ssize_t start):
         if next_pos == start:
             break
         elif next_pos > start:
-            yield from chunk(itertools.chain((data[start - pos:],), data_iter), data_size, flush=True)
+            yield from chunk(prepend(data[start - pos:], data_iter), data_size, flush=True)
             return
         pos = next_pos
 
@@ -233,6 +233,11 @@ def iter_data_stop_idx(data_iter, Py_ssize_t stop):
 
 def iter_view_dtype(data_iter, dtype):
     return (types.view_dtype(data, dtype) for data in data_iter)
+
+
+def prepend(data, data_iter):
+    yield data
+    yield from data_iter
 
 
 #def tolist(array):
