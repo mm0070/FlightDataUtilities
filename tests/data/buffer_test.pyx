@@ -1,13 +1,15 @@
+# cython: language_level=3, boundscheck=False
 import unittest
+
 import numpy as np
 
-from flightdatautilities.data import buffer as bf
+from flightdatautilities.data cimport buffer as bf
 
 
 class TestBuffer(unittest.TestCase):
 
     def test_buffer_bytes(self):
-        buff = bf.Buffer()
+        cdef bf.Buffer buff = bf.Buffer()
         self.assertEqual(buff.size, 0)
         self.assertEqual(buff.read(10), b'')
         buff.truncate(10)
@@ -52,7 +54,7 @@ class TestBuffer(unittest.TestCase):
         self.assertEqual(buff.size, 2)
 
     def test_buffer_array(self):
-        buff = bf.Buffer(dtype=np.uint8)
+        cdef bf.Buffer buff = bf.Buffer(dtype=np.uint8)
         self.assertEqual(buff.size, 0)
         data = buff.read(10)
         self.assertEqual(data.dtype, np.uint8)
@@ -92,7 +94,7 @@ class TestBuffer(unittest.TestCase):
 
 class TestDataBufferUint8(unittest.TestCase):
     def test_data_buffer_uint8(self):
-        buff = bf.DataBufferUint8()
+        cdef bf.DataBufferUint8 buff = bf.DataBufferUint8()
         self.assertEqual(buff.size, 0)
         data = buff.read(10)
         self.assertEqual(len(data), 0)
@@ -129,14 +131,78 @@ class TestDataBufferUint8(unittest.TestCase):
         self.assertEqual(buff.size, 2)
 
 
+
+class TestWriteBufferUint8(unittest.TestCase):
+    def test_init(self):
+        self.assertRaises(ValueError, bf.WriteBufferUint8, -1)
+        self.assertRaises(ValueError, bf.WriteBufferUint8, 0)
+        cdef bf.WriteBufferUint8 write_buffer = bf.WriteBufferUint8(8)
+        self.assertEqual(write_buffer.size, 0)
+
+    def test_write(self):
+        cdef bf.WriteBufferUint8 write_buffer = bf.WriteBufferUint8(16)
+        write_buffer.write(b'a')
+        self.assertEqual(write_buffer.size, 1)
+        self.assertEqual(write_buffer.buffer[0], ord(b'a'))
+        data = np.arange(15, dtype=np.uint8)
+        write_buffer.write(data)
+        self.assertEqual(write_buffer.size, 16)
+        self.assertEqual(list(write_buffer.buffer), [ord(b'a')] + data.tolist())
+        write_buffer = bf.WriteBufferUint8(16)
+        data1 = np.array([125.85], dtype=np.float64)
+        write_buffer.write(data1)
+        self.assertEqual(write_buffer.size, 8)
+        self.assertEqual(np.frombuffer(write_buffer.buffer[:8]).tolist(), data1.tolist())
+        data2 = np.array([95386.251], dtype=np.float64)
+        write_buffer.write(data2)
+        self.assertEqual(write_buffer.size, 16)
+        self.assertEqual(np.frombuffer(write_buffer.buffer).tolist(), data1.tolist() + data2.tolist())
+
+    def test_write_beyond_size_raises(self):
+        cdef bf.WriteBufferUint8 write_buffer = bf.WriteBufferUint8(14)
+        try:
+            write_buffer.write(np.zeros(2, dtype=np.float64))
+        except ValueError:
+            pass
+        else:
+            self.assertTrue(False, msg='write beyond buffer size does not raise ValueError')
+
+    def test_write_uint8(self):
+        cdef bf.WriteBufferUint8 write_buffer = bf.WriteBufferUint8(8)
+        write_buffer.write_uint8(np.zeros(0, dtype=np.uint8))
+        self.assertEqual(write_buffer.size, 0)
+        data1 = b'\x24\x36\x48\x5A'
+        write_buffer.write_uint8(data1)
+        self.assertEqual(write_buffer.size, 4)
+        self.assertEqual(bytes(write_buffer.buffer[:4]), data1)
+        data2 = np.arange(16, 20, dtype=np.uint8)
+        write_buffer.write_uint8(data2)
+        self.assertEqual(write_buffer.size, 8)
+        self.assertEqual(bytes(write_buffer.buffer), data1 + bytes(data2))
+
+    def test_write_uint8_beyond_size_raises(self):
+        cdef bf.WriteBufferUint8 write_buffer = bf.WriteBufferUint8(14)
+        try:
+            write_buffer.write_uint8(np.zeros(16, dtype=np.uint8))
+        except ValueError:
+            pass
+        else:
+            self.assertTrue(False, msg='write_uint8 beyond buffer size does not raise ValueError')
+
+
 class TestWriteBufferUint16(unittest.TestCase):
-    def test_write_buffer_uint16(self):
+    def test_init(self):
         self.assertRaises(ValueError, bf.WriteBufferUint16, -1)
         self.assertRaises(ValueError, bf.WriteBufferUint16, 0)
-        write_buffer = bf.WriteBufferUint16(8)
+        cdef bf.WriteBufferUint16 write_buffer = bf.WriteBufferUint16(8)
         self.assertEqual(write_buffer.size, 0)
-        self.assertEqual(list(write_buffer.flush()), [])
-        self.assertRaises(ValueError, write_buffer.write_uint8, np.zeros(1, dtype=np.uint8))
+        self.assertEqual(len(write_buffer.flush()), 0)
+        try:
+            write_buffer.write_uint8(np.zeros(1, dtype=np.uint8))
+        except ValueError:
+            pass
+        else:
+            self.assertTrue(False, msg='write_uint8 beyond buffer size does not raise ValueError')
         write_buffer.write_uint8(np.zeros(0, dtype=np.uint8))
         self.assertEqual(write_buffer.size, 0)
         self.assertEqual(list(write_buffer.flush()), [])
