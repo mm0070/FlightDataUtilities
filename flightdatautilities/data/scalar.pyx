@@ -12,6 +12,7 @@ from numpy.math cimport PI
 ################################################################################
 # Power of 2
 
+
 cpdef bint is_power2(number):
     '''
     Whether or not a number is a power of two. Forces floats to int.
@@ -41,6 +42,7 @@ cpdef bint is_power2_fraction(number):
 ################################################################################
 # Random
 
+
 cdef int randint(int min, int max) nogil:
     '''
     Cython equivalent of random.randint.
@@ -53,12 +55,14 @@ cdef int randint(int min, int max) nogil:
 ################################################################################
 # Bits
 
+
 cdef np.uint64_t saturated_value(np.uint64_t bit_length) nogil:
     return (2 ** bit_length) - 1
 
 
 ################################################################################
 # Unit conversion
+
 
 cdef np.float64_t degrees_to_radians(np.float64_t degrees) nogil:
     return degrees * (PI / 180.0)

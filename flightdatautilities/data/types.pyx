@@ -1,6 +1,7 @@
 # cython: language_level=3, boundscheck=False
 from collections import Sequence
 
+cimport numpy as np
 import numpy as np
 
 
@@ -8,6 +9,23 @@ import numpy as np
 ARRAY_TYPES = {'MaskedArray', 'ndarray'}
 MEMORYVIEW_TYPES = {'memoryview', '_memoryviewslice'}
 ARRAY_LIKE_TYPES = ARRAY_TYPES | MEMORYVIEW_TYPES
+
+
+cdef as_array(obj, dtype):
+    if isinstance(obj, np.ndarray):
+        return obj if obj.dtype == dtype else obj.view(dtype)
+    else:
+        return np.frombuffer(obj, dtype)
+
+
+cdef bytes as_bytes(const np.uint8_t[:] array):
+    '''
+    Convert a C char array of a specific length (which Cython incorrectly interprets as null-terminated) to bytes.
+
+    When converting char arrays to bytes (e.g. within structs), char arrays are interpreted as null-terminated strings
+    where the size of the array is ignored. Casting to a memoryview applies array length.
+    '''
+    return bytes(array)
 
 
 cpdef as_dtype(data, dtype):
@@ -61,6 +79,10 @@ cpdef byte_size(data):
     return data.nbytes if is_array_like(data) else len(data)
 
 
+cpdef bint dtype_uint8(dtype):
+    return dtype in {None, np.uint8}
+
+
 def _get_dtype_none(obj):
     return None
 
@@ -96,11 +118,14 @@ cpdef get_dtype(obj):
     return GET_DTYPE_FUNCTIONS[obj.__class__.__name__](obj)
 
 
-cpdef get_itemsize(data):
+cpdef Py_ssize_t get_itemsize(data):
     '''
     Array and memoryview types have the itemsize attribute while the itemsize for bytes and bytearrays is always 1.
     '''
-    return getattr(data, 'itemsize' , 1)
+    try:
+        return int(getattr(data, 'itemsize' , 1))
+    except TypeError:
+        return np.dtype(data).itemsize  # numpy type object, e.g. np.int64
 
 
 cpdef bint is_array(obj):
@@ -219,5 +244,10 @@ cdef dict VIEW_DTYPE_FUNCTIONS = {
 
 
 cpdef view_dtype(data, dtype):
-    return bytes(data) if dtype is None else VIEW_DTYPE_FUNCTIONS[data.__class__.__name__](data, np.dtype(dtype))
+    if dtype is False:
+        return data
+    elif dtype is None:
+        return bytes(data)
+    else:
+        return VIEW_DTYPE_FUNCTIONS[data.__class__.__name__](data, np.dtype(dtype))
 

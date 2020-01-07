@@ -8,15 +8,12 @@ from flightdatautilities.data import types
 class TestAsDtype(unittest.TestCase):
     def test_as_dtype(self):
         data = b'abc'
-        self.assertEqual(types.as_dtype(data), data)
         self.assertEqual(types.as_dtype(data, None), data)
         dtype = np.uint8
-        self.assertEqual(types.as_dtype(data, dtype) == bytes(data))
+        self.assertTrue((types.as_dtype(data, dtype) == np.frombuffer(data, dtype=np.uint8)).all())
         data = np.arange(3)
-        self.assertEqual(types.as_dtype(data), data.tostring())
         self.assertEqual(types.as_dtype(data, None), data.tostring())
-        self.assertTrue(np.all(types.as_dtype(data, dtype) == data.view(dtype)))
-        self.assertTrue(np.all(types.as_dtype(data, dtype, cast=True) == data.astype(dtype)))
+        self.assertTrue((types.as_dtype(data, dtype) == data.astype(dtype)).all())
 
 
 class TestAsInt(unittest.TestCase):
