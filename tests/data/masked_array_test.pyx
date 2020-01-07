@@ -11,11 +11,11 @@ from numpy.ma.testutils import assert_array_equal
 from flightdatautilities import masked_array_testutils as ma_test
 from flightdatautilities.data cimport masked_array as ma
 #from flightdatautilities.data.masked_array import repair_mask
-from flightdatautilities.read import reader
 
 
 ################################################################################
 # Utility functions
+
 
 class TestGetmaskarray1d(unittest.TestCase):
     def test_getmaskarray1d(self):
@@ -30,6 +30,7 @@ class TestGetmaskarray1d(unittest.TestCase):
 
 ################################################################################
 # Mask ratio/percentage
+
 
 class TestMaskRatio(unittest.TestCase):
     def test_mask_ratio(self):
@@ -51,6 +52,7 @@ class TestPercentMasked(unittest.TestCase):
 
 ################################################################################
 # Fill range
+
 
 class TestFillRange(unittest.TestCase):
     def test_fill_range(self):
@@ -81,6 +83,7 @@ class TestFillRange(unittest.TestCase):
 
 ################################################################################
 # Interpolate range
+
 
 class TestInterpolateRangeUnsafe(unittest.TestCase):
     def test_interpolate_range_unsafe(self):
@@ -183,6 +186,7 @@ class TestInterpolateRange(unittest.TestCase):
 ################################################################################
 # Repair mask
 
+
 #class TestRepairMask(unittest.TestCase):
     #def setUp(self):
         #self.basic_data = np.ma.array(
@@ -267,6 +271,7 @@ class TestInterpolateRange(unittest.TestCase):
 ################################################################################
 # Aggregation
 
+
 # TODO: fix crash
 #class TestMaxValues(unittest.TestCase):
     #def test_max_values(self):
@@ -294,6 +299,7 @@ class TestInterpolateRange(unittest.TestCase):
 
 ################################################################################
 # Alignment
+
 
 class TestAlign(unittest.TestCase):
     def test_align_basic(self):
