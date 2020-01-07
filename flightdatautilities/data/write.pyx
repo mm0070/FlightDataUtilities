@@ -5,6 +5,7 @@ import os
 import numpy as np
 
 from flightdatautilities.compression import (
+    COMPRESSION_CLASSES,
     DEFAULT_COMPRESSION,
     FILE_CLASSES,
     iter_compress,
@@ -33,7 +34,7 @@ def open_writable_file(filepath, compression=DEFAULT_COMPRESSION):
     '''
     if compression:
         filepath += '.' + compression
-    return filepath, FILE_CLASSES[compression](filepath, 'xb')
+    return filepath, COMPRESSION_CLASSES[compression](filepath, 'xb')
 
 
 def decompressed_filepath(filepath):
