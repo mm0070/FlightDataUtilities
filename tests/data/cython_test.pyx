@@ -4,8 +4,7 @@ import unittest
 import numpy as np
 cimport numpy as np
 
-from flightdatautilities.data cimport cython as cy
-from flightdatautilities.type import is_memoryview
+from flightdatautilities.data cimport cython as cy, types
 
 
 ################################################################################
@@ -14,7 +13,7 @@ from flightdatautilities.type import is_memoryview
 class TestEmptyInt64(unittest.TestCase):
     def test_empty_int64(self):
         memview = cy.empty_int64(5)
-        self.assertTrue(is_memoryview(memview))
+        self.assertTrue(types.is_memoryview(memview))
         self.assertEqual(memview.shape, (5,))
         self.assertEqual(np.asarray(memview).dtype, np.dtype('int64'))
 
@@ -22,7 +21,7 @@ class TestEmptyInt64(unittest.TestCase):
 class TestEmpty2dInt64(unittest.TestCase):
     def test_empty2d_int64(self):
         memview = cy.empty2d_int64(2, 3)
-        self.assertTrue(is_memoryview(memview))
+        self.assertTrue(types.is_memoryview(memview))
         self.assertEqual(memview.shape, (2, 3))
         self.assertEqual(np.asarray(memview).dtype, np.dtype('int64'))
 
@@ -30,7 +29,7 @@ class TestEmpty2dInt64(unittest.TestCase):
 class TestZerosInt64(unittest.TestCase):
     def test_zeros_int64(self):
         memview = cy.zeros_int64(5)
-        self.assertTrue(is_memoryview(memview))
+        self.assertTrue(types.is_memoryview(memview))
         self.assertEqual(memview.shape, (5,))
         array = np.asarray(memview)
         self.assertEqual(array.dtype, np.dtype('int64'))
@@ -40,7 +39,7 @@ class TestZerosInt64(unittest.TestCase):
 class TestZeros2dInt64(unittest.TestCase):
     def test_zeros2d_int64(self):
         memview = cy.zeros2d_int64(2, 3)
-        self.assertTrue(is_memoryview(memview))
+        self.assertTrue(types.is_memoryview(memview))
         self.assertEqual(memview.shape, (2, 3))
         array = np.asarray(memview)
         self.assertEqual(array.dtype, np.dtype('int64'))
@@ -50,7 +49,7 @@ class TestZeros2dInt64(unittest.TestCase):
 class TestEmptyIntp(unittest.TestCase):
     def test_empty_intp(self):
         memview = cy.empty_intp(5)
-        self.assertTrue(is_memoryview(memview))
+        self.assertTrue(types.is_memoryview(memview))
         self.assertEqual(memview.shape, (5,))
         self.assertEqual(np.asarray(memview).dtype, np.dtype('intp'))
 
@@ -58,7 +57,7 @@ class TestEmptyIntp(unittest.TestCase):
 class TestEmpty2dIntp(unittest.TestCase):
     def test_empty2d_intp(self):
         memview = cy.empty2d_intp(2, 3)
-        self.assertTrue(is_memoryview(memview))
+        self.assertTrue(types.is_memoryview(memview))
         self.assertEqual(memview.shape, (2, 3))
         self.assertEqual(np.asarray(memview).dtype, np.dtype('intp'))
 
@@ -66,7 +65,7 @@ class TestEmpty2dIntp(unittest.TestCase):
 class TestZerosIntp(unittest.TestCase):
     def test_zeros_intp(self):
         memview = cy.zeros_intp(5)
-        self.assertTrue(is_memoryview(memview))
+        self.assertTrue(types.is_memoryview(memview))
         self.assertEqual(memview.shape, (5,))
         array = np.asarray(memview)
         self.assertEqual(array.dtype, np.dtype('intp'))
@@ -76,7 +75,7 @@ class TestZerosIntp(unittest.TestCase):
 class TestZeros2dIntp(unittest.TestCase):
     def test_zeros2d_intp(self):
         memview = cy.zeros2d_intp(2, 3)
-        self.assertTrue(is_memoryview(memview))
+        self.assertTrue(types.is_memoryview(memview))
         self.assertEqual(memview.shape, (2, 3))
         array = np.asarray(memview)
         self.assertEqual(array.dtype, np.dtype('intp'))
@@ -86,7 +85,7 @@ class TestZeros2dIntp(unittest.TestCase):
 class TestEmptyUint8(unittest.TestCase):
     def test_empty_uint8(self):
         memview = cy.empty_uint8(5)
-        self.assertTrue(is_memoryview(memview))
+        self.assertTrue(types.is_memoryview(memview))
         self.assertEqual(memview.shape, (5,))
         self.assertEqual(np.asarray(memview).dtype, np.dtype('uint8'))
 
@@ -94,7 +93,7 @@ class TestEmptyUint8(unittest.TestCase):
 class TestZerosUint8(unittest.TestCase):
     def test_zeros_uint8(self):
         memview = cy.zeros_uint8(5)
-        self.assertTrue(is_memoryview(memview))
+        self.assertTrue(types.is_memoryview(memview))
         self.assertEqual(memview.shape, (5,))
         array = np.asarray(memview)
         self.assertEqual(array.dtype, np.dtype('uint8'))
@@ -104,7 +103,7 @@ class TestZerosUint8(unittest.TestCase):
 class TestOnesUint8(unittest.TestCase):
     def test_ones_uint8(self):
         memview = cy.ones_uint8(5)
-        self.assertTrue(is_memoryview(memview))
+        self.assertTrue(types.is_memoryview(memview))
         self.assertEqual(memview.shape, (5,))
         array = np.asarray(memview)
         self.assertEqual(array.dtype, np.dtype('uint8'))
@@ -114,7 +113,7 @@ class TestOnesUint8(unittest.TestCase):
 class TestEmptyUint16(unittest.TestCase):
     def test_empty_uint16(self):
         memview = cy.empty_uint16(5)
-        self.assertTrue(is_memoryview(memview))
+        self.assertTrue(types.is_memoryview(memview))
         self.assertEqual(memview.shape, (5,))
         self.assertEqual(np.asarray(memview).dtype, np.dtype('uint16'))
 
@@ -122,7 +121,7 @@ class TestEmptyUint16(unittest.TestCase):
 class TestZerosUint16(unittest.TestCase):
     def test_zeros_uint16(self):
         memview = cy.zeros_uint16(5)
-        self.assertTrue(is_memoryview(memview))
+        self.assertTrue(types.is_memoryview(memview))
         self.assertEqual(memview.shape, (5,))
         array = np.asarray(memview)
         self.assertEqual(array.dtype, np.dtype('uint16'))
@@ -132,7 +131,7 @@ class TestZerosUint16(unittest.TestCase):
 class TestEmptyUint64(unittest.TestCase):
     def test_empty_uint64(self):
         memview = cy.empty_uint64(5)
-        self.assertTrue(is_memoryview(memview))
+        self.assertTrue(types.is_memoryview(memview))
         self.assertEqual(memview.shape, (5,))
         self.assertEqual(np.asarray(memview).dtype, np.dtype('uint64'))
 
@@ -140,7 +139,7 @@ class TestEmptyUint64(unittest.TestCase):
 class TestZerosUint64(unittest.TestCase):
     def test_zeros_uint64(self):
         memview = cy.zeros_uint64(5)
-        self.assertTrue(is_memoryview(memview))
+        self.assertTrue(types.is_memoryview(memview))
         self.assertEqual(memview.shape, (5,))
         array = np.asarray(memview)
         self.assertEqual(array.dtype, np.dtype('uint64'))
@@ -150,7 +149,7 @@ class TestZerosUint64(unittest.TestCase):
 class TestEmptyFloat64(unittest.TestCase):
     def test_empty_float64(self):
         memview = cy.empty_float64(5)
-        self.assertTrue(is_memoryview(memview))
+        self.assertTrue(types.is_memoryview(memview))
         self.assertEqual(memview.shape, (5,))
         self.assertEqual(np.asarray(memview).dtype, np.dtype('float64'))
 
@@ -158,7 +157,7 @@ class TestEmptyFloat64(unittest.TestCase):
 class TestEmpty2dFloat64(unittest.TestCase):
     def test_empty2d_float64(self):
         memview = cy.empty2d_float64(2, 3)
-        self.assertTrue(is_memoryview(memview))
+        self.assertTrue(types.is_memoryview(memview))
         self.assertEqual(memview.shape, (2, 3))
         self.assertEqual(np.asarray(memview).dtype, np.dtype('float64'))
 
@@ -166,7 +165,7 @@ class TestEmpty2dFloat64(unittest.TestCase):
 class TestZerosFloat64(unittest.TestCase):
     def test_zeros_float64(self):
         memview = cy.zeros_float64(5)
-        self.assertTrue(is_memoryview(memview))
+        self.assertTrue(types.is_memoryview(memview))
         self.assertEqual(memview.shape, (5,))
         array = np.asarray(memview)
         self.assertEqual(array.dtype, np.dtype('float64'))
@@ -176,7 +175,7 @@ class TestZerosFloat64(unittest.TestCase):
 class TestZeros2dFloat64(unittest.TestCase):
     def test_zeros2d_float64(self):
         memview = cy.zeros2d_float64(2, 3)
-        self.assertTrue(is_memoryview(memview))
+        self.assertTrue(types.is_memoryview(memview))
         self.assertEqual(memview.shape, (2, 3))
         array = np.asarray(memview)
         self.assertEqual(array.dtype, np.dtype('float64'))
