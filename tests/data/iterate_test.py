@@ -8,7 +8,8 @@ class TestChunk(unittest.TestCase):
     def test_chunk_bytes(self):
         data = [b'123', b'45', b'6', b'', b'789']
         self.assertRaises(ValueError, list, it.chunk(iter(data), 0))
-        self.assertEqual([bytes(c) for c in it.chunk(iter(data), 1)], [b'1', b'2', b'3', b'4', b'5', b'6', b'7', b'8', b'9'])
+        self.assertEqual([bytes(c) for c in it.chunk(iter(data), 1)],
+                         [b'1', b'2', b'3', b'4', b'5', b'6', b'7', b'8', b'9'])
         self.assertEqual([bytes(c) for c in it.chunk(iter(data), 2)], [b'12', b'34', b'56', b'78'])
         self.assertEqual([bytes(c) for c in it.chunk(iter(data), 2, flush=True)], [b'12', b'34', b'56', b'78', b'9'])
         self.assertEqual([bytes(c) for c in it.chunk(iter(data), 3)],  [b'123', b'456', b'789'])
@@ -28,17 +29,21 @@ class TestChunkDtype(unittest.TestCase):
     def test_chunk_dtype_bytes(self):
         data = [b'123', b'45', b'6', b'', b'789']
         self.assertRaises(ValueError, list, it.chunk_dtype(iter(data), 0))
-        self.assertEqual(list(it.chunk_dtype(iter(data), 1)), [b'1', b'2', b'3', b'4', b'5', b'6', b'7', b'8', b'9'])
-        self.assertEqual(list(it.chunk_dtype(iter(data), 2)), [b'12', b'34', b'56', b'78'])
-        self.assertEqual(list(it.chunk_dtype(iter(data), 2, flush=True)), [b'12', b'34', b'56', b'78', b'9'])
-        self.assertEqual(list(it.chunk_dtype(iter(data), 3)),  [b'123', b'456', b'789'])
-        self.assertEqual(list(it.chunk_dtype(iter(data), 3, flush=True)),  [b'123', b'456', b'789'])
-        self.assertEqual(list(it.chunk_dtype(iter(data), 20)), [])
-        self.assertEqual(list(it.chunk_dtype(iter(data), 20, flush=True)), [b''.join(data)])
+        self.assertEqual([bytes(c) for c in it.chunk_dtype(iter(data), 1)],
+                         [b'1', b'2', b'3', b'4', b'5', b'6', b'7', b'8', b'9'])
+        self.assertEqual([bytes(c) for c in it.chunk_dtype(iter(data), 2)],
+                         [b'12', b'34', b'56', b'78'])
+        self.assertEqual([bytes(c) for c in it.chunk_dtype(iter(data), 2, flush=True)],
+                         [b'12', b'34', b'56', b'78', b'9'])
+        self.assertEqual([bytes(c) for c in it.chunk_dtype(iter(data), 3)],  [b'123', b'456', b'789'])
+        self.assertEqual([bytes(c) for c in it.chunk_dtype(iter(data), 3, flush=True)],  [b'123', b'456', b'789'])
+        self.assertEqual([bytes(c) for c in it.chunk_dtype(iter(data), 20)], [])
+        self.assertEqual([bytes(c) for c in it.chunk_dtype(iter(data), 20, flush=True)], [b''.join(data)])
 
     def test_chunk_dtype_array(self):
         data = [np.array([1,2,3]), np.array([4,5]), np.array([6]), np.array([]), np.array([7,8,9])]
-        self.assertEqual(list(x.tolist() for x in it.chunk_dtype(iter(data), 3, dtype=np.int64)), [[1,2,3], [4,5,6], [7,8,9]])
+        self.assertEqual(list(x.tolist() for x in it.chunk_dtype(iter(data), 3, dtype=np.int64)),
+                         [[1,2,3], [4,5,6], [7,8,9]])
         self.assertEqual(list(x.tolist() for x in it.chunk_dtype(iter(data), 20, dtype=np.int64)), [])
         self.assertEqual(list(x.tolist() for x in it.chunk_dtype(iter(data), 20, dtype=np.int64, flush=True)),
                          [np.concatenate(data).tolist()])
@@ -48,9 +53,11 @@ class TestChunkUint8(unittest.TestCase):
     def test_chunk_uint8(self):
         data = [b'123', b'45', b'6', b'', b'789']
         self.assertRaises(ValueError, list, it.chunk_uint8(iter(data), 0))
-        self.assertEqual([bytes(c) for c in it.chunk_uint8(iter(data), 1)], [b'1', b'2', b'3', b'4', b'5', b'6', b'7', b'8', b'9'])
+        self.assertEqual([bytes(c) for c in it.chunk_uint8(iter(data), 1)],
+                         [b'1', b'2', b'3', b'4', b'5', b'6', b'7', b'8', b'9'])
         self.assertEqual([bytes(c) for c in it.chunk_uint8(iter(data), 2)], [b'12', b'34', b'56', b'78'])
-        self.assertEqual([bytes(c) for c in it.chunk_uint8(iter(data), 2, flush=True)], [b'12', b'34', b'56', b'78', b'9'])
+        self.assertEqual([bytes(c) for c in it.chunk_uint8(iter(data), 2, flush=True)],
+                         [b'12', b'34', b'56', b'78', b'9'])
         self.assertEqual([bytes(c) for c in it.chunk_uint8(iter(data), 3)],  [b'123', b'456', b'789'])
         self.assertEqual([bytes(c) for c in it.chunk_uint8(iter(data), 3, flush=True)],  [b'123', b'456', b'789'])
         self.assertEqual(list(it.chunk_uint8(iter(data), 20)), [])

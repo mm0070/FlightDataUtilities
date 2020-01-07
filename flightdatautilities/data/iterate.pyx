@@ -7,8 +7,6 @@ Functions for data iterables.
 # Imports
 
 
-import itertools
-
 cimport cython
 import numpy as np
 
@@ -21,6 +19,8 @@ from flightdatautilities.data cimport buffer as bf, types
 
 def chunk(data_iter, Py_ssize_t size, bint flush=False):
     '''
+    Chunk any data iterable into chunks of a specific size.
+
     Unlike chunk_dtype and chunk_uint8 an iterator is required as the dtype of the underlying buffer is inferred from
     the first element of the iterator.
 
@@ -30,57 +30,36 @@ def chunk(data_iter, Py_ssize_t size, bint flush=False):
         raise ValueError('size must be greater than 0')
 
     data_iter = iter(data_iter)
-
     try:
         first_data = next(data_iter)
     except StopIteration:
         return
-
-    dtype = types.get_dtype(first_data)
-    if dtype in {None, np.uint8}:
-        yield from chunk_uint8(itertools.chain((first_data,), data_iter), size, flush=flush)  # OPT: ~8x faster
-        return
-
-    cdef bf.Buffer buff = bf.Buffer(dtype=dtype)
-
-    def chunk_data(data):
-        buff.add(data)
-        while buff.size >= size:
-            yield buff.read(size)
-
-    yield from chunk_data(first_data)
-    for data in data_iter:
-        yield from chunk_data(data)
-
-    if flush and buff.size:
-        yield buff.read(size)
+    yield from chunk_dtype(prepend(first_data, data_iter), size, types.get_dtype(first_data), flush=flush)
 
 
 def chunk_dtype(data_iter, Py_ssize_t size, dtype=None, bint flush=False):
-    if dtype is np.uint8:
-        yield from chunk_uint8(data_iter, size, flush=flush)  # OPT: ~8x faster
-        return
+    '''
+    Chunk a dtype data iterable into chunks of a specific size.
+    '''
+    cdef bint uint8 = types.dtype_uint8(dtype)
+    if not uint8:
+        data_iter = iter_view_dtype(data_iter, np.uint8)
+        size *= types.get_itemsize(dtype)
 
-    if size <= 0:
-        raise ValueError('size must be greater than 0')
+    data_iter = chunk_uint8(data_iter, size, flush=flush)
 
-    cdef bf.Buffer buff = bf.Buffer(dtype=dtype)
+    if not uint8:
+        data_iter = iter_view_dtype(data_iter, dtype)
 
-    for data in data_iter:
-        buff.add(data)
-        while buff.size >= size:
-            yield buff.read(size)
-
-    if flush and buff.size:
-        yield buff.read(size)
+    yield from data_iter
 
 
 def chunk_uint8(data_iter, Py_ssize_t size, bint flush=False):
+    '''
+    Chunk a uint8 data iterable into chunks of a specific size.
+    '''
     if size <= 0:
         raise ValueError('size must be greater than 0')
-
-    from uuid import uuid4
-    x = str(uuid4())
 
     cdef bf.DataBufferUint8 buff = bf.DataBufferUint8()
     for data in data_iter:
@@ -113,28 +92,51 @@ def join(chunks, dtype=None):
 
 
 def iter_as_dtype(data_iter, dtype):
+    '''
+    Iterate through a data iterable and yield data as dtype (casts if required).
+
+    :type data_iter: iterable
+    :yields: data as dtype
+    '''
     return (types.as_dtype(data, dtype) for data in data_iter)
 
 
 def iter_data(data_iter):
     '''
-    Iterate over an iterable and yield only data.
+    Iterate through an iterable and yield only data.
 
     :type data_iter: iterable
-    :rtype: iterable
+    :yields: data
     '''
     return (d for d in data_iter if types.is_data(d))
 
 
 def iter_data_slice(data_iter, slice):
+    '''
+    Yield a data slice for every piece of data in the iterable.
+
+    :type data_iter: data iterable
+    :type slice: slice
+    '''
     return (data[slice] for data in data_iter)
 
 
 def iter_data_slices(data_iter, slices):
+    '''
+    Yield a list of data slices for each piece of data in the iterable.
+
+    :type data_iter: data iterable
+    :type slices: iterable of slice
+    '''
     return ([data[s] for s in slices] for data in data_iter)
 
 
 def iter_data_start_idx(data_iter, Py_ssize_t start):
+    '''
+    Iterate through a data iterable and skip data until reaching the start index.
+
+    :type data_iter: data iterable
+    '''
     if start <= 0:
         yield from data_iter
         return
@@ -154,50 +156,12 @@ def iter_data_start_idx(data_iter, Py_ssize_t start):
     yield from data_iter
 
 
-#def iter_data_byte_range(data_iter, Py_ssize_t start=0, Py_ssize_t stop=0):
-    #data_iter = it.chunk_uint8(it.iter_view_dtype(self.data_iter, np.uint8))
-    #if start:
-        #data_iter = it.iter_data_start_idx(data_iter, start)
-    #if stop:
-        #data_iter = it.iter_data_stop_idx(data_iter, stop)
-    #return data_iter
-
-
-#@cython.cdivision(True)
-#def iter_data_start_byte(data_iter, Py_ssize_t start):
-    #if start <= 0:
-        #yield from data_iter
-
-    #cdef Py_ssize_t data_size, itemsize = 0, pos = 0, next_pos
-
-    #for data in data_iter:
-        #if not itemsize:
-            #itemsize = types.get_itemsize(data)
-            #dtype = types.get_dtype(data)
-        #data_size = len(data)
-        #next_pos = pos + data_size * itemsize
-        #if next_pos == start:
-            #break
-        #elif next_pos > start:
-            #if (start - pos) % itemsize:
-                #if dtype is not np.uint8:
-                    #data_iter = iter_as_dtype(data_iter, np.uint8)
-                    #data = types.as_dtype(data, np.uint8)
-                #data_iter = chunk_uint8(itertools.chain((data[start - pos:],), data_iter), data_size * itemsize,
-                                        #flush=True)
-                #if dtype is not np.uint8:
-                    #data_iter = iter_as_dtype(data_iter, dtype)
-                #break
-            #else:
-                #yield from chunk_dtype(itertools.chain((data[(start - pos) // itemsize:],), data_iter), data_size,
-                                       #dtype=dtype, flush=True)
-                #return
-        #pos = next_pos
-
-    #yield from data_iter
-
-
 def iter_data_stop_idx(data_iter, Py_ssize_t stop):
+    '''
+    Iterate through a data iterable and yield until reaching the stop index.
+
+    :type data_iter: data iterable
+    '''
     if stop <= 0:
         return
     cdef Py_ssize_t pos = 0, next_pos
@@ -212,36 +176,22 @@ def iter_data_stop_idx(data_iter, Py_ssize_t stop):
         pos = next_pos
 
 
-#@cython.cdivision(True)
-#def iter_data_stop_byte(data_iter, Py_ssize_t stop):
-    #cdef Py_ssize_t itemsize = 0, pos = 0, next_pos
-
-    #for data in data_iter:
-        #if not itemsize:
-            #itemsize = types.get_itemsize(data)
-        #next_pos = pos + len(data) * itemsize
-        #if next_pos > stop:
-            #yield data[:(stop - pos) // itemsize]
-            #return
-        #elif next_pos == stop:
-            #yield data
-            #return
-        #else:
-            #yield data
-        #pos = next_pos
-
-
 def iter_view_dtype(data_iter, dtype):
-    return (types.view_dtype(data, dtype) for data in data_iter)
+    '''
+    Iterate through a data iterable and yield the data viewed as dtype.
+
+    :type data_iter: iterable
+    :yields: data viewed as dtype
+    '''
+    return data_iter if dtype is False else (types.view_dtype(data, dtype) for data in data_iter)
 
 
 def prepend(data, data_iter):
+    '''
+    Prepend a data iterable with a piece of data (e.g. with the remainder of a variable size header).
+
+    :type data_iter: iterable
+    '''
     yield data
     yield from data_iter
-
-
-#def tolist(array):
-    #'''
-    #'''
-    #return [a.tolist() if hasattr(a, 'tolist') else tolist(a) for a in array]
 
