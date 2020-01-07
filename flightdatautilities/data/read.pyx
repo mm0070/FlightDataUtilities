@@ -6,17 +6,31 @@ cimport cython
 import numpy as np
 
 from flightdatautilities.compression import open_compressed
-from flightdatautilities.data cimport types
+from flightdatautilities.data cimport buffer as bf, types
 from flightdatautilities.data import iterate as it
 
 
+# default read size in bytes, code using this module assumes this is a multiple of megabytes
 cdef Py_ssize_t READ_SIZE_C = 16 * 1024 * 1024
 READ_SIZE = READ_SIZE_C
 
 
 cdef class base_reader:
+    '''
+    Abstract class for reading data incrementally from a source. Subclasses provide a consistent interface for reading
+    data from multiple sources, e.g. files, streams, memoryviews and iterables.
+    '''
     def __init__(self, dtype=False, Py_ssize_t count=-1, Py_ssize_t start=0, Py_ssize_t stop=0, bint byte=True,
-                 callback=None, **kwargs):
+                 bint array=False, callback=None, **kwargs):  # Q: is kwargs required?
+        '''
+        :param dtype: dtype to read. None specifies bytes/unsigned char, False specifies leaving source dtype unchanged.
+        :type dtype: bool or None or np.dtype
+        :param start: start position to read from
+        :param stop: stop position to read until
+        :param byte: whether or not start and stop positions are in bytes or dtype itemsize (for consistency with seek)
+        :param array: whether or not to output arrays (for python) or memoryview compatible (faster for cython)
+        :param callback: callback function to call each read with current position (e.g. for UI feedback)
+        '''
         if start < 0:
             raise ValueError('start must be 0 (default) or positive')
         if stop < 0:
@@ -25,6 +39,9 @@ cdef class base_reader:
             raise ValueError('stop must be greater than start')
 
         self.dtype = dtype and np.dtype(dtype)
+        if not self.dtype and array:
+            raise ValueError('dtype must be provided to return specific array type')
+        self._array = array
         self._itemsize = self.dtype.itemsize if dtype else 1
 
         if count == -1:
@@ -44,7 +61,17 @@ cdef class base_reader:
         if self._callback_exists:
             self._callback = callback
 
+    cdef _create_array(self, obj):
+        '''
+        Creates an array if self.array is True.
+        '''
+        return types.as_array(obj, self.dtype) if self._array else obj
+
+    @cython.cdivision(True)
     def __next__(self):
+        '''
+        Read count of items from source, raises StopIteration if there is no more data to read.
+        '''
         cdef Py_ssize_t read_count
 
         if self.stop:
@@ -79,17 +106,29 @@ cdef class base_reader:
         return self
 
     cpdef all(self):
+        '''
+        Read all data incrementally from source.
+        '''
         with self as data_iter:
             return it.join(self)
 
     cpdef first(self):
+        '''
+        Read the first count of items from source.
+        '''
         with self as data_iter:
             return next(iter(data_iter), None)
+
+    cpdef read(self, Py_ssize_t count):
+        '''
+        Read a count of items from source.
+        '''
+        raise NotImplementedError()
 
 
 cdef class data_reader(base_reader):
     '''
-    Read data incrementally from an array or bytes.
+    Read incrementally from data.
     '''
     def __init__(self, data, *args, **kwargs):
         '''
@@ -103,16 +142,17 @@ cdef class data_reader(base_reader):
                 data = types.view_dtype(data, self.dtype)
         self._data = data
 
-    cpdef read(self, Py_ssize_t read_count):
-        return self._data[self.pos // self._itemsize:(self.pos // self._itemsize) + read_count]
+    @cython.cdivision(True)
+    cpdef read(self, Py_ssize_t count):
+        '''
+        Read count of items from data.
+        '''
+        return self._create_array(self._data[self.pos // self._itemsize:(self.pos // self._itemsize) + count])
 
 
 cdef class iterable_reader(base_reader):
     '''
-    Read data from a data iterable.
-
-    OPT: This is not optimised for performance and is implemented so that existing readers/iterables can be wrapped
-         consistently.
+    Read data incrementally from a data iterable.
     '''
     def __init__(self, data_iter, *args, **kwargs):
         '''
@@ -120,31 +160,37 @@ cdef class iterable_reader(base_reader):
         :type data_iter: iterable
         '''
         super(iterable_reader, self).__init__(*args, **kwargs)
-        self._data_iter = data_iter
-
-    @cython.cdivision(True)
-    def __enter__(self):
-        if self.dtype is False:
-            self._data_iter = it.chunk(self._data_iter, self.count, flush=True)
-        else:
-            # OPT: it.chunk_uint8 is faster than it.chunk, so always view as uint8 for simplicity
-            self._data_iter = it.chunk_uint8(it.iter_view_dtype(self._data_iter, np.uint8), self.count * self._itemsize,
-                                             flush=True)
+        self._buffer = bf.DataBufferUint8()
+        self._data_iter = it.iter_view_dtype(data_iter, np.uint8)
+        cdef:
+            Py_ssize_t current_pos = 0, next_pos
         if self.pos:
-            self._data_iter = it.iter_data_start_idx(self._data_iter, self.pos)
-        if self.stop:
-            self._data_iter = it.iter_data_stop_idx(self._data_iter, self.stop - self.pos)
-        if self.dtype is not False:
-            self._data_iter = it.iter_view_dtype(self._data_iter, self.dtype)
-        return self
+            for data in self._data_iter:
+                next_pos = current_pos + len(data)
+                if next_pos == self.pos:
+                    break
+                elif next_pos > self.pos:
+                    self._buffer.add(data[self.pos - current_pos:])
+                    break
+                current_pos = next_pos
 
-    def __next__(self):
-        return next(self._data_iter)
+    cpdef read(self, Py_ssize_t count):
+        '''
+        Read count of items from iterable.
+        '''
+        cdef Py_ssize_t size = count * self._itemsize
+        while self._buffer.size < size:
+            try:
+                self._buffer.add(next(self._data_iter))
+            except StopIteration:
+                break
+
+        return self._create_array(types.view_dtype(self._buffer.read(size), self.dtype))
 
 
 cdef class file_reader(base_reader):
     '''
-    Read data from a file.
+    Read data incrementally from a file path or fileobj.
     '''
     def __init__(self, path, *args, **kwargs):
         '''
@@ -156,6 +202,9 @@ cdef class file_reader(base_reader):
         self.name = path
 
     def __enter__(self):
+        '''
+        Opens file for reading.
+        '''
         # TODO: Handle '-' as stdin, e.g. getattr(sys.stdin, 'buffer', sys.stdin)?
         self.fileobj = open_compressed(self.name) if isinstance(self.name, str) else self.name
 
@@ -167,11 +216,18 @@ cdef class file_reader(base_reader):
         return self
 
     def __exit__(self, *exc_info):
+        '''
+        Closes file if supported.
+        '''
         if not getattr(self.fileobj, 'closed', True):
             self.fileobj.close()
 
+    @cython.cdivision(True)
     cpdef read(self, Py_ssize_t read_count):
-        if self.dtype is not None and self.fileobj.__class__ is open:
+        '''
+        Read count of items from file.
+        '''
+        if self.dtype is not None and isinstance(self.fileobj, io.BufferedReader):
             kwargs = {'dtype': self.dtype}
             if read_count:
                 kwargs['count'] = read_count
@@ -179,73 +235,17 @@ cdef class file_reader(base_reader):
         else:
             data = self.fileobj.read(read_count * self._itemsize) if read_count else self.fileobj.read()
             if self.dtype is not None:
-                remainder = len(data) % self._itemsize
-                if remainder:
-                    data = data[:-remainder]
-                data = np.frombuffer(data, dtype=self.dtype)  #.copy()  # TODO: fast read-only option without copy
+                if self._itemsize != 1:
+                    remainder = len(data) % self._itemsize
+                    if remainder:
+                        data = data[:-remainder]
+                data = np.frombuffer(data, dtype=self.dtype)
         return data
-
-
-class StringIteratorIO(io.TextIOBase):
-    '''
-    Copied from https://stackoverflow.com/questions/12593576/adapt-an-iterator-to-behave-like-a-file-like-object-in-python
-    '''
-
-    def __init__(self, iter):
-        self._iter = iter
-        self._left = ''
-
-    def readable(self):
-        return True
-
-    def _read1(self, n=None):
-        while not self._left:
-            try:
-                self._left = next(self._iter)
-            except StopIteration:
-                break
-        ret = self._left[:n]
-        self._left = self._left[len(ret):]
-        return ret
-
-    def read(self, n=None):
-        l = []
-        if n is None or n < 0:
-            while True:
-                m = self._read1()
-                if not m:
-                    break
-                l.append(m)
-        else:
-            while n > 0:
-                m = self._read1(n)
-                if not m:
-                    break
-                n -= len(m)
-                l.append(m)
-        return ''.join(l)
-
-    def readline(self):
-        l = []
-        while True:
-            i = self._left.find('\n')
-            if i == -1:
-                l.append(self._left)
-                try:
-                    self._left = next(self._iter)
-                except StopIteration:
-                    self._left = ''
-                    break
-            else:
-                l.append(self._left[:i+1])
-                self._left = self._left[i+1:]
-                break
-        return ''.join(l)
 
 
 def reader(obj, *args, **kwargs):
     '''
-    reader factory which creates a reader based on the type of obj.
+    reader factory which creates a reader based on the type of object.
 
     :type obj: base_reader subclass object, bytes, str, np.array or generator
     :rtype: base_reader subclass object

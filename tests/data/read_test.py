@@ -1,15 +1,18 @@
-import numpy as np
 import os
 import unittest
 
+import numpy as np
+
 from flightdatautilities.data import iterate as it, read, types
 
-from flightdataprocessing.common.test import TEST_DATA_PATH
+
+PACKAGE_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+TEST_DATA_PATH = os.path.join(os.path.dirname(PACKAGE_PATH), 'tests', 'test_data')
 
 
 class ReaderImplementationTest:
     def setUp(self):
-        self.filepath = os.path.join(TEST_DATA_PATH, 'l3uqar', '01', 'serial_num_7_digits.dat')
+        self.filepath = os.path.join(TEST_DATA_PATH, 'flight_data', 'l3uqar', '01', 'serial_num_7_digits.dat')
         with open(self.filepath, 'rb') as f:
             self.data = f.read()
 
@@ -159,7 +162,7 @@ class TestIterableReader(ReaderImplementationTest, unittest.TestCase):
 
     @property
     def input(self):
-        return it.chunk([self.data], 4096, flush=True)
+        return it.chunk_uint8([self.data], 4096, flush=True)
 
 
 class TestReader(unittest.TestCase):
@@ -182,10 +185,10 @@ class TestReader(unittest.TestCase):
         self.assertEqual(list(r), [array])
 
     def test_reader_iterable(self):
-        data_iter = (x for x in [1])
+        data_iter = (x for x in [b'abc'])
         r = read.reader(data_iter)
         self.assertTrue(isinstance(r, read.iterable_reader))
-        self.assertEqual(list(r), [1])
+        self.assertEqual([bytes(x) for x in r], [b'abc'])
 
     #def test_reader_reader(self):
         #data = b'data'
