@@ -185,4 +185,3 @@ def dict_filter(d, keep=None, remove=None):
 
 
 ################################################################################
-# vim:et:ft=python:nowrap:sts=4:sw=4:ts=4

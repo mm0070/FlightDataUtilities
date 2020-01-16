@@ -271,4 +271,3 @@ class TestUnitsModule(unittest.TestCase):
 
 
 ##############################################################################
-# vim:et:ft=python:nowrap:sts=4:sw=4:ts=4
