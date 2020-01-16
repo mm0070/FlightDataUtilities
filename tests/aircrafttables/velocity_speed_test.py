@@ -14,7 +14,6 @@ import warnings
 
 import numpy as np
 
-from builtins import map
 from itertools import chain
 
 from flightdatautilities import aircrafttables as at, units as ut
