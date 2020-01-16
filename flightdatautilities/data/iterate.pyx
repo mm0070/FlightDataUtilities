@@ -34,7 +34,7 @@ def chunk(data_iter, Py_ssize_t size, bint flush=False):
         first_data = next(data_iter)
     except StopIteration:
         return
-    yield from chunk_dtype(prepend(first_data, data_iter), size, types.get_dtype(first_data), flush=flush)
+    return chunk_dtype(prepend(first_data, data_iter), size, types.get_dtype(first_data), flush=flush)
 
 
 def chunk_dtype(data_iter, Py_ssize_t size, dtype=None, bint flush=False):
@@ -51,7 +51,7 @@ def chunk_dtype(data_iter, Py_ssize_t size, dtype=None, bint flush=False):
     if not uint8:
         data_iter = iter_view_dtype(data_iter, dtype)
 
-    yield from data_iter
+    return data_iter
 
 
 def chunk_uint8(data_iter, Py_ssize_t size, bint flush=False):

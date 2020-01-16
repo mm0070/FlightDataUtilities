@@ -293,8 +293,7 @@ def iter_compress(data_iter, compression):
     '''
     compressor = COMPRESSORS[compression]()
 
-    for data in data_iter:
-        yield compressor.compress(data)
+    yield from (compressor.compress(data) for data in data_iter)
 
     yield compressor.flush()
 
@@ -305,8 +304,7 @@ def iter_decompress(data_iter, compression):
     '''
     decompressor = DECOMPRESSORS[compression]()
 
-    for data in data_iter:
-        yield decompressor.decompress(data)
+    return (decompressor.decompress(data) for data in data_iter)
 
 
 def open_compressed(filepath, mode='rb'):

@@ -133,8 +133,7 @@ def file_split_writer(filepath, data_gen, compression=DEFAULT_COMPRESSION):
 
             write_data(file['fileobj'], data)
 
-    for s in iterate(data_gen):
-        yield s
+    yield from iterate(data_gen)
 
     if file:
         file['fileobj'].close()
@@ -162,8 +161,7 @@ def memory_split_writer(data_gen):
                     split['extension'] = split_extension(metadata)
                 split['chunks'].append(data)
 
-    for s in iterate(data_gen):
-        yield s
+    yield from iterate(data_gen)
 
     if split['chunks']:
         yield split['extension'], split['chunks']
