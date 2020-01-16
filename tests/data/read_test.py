@@ -200,5 +200,12 @@ class TestReader(unittest.TestCase):
         #self.assertEqual(reader_output.stop, stop)
 
 
+class TestReadSize(unittest.TestCase):
+    def test_read_size(self):
+        # READ_SIZE is assumed to be a multiple of megabytes in various reader use cases for brevity
+        self.assertGreaterEqual(read.READ_SIZE, 1024 * 1024)
+        self.assertEqual(read.READ_SIZE % (1024 * 1024), 0)
+
+
 if __name__ == '__main__':
     unittest.main()
