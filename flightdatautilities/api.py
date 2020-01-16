@@ -32,7 +32,7 @@ class APIError(Exception):
     '''
 
     def __init__(self, message, url=None, method=None, params=None, data=None, json=None):
-        super(APIError, self).__init__(message)
+        super().__init__(message)
         self.url = url
         self.method = method
         self.params = params

@@ -251,7 +251,7 @@ class ReadOnlyCompressedFile(CompressedFile):
     def __init__(self, *args, **kwargs):
         kwargs = kwargs.copy()
         kwargs['mode'] = 'r'
-        super(ReadOnlyCompressedFile, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
 
 class CachedCompressedFile(ReadOnlyCompressedFile):
@@ -260,7 +260,7 @@ class CachedCompressedFile(ReadOnlyCompressedFile):
     def __init__(self, *args, **kwargs):
         kwargs = kwargs.copy()
         kwargs['cache'] = True
-        super(CachedCompressedFile, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def uncompress(self):
         '''
@@ -274,7 +274,7 @@ class CachedCompressedFile(ReadOnlyCompressedFile):
 
         if need_to_update:
             logger.debug(f'Cached file `{self.uncompressed_path}` not found')
-            super(CachedCompressedFile, self).uncompress()
+            super().uncompress()
         else:
             logger.debug(f'Found cached file `{self.uncompressed_path}`, reuse it')
 

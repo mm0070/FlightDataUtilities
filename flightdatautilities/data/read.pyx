@@ -135,7 +135,7 @@ cdef class data_reader(base_reader):
         :param data: data to read from
         :type data: types.is_data compatible
         '''
-        super(data_reader, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         if self.dtype is not False:
             data_dtype = types.get_dtype(data)
             if data_dtype != self.dtype:
@@ -159,7 +159,7 @@ cdef class iterable_reader(base_reader):
         :param data_iter: data iterable
         :type data_iter: iterable
         '''
-        super(iterable_reader, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._buffer = bf.DataBufferUint8()
         self._data_iter = it.iter_view_dtype(data_iter, np.uint8)
         cdef:
@@ -198,7 +198,7 @@ cdef class file_reader(base_reader):
         :type path: str or fileobj
         '''
         kwargs['dtype'] = kwargs.get('dtype') or None  # change False to None
-        super(file_reader, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.name = path
 
     def __enter__(self):

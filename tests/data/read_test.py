@@ -69,21 +69,21 @@ class ReaderImplementationTest:
 
 class TestFileReader(ReaderImplementationTest, unittest.TestCase):
     def setUp(self):
-        super(TestFileReader, self).setUp()
+        super().setUp()
         self.cls = read.file_reader
         self.input = self.filepath
 
 
 class TestDataReaderBytes(ReaderImplementationTest, unittest.TestCase):
     def setUp(self):
-        super(TestDataReaderBytes, self).setUp()
+        super().setUp()
         self.cls = read.data_reader
         self.input = self.data
 
 
 class TestDataReaderArray(ReaderImplementationTest, unittest.TestCase):
     def setUp(self):
-        super(TestDataReaderArray, self).setUp()
+        super().setUp()
         self.cls = read.data_reader
         self.input = np.frombuffer(self.data)
 
@@ -157,7 +157,7 @@ class TestDataReaderArray(ReaderImplementationTest, unittest.TestCase):
 
 class TestIterableReader(ReaderImplementationTest, unittest.TestCase):
     def setUp(self):
-        super(TestIterableReader, self).setUp()
+        super().setUp()
         self.cls = read.iterable_reader
 
     @property
