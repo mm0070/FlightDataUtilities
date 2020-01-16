@@ -55,7 +55,7 @@ class TestIsData(unittest.TestCase):
         # TODO: memoryview
         self.assertTrue(types.is_data(np.arange(10)))
         self.assertTrue(types.is_data(b'abc'))
-        self.assertFalse(types.is_data(u'abc'))
+        self.assertFalse(types.is_data('abc'))
         self.assertFalse(types.is_data(7))
         self.assertFalse(types.is_data(None))
 
@@ -65,7 +65,7 @@ class TestIsDataIterable(unittest.TestCase):
         # TODO: memoryview
         self.assertFalse(types.is_data_iterable(np.arange(10)))
         self.assertFalse(types.is_data_iterable(b'abc'))
-        self.assertFalse(types.is_data_iterable(u'abc'))
+        self.assertFalse(types.is_data_iterable('abc'))
         self.assertFalse(types.is_data_iterable(7))
         self.assertFalse(types.is_data_iterable(None))
         self.assertTrue(types.is_data_iterable([b'abc']))

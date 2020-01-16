@@ -167,7 +167,7 @@ class TestIterableReader(ReaderImplementationTest, unittest.TestCase):
 
 class TestReader(unittest.TestCase):
     def test_reader_path(self):
-        path = u'path'
+        path = 'path'
         r = read.reader(path)
         self.assertTrue(isinstance(r, read.file_reader))
         self.assertEqual(r.name, path)
