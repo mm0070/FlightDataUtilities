@@ -10,7 +10,6 @@ Flight Data Utilities: Iter Extensions
 
 import numpy as np
 
-from builtins import zip
 from itertools import chain, count, groupby, islice, takewhile, tee
 from operator import itemgetter
 
