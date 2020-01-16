@@ -1,7 +1,3 @@
-# -*- coding: utf-8 -*-
-################################################################################
-
-
 import types
 
 from flightdatautilities.dict_helpers import dcompact
@@ -47,7 +43,7 @@ class Struct(dict):
                 setattr(self, k, Struct(v))
             else:
                 setattr(self, k, v)
-    
+
     def __getattr__(self, key):
         '''
         Retrieves an attribute from the structure.
@@ -70,7 +66,7 @@ class Struct(dict):
                     self.__class__.__name__,
                     key,
                 ))
-            # Create new structures for unknown attributes: 
+            # Create new structures for unknown attributes:
             s = Struct()
             setattr(self, key, s)
             return s
