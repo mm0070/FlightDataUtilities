@@ -4,10 +4,10 @@ requires helper methods to help maintain consistent behaviour from an existing
 codebase.
 '''
 
-
 # Python 3 and Numpy 1.15+ upgrade helpers
 import math
 import numpy as np
+
 
 def py2round(x, d=0):
     '''

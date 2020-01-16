@@ -1,16 +1,12 @@
-##############################################################################
-
 '''
 Additional functions for testing masked arrays.
 
 These build on the functions provided in the ``numpy.ma.testutils`` module.
 '''
 
-##############################################################################
-# Imports
-
 import numpy as np
 from numpy.ma.testutils import approx, almost, operator, assert_, assert_array_equal, assert_array_compare
+
 
 ##############################################################################
 # Functions

@@ -1,5 +1,3 @@
-##############################################################################
-
 '''
 Provides utilities for handling conversions between units of flight data.
 
@@ -9,17 +7,10 @@ The following links are useful resources:
 
 '''
 
-##############################################################################
-# Imports
-
-
 import decimal
 
 import six
 import numpy as np
-
-##############################################################################
-# Constants
 
 
 # Names of localisation profiles:

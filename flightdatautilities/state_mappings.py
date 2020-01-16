@@ -2,15 +2,7 @@
 Multi-state Parameter State Value Mappings
 '''
 
-##############################################################################
-# Import
-
-
 from flightdatautilities.patterns import wildcard_match
-
-
-##############################################################################
-# Constants
 
 
 PARAMETER_CORRECTIONS = {
