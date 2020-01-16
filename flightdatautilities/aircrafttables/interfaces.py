@@ -28,7 +28,7 @@ logger = logging.getLogger(name=__name__)
 # Abstract Classes
 
 
-class VelocitySpeed(object):
+class VelocitySpeed:
     '''
     Provides a base implementation of a velocity speed lookup table.
 

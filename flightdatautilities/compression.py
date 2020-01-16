@@ -46,7 +46,7 @@ DECOMPRESSORS = {
 DEFAULT_COMPRESSION = 'bz2'
 
 
-class CompressedFile(object):
+class CompressedFile:
     '''
     Context manager wrapping decompression and compression of given file.
 
