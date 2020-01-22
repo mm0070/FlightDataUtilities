@@ -27,6 +27,107 @@ NONE_IDX = LLONG_MIN
 ################################################################################
 # Memory Allocation
 
+
+@cython.wraparound(False)
+cdef np.int8_t[:] empty_int8(np.npy_intp size):
+    '''
+    Return a new one-dimensional np.int8 memoryview of given size, without initializing entries.
+
+    OPT: ~2.5x faster than creating a memoryview from np.empty
+    '''
+    cdef np.npy_intp shape[1]
+    shape[0] = size
+    return np.PyArray_EMPTY(1, shape, np.NPY_INT8, False)
+
+
+@cython.wraparound(False)
+cdef np.int8_t[:, :] empty2d_int8(np.npy_intp x, np.npy_intp y):
+    '''
+    Return a new two-dimensional np.int8 memoryview of given size, without initializing entries.
+
+    OPT: ~2.5x faster than creating a memoryview from np.empty
+    '''
+    cdef np.npy_intp shape[2]
+    shape[0] = x
+    shape[1] = y
+    return np.PyArray_EMPTY(2, shape, np.NPY_INT8, False)
+
+
+@cython.wraparound(False)
+cdef np.int8_t[:] zeros_int8(np.npy_intp size):
+    '''
+    Return a new one-dimensional np.int8 memoryview of given size, filled with zeros.
+
+    OPT: ~2.5x faster than creating a memoryview from np.zeros
+    '''
+    cdef np.npy_intp shape[1]
+    shape[0] = size
+    return np.PyArray_ZEROS(1, shape, np.NPY_INT8, False)
+
+
+@cython.wraparound(False)
+cdef np.int8_t[:, :] zeros2d_int8(np.npy_intp x, np.npy_intp y):
+    '''
+    Return a new two-dimensional np.int8 memoryview of given size, filled with zeros.
+
+    OPT: ~2.5x faster than creating a memoryview from np.empty (Python call).
+    '''
+    cdef np.npy_intp shape[2]
+    shape[0] = x
+    shape[1] = y
+    return np.PyArray_ZEROS(2, shape, np.NPY_INT8, False)
+
+
+@cython.wraparound(False)
+cdef np.int16_t[:] empty_int16(np.npy_intp size):
+    '''
+    Return a new one-dimensional np.int16 memoryview of given size, without initializing entries.
+
+    OPT: ~2.5x faster than creating a memoryview from np.empty
+    '''
+    cdef np.npy_intp shape[1]
+    shape[0] = size
+    return np.PyArray_EMPTY(1, shape, np.NPY_INT16, False)
+
+
+@cython.wraparound(False)
+cdef np.int16_t[:, :] empty2d_int16(np.npy_intp x, np.npy_intp y):
+    '''
+    Return a new two-dimensional np.int16 memoryview of given size, without initializing entries.
+
+    OPT: ~2.5x faster than creating a memoryview from np.empty
+    '''
+    cdef np.npy_intp shape[2]
+    shape[0] = x
+    shape[1] = y
+    return np.PyArray_EMPTY(2, shape, np.NPY_INT16, False)
+
+
+@cython.wraparound(False)
+cdef np.int16_t[:] zeros_int16(np.npy_intp size):
+    '''
+    Return a new one-dimensional np.int16 memoryview of given size, filled with zeros.
+
+    OPT: ~2.5x faster than creating a memoryview from np.zeros
+    '''
+    cdef np.npy_intp shape[1]
+    shape[0] = size
+    return np.PyArray_ZEROS(1, shape, np.NPY_INT16, False)
+
+
+@cython.wraparound(False)
+cdef np.int16_t[:, :] zeros2d_int16(np.npy_intp x, np.npy_intp y):
+    '''
+    Return a new two-dimensional np.int16 memoryview of given size, filled with zeros.
+
+    OPT: ~2.5x faster than creating a memoryview from np.empty (Python call).
+    '''
+    cdef np.npy_intp shape[2]
+    shape[0] = x
+    shape[1] = y
+    return np.PyArray_ZEROS(2, shape, np.NPY_INT16, False)
+
+
 @cython.wraparound(False)
 cdef np.int32_t[:] empty_int32(np.npy_intp size):
     '''
@@ -444,6 +545,7 @@ cdef np.float64_t[:, :] zeros2d_float64(np.npy_intp x, np.npy_intp y):
 ################################################################################
 # Unpacking data types
 
+
 @cython.wraparound(False)
 cdef inline np.uint16_t unpack_uint16_le_unsafe(const np.uint8_t[:] data, Py_ssize_t idx=0) nogil:
     '''
@@ -658,6 +760,7 @@ cdef array_idx_value(Py_ssize_t idx, array):
 ################################################################################
 # Array index finders
 
+
 @cython.wraparound(False)
 cdef Py_ssize_t prev_idx_unsafe(const np.uint8_t[:] array, Py_ssize_t idx, bint match=True, Py_ssize_t start=0) nogil:
     '''
@@ -804,6 +907,7 @@ cdef Py_ssize_t value_idx_uint8(const np.uint8_t[:] array, np.uint8_t value) nog
 ################################################################################
 # Array operations
 
+
 @cython.wraparound(False)
 cdef np_types arrays_continuous_value(np_types[:] data1, np_types[:] data2, Py_ssize_t idx) nogil:
     '''
@@ -829,7 +933,6 @@ cdef np.uint16_t[:] byteswap_array(const np.uint8_t[:] data):
         swapped[swapped_idx] = (data[data_idx] << 8) | data[data_idx + 1]
 
     return swapped
-
 
 
 cdef np.uint8_t[:] contract_runs(np.uint8_t[:] data, Py_ssize_t size, bint match=True) nogil:
@@ -902,6 +1005,7 @@ cdef np.uint8_t[:] remove_small_runs(np.uint8_t[:] data, np.float64_t seconds, n
 
 ################################################################################
 # Concatenate memoryviews
+
 
 cdef np.uint8_t[:] concatenate_uint8(memviews):
     '''

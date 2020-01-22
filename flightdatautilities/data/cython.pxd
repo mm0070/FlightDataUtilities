@@ -42,6 +42,14 @@ cdef Py_ssize_t NONE_IDX
 
 ################################################################################
 # Memory Allocation
+cdef np.int8_t[:] empty_int8(np.npy_intp psize)
+cdef np.int8_t[:, :] empty2d_int8(np.npy_intp x, np.npy_intp y)
+cdef np.int8_t[:] zeros_int8(np.npy_intp psize)
+cdef np.int8_t[:, :] zeros2d_int8(np.npy_intp x, np.npy_intp y)
+cdef np.int16_t[:] empty_int16(np.npy_intp psize)
+cdef np.int16_t[:, :] empty2d_int16(np.npy_intp x, np.npy_intp y)
+cdef np.int16_t[:] zeros_int16(np.npy_intp psize)
+cdef np.int16_t[:, :] zeros2d_int16(np.npy_intp x, np.npy_intp y)
 cdef np.int32_t[:] empty_int32(np.npy_intp psize)
 cdef np.int32_t[:, :] empty2d_int32(np.npy_intp x, np.npy_intp y)
 cdef np.int32_t[:] zeros_int32(np.npy_intp psize)
