@@ -118,6 +118,8 @@ cdef Py_ssize_t prev_idx_unsafe(const np.uint8_t[:] array, Py_ssize_t idx, bint 
 cdef Py_ssize_t prev_idx(const np.uint8_t[:] array, Py_ssize_t idx, bint match=?, Py_ssize_t start=?) nogil
 cdef Py_ssize_t next_idx_unsafe(const np.uint8_t[:] array, Py_ssize_t idx=?, bint match=?, Py_ssize_t stop=?) nogil
 cdef Py_ssize_t next_idx(const np.uint8_t[:] array, Py_ssize_t idx=?, bint match=?, Py_ssize_t stop=?) nogil
+cdef Py_ssize_t first_idx(const np.uint8_t[:] array, bint match=?) nogil
+cdef Py_ssize_t last_idx(const np.uint8_t[:] array, bint match=?) nogil
 cdef Py_ssize_t nearest_idx_unsafe(np.uint8_t[:] array, Py_ssize_t idx, bint match=?, Py_ssize_t start=?, Py_ssize_t stop=?) nogil
 cdef Py_ssize_t nearest_idx(np.uint8_t[:] array, Py_ssize_t idx, bint match=?, Py_ssize_t start=?, Py_ssize_t stop=?) nogil
 cdef Py_ssize_t subarray_idx_uint8(const np.uint8_t[:] array, const np.uint8_t[:] subarray, Py_ssize_t start=?) nogil

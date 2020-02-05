@@ -805,6 +805,22 @@ cdef Py_ssize_t next_idx(const np.uint8_t[:] array, Py_ssize_t idx=0, bint match
 
 
 @cython.wraparound(False)
+cdef Py_ssize_t first_idx(const np.uint8_t[:] array, bint match=True) nogil:
+    '''
+    Return the previous index within the array which matches a value or -1 if the value is not found.
+    '''
+    return next_idx_unsafe(array, idx=0, match=match)
+
+
+@cython.wraparound(False)
+cdef Py_ssize_t last_idx(const np.uint8_t[:] array, bint match=True) nogil:
+    '''
+    Return the previous index within the array which matches a value or -1 if the value is not found.
+    '''
+    return prev_idx_unsafe(array, array.shape[0], match=match)
+
+
+@cython.wraparound(False)
 cdef Py_ssize_t nearest_idx_unsafe(np.uint8_t[:] array, Py_ssize_t idx, bint match=True, Py_ssize_t start=0,
                                    Py_ssize_t stop=NONE_IDX) nogil:
     stop = array_wraparound_idx(stop, array.shape[0], stop=True)
