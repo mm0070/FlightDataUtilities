@@ -50,6 +50,7 @@ cdef np.uint8_t[:] getmaskarray1d(array):
 ################################################################################
 # Mask ratio/percentage
 
+
 cpdef mask_ratio(mask):
     '''
     Ratio of masked data (1 == all masked).

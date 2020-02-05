@@ -1,5 +1,6 @@
 # cython: language_level=3, boundscheck=False
 import io
+import os
 import zipfile
 
 cimport cython
@@ -125,6 +126,12 @@ cdef class base_reader:
         '''
         raise NotImplementedError()
 
+    cpdef seek(self, Py_ssize_t pos, how=os.SEEK_SET):
+        '''
+        Seek to a byte position within source.
+        '''
+        raise NotImplementedError('seek not supported')
+
 
 cdef class data_reader(base_reader):
     '''
@@ -148,6 +155,16 @@ cdef class data_reader(base_reader):
         Read count of items from data.
         '''
         return self._create_array(self._data[self.pos // self._itemsize:(self.pos // self._itemsize) + count])
+
+    @cython.cdivision(True)
+    cpdef seek(self, Py_ssize_t pos, how=os.SEEK_SET):
+        '''
+        Seek to a byte position in source.
+        '''
+        if pos % self._itemsize:
+            raise ValueError('cannot seek to byte position within data as it is not a multiple of itemsize')
+
+        self.pos = pos
 
 
 cdef class iterable_reader(base_reader):
@@ -227,6 +244,9 @@ cdef class file_reader(base_reader):
         '''
         Read count of items from file.
         '''
+        if self.fileobj is None:
+            raise RuntimeError(f'file not opened - {self.__class__.__name__} must be used as a context manager')
+
         if self.dtype is not None and isinstance(self.fileobj, io.BufferedReader):
             kwargs = {'dtype': self.dtype}
             if read_count:
@@ -241,6 +261,18 @@ cdef class file_reader(base_reader):
                         data = data[:-remainder]
                 data = np.frombuffer(data, dtype=self.dtype)
         return data
+
+    cpdef seek(self, Py_ssize_t pos, how=os.SEEK_SET):
+        '''
+        Seek to a byte position in source.
+
+        :raises zipfile.io.UnsupportedOperation: Files opened within zip files do not support seek.
+        '''
+        if self.fileobj is None:
+            raise RuntimeError(f'file not opened - {self.__class__.__name__} must be used as a context manager')
+
+        self.fileobj.seek(pos, how)
+        self.pos = pos
 
 
 def reader(obj, *args, **kwargs):

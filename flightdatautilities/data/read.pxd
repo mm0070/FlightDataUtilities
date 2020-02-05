@@ -17,11 +17,13 @@ cdef class base_reader:
     cpdef all(self)
     cpdef first(self)
     cpdef read(self, Py_ssize_t read_count)
+    cpdef seek(self, Py_ssize_t pos, how=?)
 
 cdef class data_reader(base_reader):
     cdef:
         object _data
     cpdef read(self, Py_ssize_t read_count)
+    cpdef seek(self, Py_ssize_t pos, how=?)
 
 cdef class iterable_reader(base_reader):
     cdef:
@@ -34,4 +36,4 @@ cdef class file_reader(base_reader):
         public object name
         object fileobj
     cpdef read(self, Py_ssize_t read_count)
-
+    cpdef seek(self, Py_ssize_t pos, how=?)
