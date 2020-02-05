@@ -13,6 +13,23 @@ from flightdatautilities.data cimport masked_array as ma
 #from flightdatautilities.data.masked_array import repair_mask
 
 
+class TestFirstIndexWithinROC(unittest.TestCase):
+
+    def test_first_index_within_roc(self):
+        array = np.ma.zeros(20)
+        self.assertEqual(ma.first_idx_within_roc(array.data, array.mask, 1, 0, 2, 10), 2)
+        self.assertEqual(ma.first_idx_within_roc(array.data, array.mask, 1, 2, 5, 15), 5)
+
+        array = np.ma.arange(20) * 2
+        self.assertEqual(ma.first_idx_within_roc(array.data, array.mask, 1, 0, 3, 10), -1)
+        self.assertEqual(ma.first_idx_within_roc(array.data, array.mask, 5, 0, 4, 10), 4)
+
+        array = np.ma.array([100, 100, 0, 0, 0, 0, 0, 0])
+        self.assertEqual(ma.first_idx_within_roc(array.data, array.mask, 25, 0, 2, 8), 4)
+        array = np.ma.array([100, 100, 200, 200, 200, 200, 200, 200])
+        self.assertEqual(ma.first_idx_within_roc(array.data, array.mask, 25, 0, 2, 8), 4)
+
+
 ################################################################################
 # Utility functions
 

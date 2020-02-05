@@ -10,6 +10,8 @@ cdef enum Aggregate:
 cdef enum RepairMethod:
     FILL_START, FILL_STOP, INTERPOLATE
 
+cpdef Py_ssize_t first_idx_within_roc(np.float64_t[:] data, np.uint8_t[:] mask, np.float64_t limit, Py_ssize_t last_stable_idx, Py_ssize_t start_idx,
+                                      Py_ssize_t stop_idx)
 ################################################################################
 # Utility functions
 cdef np.uint8_t[:] getmaskarray1d(array)
