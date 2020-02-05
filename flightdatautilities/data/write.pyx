@@ -19,11 +19,11 @@ from flightdatautilities.data import iterate as it
 METADATA_KEYS = ('serial_number', 'wps', 'frame_double', 'split')
 
 
-def iter_hash(data_gen, hash):
+def iter_hash(data_iter, hash):
     '''
     Update a hash object with data from a generator.
     '''
-    for data in data_gen:
+    for data in data_iter:
         hash.update(data)
         yield data
 
@@ -71,36 +71,36 @@ def split_extension(metadata, metadata_keys=METADATA_KEYS):
     return '.'.join(parts)
 
 
-def memory_writer(data_gen):
+def memory_writer(data_iter):
     '''
     Write data iterable to list.
     '''
-    return list(it.iter_data(data_gen))
+    return list(it.iter_data(data_iter))
 
 
-def file_writer(filelike, data_gen, compression=DEFAULT_COMPRESSION):
+def file_writer(filelike, data_iter, compression=DEFAULT_COMPRESSION):
     '''
     Write data iterable to filepath or file-like object (ignores splits).
     '''
     if isinstance(filelike, str):
         filepath = decompressed_filepath(filelike)
         filepath, fileobj = open_writable_file(filepath, compression=compression)
-        for data in it.iter_data(data_gen):
+        for data in it.iter_data(data_iter):
             write_data(fileobj, data)
         return filepath
     else:
-        data_gen = it.iter_as_dtype(it.iter_data(data_gen), None)
+        data_iter = it.iter_as_dtype(it.iter_data(data_iter), None)
 
         if compression:
-            data_gen = iter_compress(data_gen, compression)
+            data_iter = iter_compress(data_iter, compression)
 
-        for data in data_gen:
+        for data in data_iter:
             filelike.write(data)
 
         return filelike
 
 
-def file_split_writer(filepath, data_gen, compression=DEFAULT_COMPRESSION):
+def file_split_writer(filepath, data_iter, compression=DEFAULT_COMPRESSION):
     '''
     Write data iterable to multiple files with flight splitting.
     '''
@@ -108,8 +108,8 @@ def file_split_writer(filepath, data_gen, compression=DEFAULT_COMPRESSION):
     metadata = {'split': 1}
     file = {}
 
-    def iterate(data_gen):
-        for data in data_gen:
+    def iterate(data_iter):
+        for data in data_iter:
             if data is None:
                 continue
             elif types.is_split(data):
@@ -133,22 +133,22 @@ def file_split_writer(filepath, data_gen, compression=DEFAULT_COMPRESSION):
 
             write_data(file['fileobj'], data)
 
-    yield from iterate(data_gen)
+    yield from iterate(data_iter)
 
     if file:
         file['fileobj'].close()
         yield file['extension'], file['filepath']
 
 
-def memory_split_writer(data_gen):
+def memory_split_writer(data_iter):
     '''
     Write data to multiple lists with flight splitting.
     '''
     metadata = {'split': 1}
     split = {'chunks': []}
 
-    def iterate(data_gen):
-        for data in data_gen:
+    def iterate(data_iter):
+        for data in data_iter:
             if types.is_split(data):
                 metadata.update(data)
                 if split['chunks']:
@@ -161,7 +161,7 @@ def memory_split_writer(data_gen):
                     split['extension'] = split_extension(metadata)
                 split['chunks'].append(data)
 
-    yield from iterate(data_gen)
+    yield from iterate(data_iter)
 
     if split['chunks']:
         yield split['extension'], split['chunks']
