@@ -279,6 +279,20 @@ cdef np.intp_t[:, :] zeros2d_intp(np.npy_intp x, np.npy_intp y):
 
 
 @cython.wraparound(False)
+cdef np.intp_t[:, :, :] zeros3d_intp(np.npy_intp x, np.npy_intp y, np.npy_intp z):
+    '''
+    Return a new two-dimensional np.intp memoryview of given size, filled with zeros.
+
+    OPT: ~2.5x faster than creating a memoryview from np.zeros
+    '''
+    cdef np.npy_intp shape[3]
+    shape[0] = x
+    shape[1] = y
+    shape[2] = z
+    return np.PyArray_ZEROS(3, shape, np.NPY_INTP, False)
+
+
+@cython.wraparound(False)
 cdef np.uint8_t[:] empty_uint8(np.npy_intp size):
     '''
     Return a new one-dimensional np.uint8 memoryview of given size, without initializing entries.
