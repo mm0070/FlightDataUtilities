@@ -1,5 +1,4 @@
 # cython: language_level=3, boundscheck=False
-
 '''
 # Slice Replacement
 
@@ -82,6 +81,7 @@ slices_to_array(length, slices)
 
 
 import cython
+from libc.math cimport ceil, floor
 import numpy as np
 cimport numpy as np
 
@@ -91,6 +91,7 @@ from flightdatautilities.data cimport cython as cy, scalar as sc
 
 ################################################################################
 # Slice operations
+
 
 cpdef nearest_slice(array, Py_ssize_t idx, bint match=True):
     cdef np.uint8_t[:] data = array.view(np.uint8)
@@ -180,6 +181,7 @@ cpdef slices_to_array(Py_ssize_t size, slices):
 
 ################################################################################
 # Type-inspecific array operations
+
 
 cpdef align_arrays(slave_array, master_array):
     '''
@@ -328,6 +330,7 @@ cpdef value_idx(cy.np_types[:] array, cy.np_types value):
 ################################################################################
 # Boolean array operations
 
+
 cpdef contract_runs(array, Py_ssize_t size, bint match=True):
     '''
     Contract runs of matching values within an array, e.g.
@@ -421,6 +424,7 @@ cpdef section_overlap(a, b):
 
 ################################################################################
 # Uint8 array (bytes) operations
+
 
 cpdef bytes key_value(const np.uint8_t[:] array, const np.uint8_t[:] key, const np.uint8_t[:] delimiter,
                       const np.uint8_t[:] separator, Py_ssize_t start=0):
@@ -538,6 +542,7 @@ cpdef upsample_arrays(arrays):
 ################################################################################
 # Flight Data Recorder data operations
 
+
 @cython.cdivision(True)
 @cython.wraparound(False)
 cpdef np.uint8_t[:] pack(const np.uint8_t[:] unpacked):
@@ -604,6 +609,7 @@ cpdef np.uint16_t[:] unpack_little_endian(const np.uint8_t[:] data):
 ################################################################################
 # Array serialisation
 
+
 cpdef save_compressed(path, array):
     '''
     Save either a MappedArray, np.ma.MaskedArray or np.ndarray in a compressed archive.
@@ -649,3 +655,37 @@ cpdef load_compressed(path):
     return array
 
 
+################################################################################
+# Alignment
+
+
+@cython.cdivision(True)
+@cython.wraparound(False)
+cpdef np.float64_t[:] align_interpolate(np.float64_t[:] input, np.float64_t slave_frequency,
+                                        np.float64_t slave_offset, np.float64_t master_frequency,
+                                        np.float64_t master_offset=0):
+    if slave_frequency <= 0 or master_frequency <= 0:
+        raise ValueError('frequencies must be greater than 0')
+
+    if slave_frequency == master_frequency and slave_offset == master_offset or not input.shape[0]:
+        return input
+
+    cdef:
+        np.float64_t input_pos, idx_multiplier = slave_frequency / master_frequency, \
+            frequency_multiplier = master_frequency / slave_frequency, \
+            offset = frequency_multiplier * (slave_offset - master_offset)
+        Py_ssize_t input_prev_idx, output_idx
+        np.float64_t[:] output = cy.zeros_float64(<Py_ssize_t>(input.shape[0] * frequency_multiplier))
+
+    for output_idx in range(output.shape[0]):
+        input_pos = (output_idx * idx_multiplier) + offset
+        if input_pos <= 0:
+            value = input[0]
+        elif input_pos >= input.shape[0] - 1:
+            value = input[input.shape[0] - 1]
+        else:
+            input_prev_idx = <Py_ssize_t>floor(input_pos)
+            output[output_idx] = input[input_prev_idx] + (
+                (input[<Py_ssize_t>ceil(input_pos)] - input[input_prev_idx]) * (input_pos - input_prev_idx))
+
+    return output

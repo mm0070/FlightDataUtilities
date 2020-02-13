@@ -37,6 +37,11 @@ cpdef upsample_arrays(arrays)
 cpdef save_compressed(path, array)
 cpdef load_compressed(path)
 ################################################################################
+# Alignment
+cpdef np.float64_t[:] align_interpolate(np.float64_t[:] input, np.float64_t slave_frequency,
+                                        np.float64_t slave_offset, np.float64_t master_frequency,
+                                        np.float64_t master_offset=?)
+################################################################################
 # Flight Data Recorder data operations
 cpdef np.uint8_t[:] pack(const np.uint8_t[:] array)
 cpdef np.uint8_t[:] unpack(const np.uint8_t[:] array)
