@@ -12,6 +12,7 @@ import io
 import logging
 import lzma
 import os
+import pathlib
 import shutil
 import tempfile
 import zipfile
@@ -305,19 +306,21 @@ def iter_decompress(data_iter, compression):
     return (decompressor.decompress(data) for data in data_iter)
 
 
-def open_compressed(filepath, mode='rb'):
+def open_compressed(path, mode='rb'):
     '''
-    Open filepath for reading which may be compressed or within an archive. Returns a file object and can therefore be used as a context manager.
+    Open path for reading which may be compressed or within an archive. Returns a file object and can therefore be used as a context manager.
 
+    :type path: pathlib.Path or str
     :param mode: either 'r' or 'rb', mode 'r' will always be in text mode, 'rb' in binary mode.
     :type mode: str
     '''
     if mode not in {'r', 'rb'}:
         raise ValueError(f'unsupported mode: {mode}')
-    extension = os.path.splitext(filepath)[1].lstrip('.')
+    path = pathlib.Path(path)
+    extension = path.suffix.lstrip('.').lower()
     archive_cls = ARCHIVE_CLASSES.get(extension)
     if archive_cls:
-        archive = archive_cls(filepath)  # archive is closed automatically when fileobj within archive is closed
+        archive = archive_cls(path)  # archive is closed automatically when fileobj within archive is closed
         filenames = archive.namelist()
         if len(filenames) != 1:
             raise IOError('Archives must contain a single file.')
@@ -326,7 +329,7 @@ def open_compressed(filepath, mode='rb'):
         if mode == 'r':
             fileobj = io.TextIOWrapper(fileobj)
     else:
-        fileobj = COMPRESSION_CLASSES.get(extension, open)(filepath, 'rt' if mode == 'r' else mode)
+        fileobj = COMPRESSION_CLASSES.get(extension, open)(path, 'rt' if mode == 'r' else mode)
 
     return fileobj
 

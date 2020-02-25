@@ -209,21 +209,24 @@ cdef class file_reader(base_reader):
     '''
     Read data incrementally from a file path or fileobj.
     '''
-    def __init__(self, path, *args, **kwargs):
+    def __init__(self, filelike, *args, **kwargs):
         '''
-        :param path: file path or fileobj
-        :type path: str or fileobj
+        :param filelike: file path or fileobj
+        :type filelike: str or pathlib.Path or fileobj
         '''
         kwargs['dtype'] = kwargs.get('dtype') or None  # change False to None
         super().__init__(**kwargs)
-        self.name = path
+        self.filelike = filelike
 
     def __enter__(self):
         '''
         Opens file for reading.
         '''
         # TODO: Handle '-' as stdin, e.g. getattr(sys.stdin, 'buffer', sys.stdin)?
-        self.fileobj = open_compressed(self.name) if isinstance(self.name, str) else self.name
+        if hasattr(self.filelike, 'read') and callable(self.filelike.read):
+            self.fileobj = self.filelike
+        else:
+            self.fileobj = open_compressed(self.filelike)
 
         if self.pos:
             try:
