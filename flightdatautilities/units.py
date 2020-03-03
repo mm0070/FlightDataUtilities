@@ -118,6 +118,7 @@ FPS = 'fps'
 IPS = 'ips'
 METER_S = 'm/s'
 MACH = 'Mach'  # [0]
+MILLIMACH = 'milliMach'  # [0]
 RPM = 'rpm'
 
 # Temperature:
@@ -405,6 +406,12 @@ CONVERSION_MULTIPLIERS = {
         FPM: 196.850394,
         FPS: 3.28084,
     },
+    MACH: {
+        MILLIMACH: 1000.0,
+    },
+    MILLIMACH: {
+        MACH: 0.001,
+    },
     # Time:
     HOUR: {
         MINUTE: 60.0,
@@ -533,6 +540,8 @@ STANDARD_CONVERSIONS = {
     BAR: PSI,
     INHG: MILLIBAR,
     HECTOPASCAL: MILLIBAR,
+    # Speed:
+    MILLIMACH: MACH,
     # Temperature:
     FAHRENHEIT: CELSIUS,
     KELVIN: CELSIUS,
@@ -583,6 +592,8 @@ UNIT_CORRECTIONS = {
     '°': DEGREE,
     'DEG': DEGREE,
     'Deg': DEGREE,
+    'Degrees': DEGREE,
+    'Degrees E of N': DEGREE,
     'degs.': DEGREE,
     'degree': DEGREE,
     'degrees': DEGREE,
@@ -704,6 +715,7 @@ UNIT_CORRECTIONS = {
     'fts': FT,
     'feet': FT,
     'FEET': FT,
+    'Feet': FT,
     'foot': FT,
     'metre': METER,
     'metres': METER,
@@ -773,6 +785,7 @@ UNIT_CORRECTIONS = {
     # Speed:
     'KT': KT,
     'KTS': KT,
+    'Knots': KT,
     'Kt': KT,
     'Kts': KT,
     'kts': KT,
@@ -788,6 +801,7 @@ UNIT_CORRECTIONS = {
     'ft/min': FPM,
     'FT/MIN': FPM,
     'Ft/Mn': FPM,
+    'Ft/Min': FPM,
     'Ft/min': FPM,
     'FEET/MIN': FPM,
     'feet/min': FPM,
@@ -813,6 +827,7 @@ UNIT_CORRECTIONS = {
     'M': MACH,
     'MACH': MACH,
     'mach': MACH,
+    'millimach': MILLIMACH,
     'RPM': RPM,
     'Rpm': RPM,
     # Temperature:
@@ -1005,7 +1020,7 @@ UNIT_CATEGORIES = {
     'Length': (FT, METER, KM, MILE, NM, INCH, MILLIMETER),
     'Mass': (LB, KG, SLUG, TONNE),
     'Pressure': (INHG, PASCAL, HECTOPASCAL, BAR, MILLIBAR, PSI, PSIA, PSID, PSIG, PSI_MINUTE, LB_FT2),
-    'Speed': (KT, MPH, FPM, FPS, IPS, METER_S, MACH, RPM),
+    'Speed': (KT, MPH, FPM, FPS, IPS, METER_S, MACH, MILLIMACH, RPM),
     'Temperature': (CELSIUS, FAHRENHEIT, KELVIN, RANKINE),
     'Time': (HOUR, MINUTE, SECOND, DAY, WEEK, MONTH, YEAR),
     'Torque': (FT_LB, IN_LB, IN_OZ),
@@ -1095,6 +1110,7 @@ UNIT_DESCRIPTIONS = {
     IPS: 'inches per second',
     METER_S: 'meters per second',
     MACH: 'Mach',
+    MILLIMACH: 'milliMach',
     RPM: 'revolutions per minute',
     # Temperature:
     CELSIUS: 'degrees Celsius',
