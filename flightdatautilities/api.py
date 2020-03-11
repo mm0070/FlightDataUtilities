@@ -79,9 +79,9 @@ class FileHandler(Handler, metaclass=abc.ABCMeta):
         logger.debug('Loading data from file: %s', path)
         with open(path, 'rb') as f:
             if path.endswith('.json'):
-                return json.load(f)
+                return json.load(f, Loader=yaml.FullLoader)
             if path.endswith('.yaml'):
-                return yaml.load(f)
+                return yaml.load(f, Loader=yaml.FullLoader)
         raise NotImplementedError('Cannot load data for unknown file type.')
 
 

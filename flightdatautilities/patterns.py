@@ -31,7 +31,7 @@ def pattern_regex(pattern, missing=True, prefix=False):
     :rtype: list
     '''
     return re.escape(pattern).replace(
-        WILDCARD_ESCAPE, '%s%s' % (OPTIONS_GROUP, '?' if missing else '')) + ('' if prefix else '\Z(?ms)')
+        WILDCARD_ESCAPE, '%s%s' % (OPTIONS_GROUP, '?' if missing else '')) + ('' if prefix else r'\Z')
 
 
 def wildcard_match(pattern, keys, missing=True, prefix=False):
@@ -56,7 +56,7 @@ def wildcard_match(pattern, keys, missing=True, prefix=False):
         return sorted({key for key in keys if key.startswith(pattern)})
     else:
         return [pattern] if pattern in keys else []
-    re_obj = re.compile(pattern_regex(pattern, missing=missing, prefix=prefix))
+    re_obj = re.compile(f'(?ms){pattern_regex(pattern, missing=missing, prefix=prefix)}')
     return sorted({key for key in keys if re_obj.match(key)})
 
 
@@ -84,7 +84,7 @@ def parse_options(name, options=OPTIONS):
     '''
     :param options: Optional valid options.
     '''
-    matched_options = re.findall('(?P<option>\(\w+\))', name)
+    matched_options = re.findall(r'(?P<option>\(\w+\))', name)
     if options:
         # The following line loses option ordering.
         #return list(set(matched_options) & set(options))

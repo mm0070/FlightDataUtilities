@@ -235,9 +235,9 @@ class TestVelocitySpeed(unittest.TestCase):
 
     def test__v2(self):
         # Test where weight argument is a single value:
-        self.assertEquals(self.vs.v2('5', 165000), 164)
-        self.assertEquals(self.vs.v2('15', 120000), 134)
-        self.assertEquals(self.vs.v2('20', 145000), 142)
+        self.assertEqual(self.vs.v2('5', 165000), 164)
+        self.assertEqual(self.vs.v2('15', 120000), 134)
+        self.assertEqual(self.vs.v2('20', 145000), 142)
         # Test where weight argument is a masked array:
         weight = np.ma.arange(120, 130, 2) * 1000
         weight[2] = np.ma.masked
@@ -254,7 +254,7 @@ class TestVelocitySpeed(unittest.TestCase):
     def test__v2__minimum_speed(self):
         self.vs.minimum_speed = 125
         # Test where weight argument is a single value:
-        self.assertEquals(self.vs.v2('15', 100500), 125)
+        self.assertEqual(self.vs.v2('15', 100500), 125)
         # Test where weight argument is a masked array:
         weight = np.ma.arange(100, 110, 2) * 1000
         weight[2] = np.ma.masked
@@ -270,8 +270,8 @@ class TestVelocitySpeed(unittest.TestCase):
         self.assertIs(self.vs.v2('20', 195000), np.ma.masked)
         self.assertIsNot(self.vs.v2('20', 100000), np.ma.masked)
         self.assertIsNot(self.vs.v2('20', 190000), np.ma.masked)
-        self.assertEquals(self.vs.v2('20', 100000), 118)
-        self.assertEquals(self.vs.v2('20', 190000), 164)
+        self.assertEqual(self.vs.v2('20', 100000), 118)
+        self.assertEqual(self.vs.v2('20', 190000), 164)
         # Test where weight argument is a masked array:
         weight = np.ma.arange(95, 200, 20) * 1000
         v2_15 = np.ma.array((0, 131, 142, 152, 162, 0))
@@ -382,9 +382,9 @@ class TestVelocitySpeed(unittest.TestCase):
 
     def test__vref(self):
         # Test where weight argument is a single value:
-        self.assertEquals(self.vs.vref('5', 120000), 128)
-        self.assertEquals(self.vs.vref('15', 120000), 122)
-        self.assertEquals(self.vs.vref('20', 145000), 132)
+        self.assertEqual(self.vs.vref('5', 120000), 128)
+        self.assertEqual(self.vs.vref('15', 120000), 122)
+        self.assertEqual(self.vs.vref('20', 145000), 132)
         # Test where weight argument is a masked array:
         weight = np.ma.arange(120, 130, 2) * 1000
         weight[2] = np.ma.masked
@@ -401,7 +401,7 @@ class TestVelocitySpeed(unittest.TestCase):
     def test__vref__minimum_speed(self):
         self.vs.minimum_speed = 112
         # Test where weight argument is a single value:
-        self.assertEquals(self.vs.vref('15', 100500), 112)
+        self.assertEqual(self.vs.vref('15', 100500), 112)
         # Test where weight argument is a masked array:
         weight = np.ma.arange(100, 110, 2) * 1000
         weight[2] = np.ma.masked
@@ -417,8 +417,8 @@ class TestVelocitySpeed(unittest.TestCase):
         self.assertIs(self.vs.vref('20', 195000), np.ma.masked)
         self.assertIsNot(self.vs.vref('20', 100000), np.ma.masked)
         self.assertIsNot(self.vs.vref('20', 190000), np.ma.masked)
-        self.assertEquals(self.vs.vref('20', 100000), 105)
-        self.assertEquals(self.vs.vref('20', 190000), 158)
+        self.assertEqual(self.vs.vref('20', 100000), 105)
+        self.assertEqual(self.vs.vref('20', 190000), 158)
         # Test where weight argument is a masked array:
         weight = np.ma.arange(95, 200, 20) * 1000
         vref_15 = np.ma.array((0, 119, 130, 140, 154, 0))
@@ -529,9 +529,9 @@ class TestVelocitySpeed(unittest.TestCase):
 
     def test__vapp(self):
         # Test where weight argument is a single value:
-        self.assertEquals(self.vs.vapp('5', 120000), 128)
-        self.assertEquals(self.vs.vapp('15', 120000), 122)
-        self.assertEquals(self.vs.vapp('20', 145000), 132)
+        self.assertEqual(self.vs.vapp('5', 120000), 128)
+        self.assertEqual(self.vs.vapp('15', 120000), 122)
+        self.assertEqual(self.vs.vapp('20', 145000), 132)
         # Test where weight argument is a masked array:
         weight = np.ma.arange(120, 130, 2) * 1000
         weight[2] = np.ma.masked
@@ -548,7 +548,7 @@ class TestVelocitySpeed(unittest.TestCase):
     def test__vapp__minimum_speed(self):
         self.vs.minimum_speed = 112
         # Test where weight argument is a single value:
-        self.assertEquals(self.vs.vapp('15', 100500), 112)
+        self.assertEqual(self.vs.vapp('15', 100500), 112)
         # Test where weight argument is a masked array:
         weight = np.ma.arange(100, 110, 2) * 1000
         weight[2] = np.ma.masked
@@ -564,8 +564,8 @@ class TestVelocitySpeed(unittest.TestCase):
         self.assertIs(self.vs.vapp('20', 195000), np.ma.masked)
         self.assertIsNot(self.vs.vapp('20', 100000), np.ma.masked)
         self.assertIsNot(self.vs.vapp('20', 190000), np.ma.masked)
-        self.assertEquals(self.vs.vapp('20', 100000), 105)
-        self.assertEquals(self.vs.vapp('20', 190000), 158)
+        self.assertEqual(self.vs.vapp('20', 100000), 105)
+        self.assertEqual(self.vs.vapp('20', 190000), 158)
         # Test where weight argument is a masked array:
         weight = np.ma.arange(95, 200, 20) * 1000
         vapp_15 = np.ma.array((0, 119, 130, 140, 154, 0))

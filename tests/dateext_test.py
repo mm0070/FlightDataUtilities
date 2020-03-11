@@ -112,19 +112,19 @@ class TestRange(unittest.TestCase):
 
     def test_range__step_normal(self):
         args = (datetime(2000, 1, 1), datetime(2000, 2, 1), 1)
-        self.assertEquals(dateext.range(*args), self.expected[0])
+        self.assertEqual(dateext.range(*args), self.expected[0])
         args = (datetime(2000, 1, 31), datetime(1999, 12, 31), -1)
-        self.assertEquals(dateext.range(*args), self.expected[1])
+        self.assertEqual(dateext.range(*args), self.expected[1])
         args = (datetime(2000, 1, 1), datetime(2000, 2, 1), 2)
-        self.assertEquals(dateext.range(*args), self.expected[2])
+        self.assertEqual(dateext.range(*args), self.expected[2])
         args = (datetime(2000, 1, 31), datetime(1999, 12, 31), -2)
-        self.assertEquals(dateext.range(*args), self.expected[3])
+        self.assertEqual(dateext.range(*args), self.expected[3])
 
     def test_range__step_reversed(self):
         args = (datetime(2000, 1, 1), datetime(2000, 2, 1), -1)
-        self.assertEquals(dateext.range(*args), [])
+        self.assertEqual(dateext.range(*args), [])
         args = (datetime(2000, 1, 31), datetime(1999, 12, 31), 1)
-        self.assertEquals(dateext.range(*args), [])
+        self.assertEqual(dateext.range(*args), [])
 
     def test_range__valid_field(self):
         for field in ('seconds', 'minutes', 'hours', 'days', 'weeks'):
@@ -142,4 +142,4 @@ class TestRange(unittest.TestCase):
     def test_range__date_convert(self):
         args = (date(2000, 1, 1), date(2000, 1, 5), 12)
         kwargs = {'field': 'hours'}
-        self.assertEquals(dateext.range(*args, **kwargs), self.expected[4])
+        self.assertEqual(dateext.range(*args, **kwargs), self.expected[4])
