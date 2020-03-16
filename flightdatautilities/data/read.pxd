@@ -35,5 +35,6 @@ cdef class file_reader(base_reader):
     cdef:
         public object name
         object fileobj
+        object filelike
     cpdef read(self, Py_ssize_t read_count)
     cpdef seek(self, Py_ssize_t pos, how=?)
