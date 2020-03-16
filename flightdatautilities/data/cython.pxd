@@ -1,7 +1,6 @@
-# cython: language_level=3, boundscheck=False
+# cython: language_level=3, boundscheck=False, wraparound=False
 '''
 TODO:
-- change mask memoryview types to np.bool when supported by Cython and remove .view(np.uint8) from calls
 - add const to fused type functions when supported by Cython for immutable buffers
 '''
 cimport cython
@@ -42,48 +41,48 @@ cdef Py_ssize_t NONE_IDX
 
 ################################################################################
 # Memory Allocation
-cdef np.int8_t[:] empty_int8(np.npy_intp psize)
-cdef np.int8_t[:, :] empty2d_int8(np.npy_intp x, np.npy_intp y)
-cdef np.int8_t[:] zeros_int8(np.npy_intp psize)
-cdef np.int8_t[:, :] zeros2d_int8(np.npy_intp x, np.npy_intp y)
-cdef np.int16_t[:] empty_int16(np.npy_intp psize)
-cdef np.int16_t[:, :] empty2d_int16(np.npy_intp x, np.npy_intp y)
-cdef np.int16_t[:] zeros_int16(np.npy_intp psize)
-cdef np.int16_t[:, :] zeros2d_int16(np.npy_intp x, np.npy_intp y)
-cdef np.int32_t[:] empty_int32(np.npy_intp psize)
-cdef np.int32_t[:, :] empty2d_int32(np.npy_intp x, np.npy_intp y)
-cdef np.int32_t[:] zeros_int32(np.npy_intp psize)
-cdef np.int32_t[:, :] zeros2d_int32(np.npy_intp x, np.npy_intp y)
-cdef np.int64_t[:] empty_int64(np.npy_intp psize)
-cdef np.int64_t[:, :] empty2d_int64(np.npy_intp x, np.npy_intp y)
-cdef np.int64_t[:] zeros_int64(np.npy_intp psize)
-cdef np.int64_t[:, :] zeros2d_int64(np.npy_intp x, np.npy_intp y)
-cdef np.intp_t[:] empty_intp(np.npy_intp psize)
-cdef np.intp_t[:, :] empty2d_intp(np.npy_intp x, np.npy_intp y)
-cdef np.intp_t[:] zeros_intp(np.npy_intp psize)
-cdef np.intp_t[:, :] zeros2d_intp(np.npy_intp x, np.npy_intp y)
-cdef np.intp_t[:, :, :] zeros3d_intp(np.npy_intp x, np.npy_intp y, np.npy_intp z)
-cdef np.uint8_t[:] empty_uint8(np.npy_intp size)
-cdef np.uint8_t[:, :] empty2d_uint8(np.npy_intp x, np.npy_intp y)
-cdef np.uint8_t[:] zeros_uint8(np.npy_intp size)
-cdef np.uint8_t[:, :] zeros2d_uint8(np.npy_intp x, np.npy_intp y)
-cdef np.uint8_t[:] ones_uint8(np.npy_intp size)
-cdef np.uint16_t[:] empty_uint16(np.npy_intp size)
-cdef np.uint16_t[:, :] empty2d_uint16(np.npy_intp x, np.npy_intp y)
-cdef np.uint16_t[:] zeros_uint16(np.npy_intp size)
-cdef np.uint16_t[:, :] zeros2d_uint16(np.npy_intp x, np.npy_intp y)
-cdef np.uint32_t[:] empty_uint32(np.npy_intp size)
-cdef np.uint32_t[:, :] empty2d_uint32(np.npy_intp x, np.npy_intp y)
-cdef np.uint32_t[:] zeros_uint32(np.npy_intp size)
-cdef np.uint32_t[:, :] zeros2d_uint32(np.npy_intp x, np.npy_intp y)
-cdef np.uint64_t[:] empty_uint64(np.npy_intp size)
-cdef np.uint64_t[:, :] empty2d_uint64(np.npy_intp x, np.npy_intp y)
-cdef np.uint64_t[:] zeros_uint64(np.npy_intp size)
-cdef np.uint64_t[:, :] zeros2d_uint64(np.npy_intp x, np.npy_intp y)
-cdef np.float64_t[:] empty_float64(np.npy_intp size)
-cdef np.float64_t[:, :] empty2d_float64(np.npy_intp x, np.npy_intp y)
-cdef np.float64_t[:] zeros_float64(np.npy_intp size)
-cdef np.float64_t[:, :] zeros2d_float64(np.npy_intp x, np.npy_intp y)
+cdef np.int8_t[:] empty_int8(np.intp_t psize)
+cdef np.int8_t[:, :] empty2d_int8(np.intp_t x, np.intp_t y)
+cdef np.int8_t[:] zeros_int8(np.intp_t psize)
+cdef np.int8_t[:, :] zeros2d_int8(np.intp_t x, np.intp_t y)
+cdef np.int16_t[:] empty_int16(np.intp_t psize)
+cdef np.int16_t[:, :] empty2d_int16(np.intp_t x, np.intp_t y)
+cdef np.int16_t[:] zeros_int16(np.intp_t psize)
+cdef np.int16_t[:, :] zeros2d_int16(np.intp_t x, np.intp_t y)
+cdef np.int32_t[:] empty_int32(np.intp_t psize)
+cdef np.int32_t[:, :] empty2d_int32(np.intp_t x, np.intp_t y)
+cdef np.int32_t[:] zeros_int32(np.intp_t psize)
+cdef np.int32_t[:, :] zeros2d_int32(np.intp_t x, np.intp_t y)
+cdef np.int64_t[:] empty_int64(np.intp_t psize)
+cdef np.int64_t[:, :] empty2d_int64(np.intp_t x, np.intp_t y)
+cdef np.int64_t[:] zeros_int64(np.intp_t psize)
+cdef np.int64_t[:, :] zeros2d_int64(np.intp_t x, np.intp_t y)
+cdef np.intp_t[:] empty_intp(np.intp_t psize)
+cdef np.intp_t[:, :] empty2d_intp(np.intp_t x, np.intp_t y)
+cdef np.intp_t[:] zeros_intp(np.intp_t psize)
+cdef np.intp_t[:, :] zeros2d_intp(np.intp_t x, np.intp_t y)
+cdef np.intp_t[:, :, :] zeros3d_intp(np.intp_t x, np.intp_t y, np.intp_t z)
+cdef np.uint8_t[:] empty_uint8(np.intp_t size)
+cdef np.uint8_t[:, :] empty2d_uint8(np.intp_t x, np.intp_t y)
+cdef np.uint8_t[:] zeros_uint8(np.intp_t size)
+cdef np.uint8_t[:, :] zeros2d_uint8(np.intp_t x, np.intp_t y)
+cdef np.uint8_t[:] ones_uint8(np.intp_t size)
+cdef np.uint16_t[:] empty_uint16(np.intp_t size)
+cdef np.uint16_t[:, :] empty2d_uint16(np.intp_t x, np.intp_t y)
+cdef np.uint16_t[:] zeros_uint16(np.intp_t size)
+cdef np.uint16_t[:, :] zeros2d_uint16(np.intp_t x, np.intp_t y)
+cdef np.uint32_t[:] empty_uint32(np.intp_t size)
+cdef np.uint32_t[:, :] empty2d_uint32(np.intp_t x, np.intp_t y)
+cdef np.uint32_t[:] zeros_uint32(np.intp_t size)
+cdef np.uint32_t[:, :] zeros2d_uint32(np.intp_t x, np.intp_t y)
+cdef np.uint64_t[:] empty_uint64(np.intp_t size)
+cdef np.uint64_t[:, :] empty2d_uint64(np.intp_t x, np.intp_t y)
+cdef np.uint64_t[:] zeros_uint64(np.intp_t size)
+cdef np.uint64_t[:, :] zeros2d_uint64(np.intp_t x, np.intp_t y)
+cdef np.float64_t[:] empty_float64(np.intp_t size)
+cdef np.float64_t[:, :] empty2d_float64(np.intp_t x, np.intp_t y)
+cdef np.float64_t[:] zeros_float64(np.intp_t size)
+cdef np.float64_t[:, :] zeros2d_float64(np.intp_t x, np.intp_t y)
 ################################################################################
 # Unpacking data types
 cdef np.uint16_t unpack_uint16_le_unsafe(const np.uint8_t[:] data, Py_ssize_t idx=?) nogil
@@ -121,8 +120,10 @@ cdef Py_ssize_t next_idx_unsafe(const np.uint8_t[:] array, Py_ssize_t idx=?, bin
 cdef Py_ssize_t next_idx(const np.uint8_t[:] array, Py_ssize_t idx=?, bint match=?, Py_ssize_t stop=?) nogil
 cdef Py_ssize_t first_idx(const np.uint8_t[:] array, bint match=?) nogil
 cdef Py_ssize_t last_idx(const np.uint8_t[:] array, bint match=?) nogil
-cdef Py_ssize_t nearest_idx_unsafe(np.uint8_t[:] array, Py_ssize_t idx, bint match=?, Py_ssize_t start=?, Py_ssize_t stop=?) nogil
-cdef Py_ssize_t nearest_idx(np.uint8_t[:] array, Py_ssize_t idx, bint match=?, Py_ssize_t start=?, Py_ssize_t stop=?) nogil
+cdef Py_ssize_t nearest_idx_unsafe(const np.uint8_t[:] array, Py_ssize_t idx, bint match=?, Py_ssize_t start=?,
+                                   Py_ssize_t stop=?) nogil
+cdef Py_ssize_t nearest_idx(const np.uint8_t[:] array, Py_ssize_t idx, bint match=?, Py_ssize_t start=?,
+                            Py_ssize_t stop=?) nogil
 cdef Py_ssize_t subarray_idx_uint8(const np.uint8_t[:] array, const np.uint8_t[:] subarray, Py_ssize_t start=?) nogil
 cdef Py_ssize_t value_idx(np_types[:] array, np_types value) nogil
 cdef Py_ssize_t value_idx_uint8(const np.uint8_t[:] array, np.uint8_t value) nogil
@@ -131,7 +132,8 @@ cdef Py_ssize_t value_idx_uint8(const np.uint8_t[:] array, np.uint8_t value) nog
 cdef np_types arrays_continuous_value(np_types[:] data1, np_types[:] data2, Py_ssize_t idx) nogil
 cdef np.uint16_t[:] byteswap_array(const np.uint8_t[:] data)
 cdef np.uint8_t[:] contract_runs(np.uint8_t[:] data, Py_ssize_t size, bint match=?) nogil
-cdef np.uint8_t[:] remove_small_runs(np.uint8_t[:] data, np.float64_t seconds, np.float64_t hz=?, bint match=?) nogil
+cdef np.uint8_t[:] remove_small_runs(np.uint8_t[:] data, Py_ssize_t size, bint match=?) nogil
+cdef np.uint8_t[:] remove_small_runs_hz(np.uint8_t[:] data, np.float64_t seconds, np.float64_t hz=?, bint match=?) nogil
 ################################################################################
 # Concatenation
 cdef np.uint8_t[:] concatenate_uint8(memviews)

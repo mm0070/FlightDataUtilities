@@ -188,7 +188,7 @@ class TestIterViewDtype(unittest.TestCase):
         result = list(it.iter_view_dtype([array], dtype))
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0].dtype, dtype)
-        self.assertEqual(bytes(result[0]), array.view(np.uint8).tostring())
+        self.assertEqual(bytes(result[0]), array.tostring())
         data = b'abc'
         result = list(it.iter_view_dtype([data], dtype))
         self.assertEqual(len(result), 1)

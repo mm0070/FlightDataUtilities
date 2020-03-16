@@ -10,6 +10,115 @@ from flightdatautilities.data cimport cython as cy, types
 ################################################################################
 # Memory Allocation
 
+
+class TestEmptyInt8(unittest.TestCase):
+    def test_empty_int8(self):
+        memview = cy.empty_int8(5)
+        self.assertTrue(types.is_memoryview(memview))
+        self.assertEqual(memview.shape, (5,))
+        self.assertEqual(np.asarray(memview).dtype, np.dtype('int8'))
+
+
+class TestEmpty2dInt8(unittest.TestCase):
+    def test_empty2d_int8(self):
+        memview = cy.empty2d_int8(2, 3)
+        self.assertTrue(types.is_memoryview(memview))
+        self.assertEqual(memview.shape, (2, 3))
+        self.assertEqual(np.asarray(memview).dtype, np.dtype('int8'))
+
+
+class TestZerosInt8(unittest.TestCase):
+    def test_zeros_int8(self):
+        memview = cy.zeros_int8(5)
+        self.assertTrue(types.is_memoryview(memview))
+        self.assertEqual(memview.shape, (5,))
+        array = np.asarray(memview)
+        self.assertEqual(array.dtype, np.dtype('int8'))
+        self.assertEqual(array.tolist(), [0, 0, 0, 0, 0])
+
+
+class TestZeros2dInt8(unittest.TestCase):
+    def test_zeros2d_int8(self):
+        memview = cy.zeros2d_int8(2, 3)
+        self.assertTrue(types.is_memoryview(memview))
+        self.assertEqual(memview.shape, (2, 3))
+        array = np.asarray(memview)
+        self.assertEqual(array.dtype, np.dtype('int8'))
+        self.assertEqual(array.tolist(), [[0, 0, 0], [0, 0, 0]])
+
+
+class TestEmptyInt16(unittest.TestCase):
+    def test_empty_int16(self):
+        memview = cy.empty_int16(5)
+        self.assertTrue(types.is_memoryview(memview))
+        self.assertEqual(memview.shape, (5,))
+        self.assertEqual(np.asarray(memview).dtype, np.dtype('int16'))
+
+
+class TestEmpty2dInt16(unittest.TestCase):
+    def test_empty2d_int16(self):
+        memview = cy.empty2d_int16(2, 3)
+        self.assertTrue(types.is_memoryview(memview))
+        self.assertEqual(memview.shape, (2, 3))
+        self.assertEqual(np.asarray(memview).dtype, np.dtype('int16'))
+
+
+class TestZerosInt16(unittest.TestCase):
+    def test_zeros_int16(self):
+        memview = cy.zeros_int16(5)
+        self.assertTrue(types.is_memoryview(memview))
+        self.assertEqual(memview.shape, (5,))
+        array = np.asarray(memview)
+        self.assertEqual(array.dtype, np.dtype('int16'))
+        self.assertEqual(array.tolist(), [0, 0, 0, 0, 0])
+
+
+class TestZeros2dInt16(unittest.TestCase):
+    def test_zeros2d_int16(self):
+        memview = cy.zeros2d_int16(2, 3)
+        self.assertTrue(types.is_memoryview(memview))
+        self.assertEqual(memview.shape, (2, 3))
+        array = np.asarray(memview)
+        self.assertEqual(array.dtype, np.dtype('int16'))
+        self.assertEqual(array.tolist(), [[0, 0, 0], [0, 0, 0]])
+
+
+class TestEmptyInt32(unittest.TestCase):
+    def test_empty_int8(self):
+        memview = cy.empty_int32(5)
+        self.assertTrue(types.is_memoryview(memview))
+        self.assertEqual(memview.shape, (5,))
+        self.assertEqual(np.asarray(memview).dtype, np.dtype('int32'))
+
+
+class TestEmpty2dInt32(unittest.TestCase):
+    def test_empty2d_int32(self):
+        memview = cy.empty2d_int32(2, 3)
+        self.assertTrue(types.is_memoryview(memview))
+        self.assertEqual(memview.shape, (2, 3))
+        self.assertEqual(np.asarray(memview).dtype, np.dtype('int32'))
+
+
+class TestZerosInt32(unittest.TestCase):
+    def test_zeros_int32(self):
+        memview = cy.zeros_int32(5)
+        self.assertTrue(types.is_memoryview(memview))
+        self.assertEqual(memview.shape, (5,))
+        array = np.asarray(memview)
+        self.assertEqual(array.dtype, np.dtype('int32'))
+        self.assertEqual(array.tolist(), [0, 0, 0, 0, 0])
+
+
+class TestZeros2dInt8(unittest.TestCase):
+    def test_zeros2d_int8(self):
+        memview = cy.zeros2d_int8(2, 3)
+        self.assertTrue(types.is_memoryview(memview))
+        self.assertEqual(memview.shape, (2, 3))
+        array = np.asarray(memview)
+        self.assertEqual(array.dtype, np.dtype('int8'))
+        self.assertEqual(array.tolist(), [[0, 0, 0], [0, 0, 0]])
+
+
 class TestEmptyInt64(unittest.TestCase):
     def test_empty_int64(self):
         memview = cy.empty_int64(5)
@@ -82,11 +191,40 @@ class TestZeros2dIntp(unittest.TestCase):
         self.assertEqual(array.tolist(), [[0, 0, 0], [0, 0, 0]])
 
 
+class TestZeros3dIntp(unittest.TestCase):
+    def test_zeros3d_intp(self):
+        memview = cy.zeros3d_intp(2, 3, 4)
+        self.assertTrue(types.is_memoryview(memview))
+        self.assertEqual(memview.shape, (2, 3, 4))
+        array = np.asarray(memview)
+        self.assertEqual(array.dtype, np.dtype('intp'))
+        self.assertEqual(array.tolist(), [
+            [
+                [0, 0, 0, 0],
+                [0, 0, 0, 0],
+                [0, 0, 0, 0],
+            ],
+            [
+                [0, 0, 0, 0],
+                [0, 0, 0, 0],
+                [0, 0, 0, 0],
+            ],
+        ])
+
+
 class TestEmptyUint8(unittest.TestCase):
     def test_empty_uint8(self):
         memview = cy.empty_uint8(5)
         self.assertTrue(types.is_memoryview(memview))
         self.assertEqual(memview.shape, (5,))
+        self.assertEqual(np.asarray(memview).dtype, np.dtype('uint8'))
+
+
+class TestEmpty2dUint8(unittest.TestCase):
+    def test_empty2d_uint8(self):
+        memview = cy.empty2d_uint8(2, 3)
+        self.assertTrue(types.is_memoryview(memview))
+        self.assertEqual(memview.shape, (2, 3))
         self.assertEqual(np.asarray(memview).dtype, np.dtype('uint8'))
 
 
@@ -98,6 +236,16 @@ class TestZerosUint8(unittest.TestCase):
         array = np.asarray(memview)
         self.assertEqual(array.dtype, np.dtype('uint8'))
         self.assertEqual(array.tolist(), [0, 0, 0, 0, 0])
+
+
+class TestZeros2dUint8(unittest.TestCase):
+    def test_zeros2d_uint8(self):
+        memview = cy.zeros2d_uint8(2, 3)
+        self.assertTrue(types.is_memoryview(memview))
+        self.assertEqual(memview.shape, (2, 3))
+        array = np.asarray(memview)
+        self.assertEqual(array.dtype, np.dtype('uint8'))
+        self.assertEqual(array.tolist(), [[0, 0, 0], [0, 0, 0]])
 
 
 class TestOnesUint8(unittest.TestCase):
@@ -118,6 +266,50 @@ class TestEmptyUint16(unittest.TestCase):
         self.assertEqual(np.asarray(memview).dtype, np.dtype('uint16'))
 
 
+class TestEmpty2dUint16(unittest.TestCase):
+    def test_empty2d_uint16(self):
+        memview = cy.empty2d_uint16(2, 3)
+        self.assertTrue(types.is_memoryview(memview))
+        self.assertEqual(memview.shape, (2, 3))
+        self.assertEqual(np.asarray(memview).dtype, np.dtype('uint16'))
+
+
+class TestZerosUint32(unittest.TestCase):
+    def test_zeros_uint32(self):
+        memview = cy.zeros_uint32(5)
+        self.assertTrue(types.is_memoryview(memview))
+        self.assertEqual(memview.shape, (5,))
+        array = np.asarray(memview)
+        self.assertEqual(array.dtype, np.dtype('uint32'))
+        self.assertEqual(array.tolist(), [0, 0, 0, 0, 0])
+
+
+class TestZeros2dUint32(unittest.TestCase):
+    def test_zeros2d_uint32(self):
+        memview = cy.zeros2d_uint32(2, 3)
+        self.assertTrue(types.is_memoryview(memview))
+        self.assertEqual(memview.shape, (2, 3))
+        array = np.asarray(memview)
+        self.assertEqual(array.dtype, np.dtype('uint32'))
+        self.assertEqual(array.tolist(), [[0, 0, 0], [0, 0, 0]])
+
+
+class TestEmptyUint32(unittest.TestCase):
+    def test_empty_uint32(self):
+        memview = cy.empty_uint32(5)
+        self.assertTrue(types.is_memoryview(memview))
+        self.assertEqual(memview.shape, (5,))
+        self.assertEqual(np.asarray(memview).dtype, np.dtype('uint32'))
+
+
+class TestEmpty2dUint32(unittest.TestCase):
+    def test_empty2d_uint32(self):
+        memview = cy.empty2d_uint32(2, 3)
+        self.assertTrue(types.is_memoryview(memview))
+        self.assertEqual(memview.shape, (2, 3))
+        self.assertEqual(np.asarray(memview).dtype, np.dtype('uint32'))
+
+
 class TestZerosUint16(unittest.TestCase):
     def test_zeros_uint16(self):
         memview = cy.zeros_uint16(5)
@@ -128,11 +320,29 @@ class TestZerosUint16(unittest.TestCase):
         self.assertEqual(array.tolist(), [0, 0, 0, 0, 0])
 
 
+class TestZeros2dUint16(unittest.TestCase):
+    def test_zeros2d_uint16(self):
+        memview = cy.zeros2d_uint16(2, 3)
+        self.assertTrue(types.is_memoryview(memview))
+        self.assertEqual(memview.shape, (2, 3))
+        array = np.asarray(memview)
+        self.assertEqual(array.dtype, np.dtype('uint16'))
+        self.assertEqual(array.tolist(), [[0, 0, 0], [0, 0, 0]])
+
+
 class TestEmptyUint64(unittest.TestCase):
     def test_empty_uint64(self):
         memview = cy.empty_uint64(5)
         self.assertTrue(types.is_memoryview(memview))
         self.assertEqual(memview.shape, (5,))
+        self.assertEqual(np.asarray(memview).dtype, np.dtype('uint64'))
+
+
+class TestEmpty2dUint64(unittest.TestCase):
+    def test_empty2d_uint64(self):
+        memview = cy.empty2d_uint64(2, 3)
+        self.assertTrue(types.is_memoryview(memview))
+        self.assertEqual(memview.shape, (2, 3))
         self.assertEqual(np.asarray(memview).dtype, np.dtype('uint64'))
 
 
@@ -144,6 +354,16 @@ class TestZerosUint64(unittest.TestCase):
         array = np.asarray(memview)
         self.assertEqual(array.dtype, np.dtype('uint64'))
         self.assertEqual(array.tolist(), [0, 0, 0, 0, 0])
+
+
+class TestZeros2dUint64(unittest.TestCase):
+    def test_zeros2d_uint64(self):
+        memview = cy.zeros2d_uint64(2, 3)
+        self.assertTrue(types.is_memoryview(memview))
+        self.assertEqual(memview.shape, (2, 3))
+        array = np.asarray(memview)
+        self.assertEqual(array.dtype, np.dtype('uint64'))
+        self.assertEqual(array.tolist(), [[0, 0, 0], [0, 0, 0]])
 
 
 class TestEmptyFloat64(unittest.TestCase):

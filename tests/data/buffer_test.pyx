@@ -74,12 +74,8 @@ class TestWriteBufferUint8(unittest.TestCase):
 
     def test_write_beyond_size_raises(self):
         cdef bf.WriteBufferUint8 write_buffer = bf.WriteBufferUint8(14)
-        try:
+        with self.assertRaises(ValueError):
             write_buffer.write(np.zeros(2, dtype=np.float64))
-        except ValueError:
-            pass
-        else:
-            self.assertTrue(False, msg='write beyond buffer size does not raise ValueError')
 
     def test_write_uint8(self):
         cdef bf.WriteBufferUint8 write_buffer = bf.WriteBufferUint8(8)
@@ -96,12 +92,8 @@ class TestWriteBufferUint8(unittest.TestCase):
 
     def test_write_uint8_beyond_size_raises(self):
         cdef bf.WriteBufferUint8 write_buffer = bf.WriteBufferUint8(14)
-        try:
+        with self.assertRaises(ValueError):
             write_buffer.write_uint8(np.zeros(16, dtype=np.uint8))
-        except ValueError:
-            pass
-        else:
-            self.assertTrue(False, msg='write_uint8 beyond buffer size does not raise ValueError')
 
 
 class TestWriteBufferUint16(unittest.TestCase):
@@ -111,12 +103,8 @@ class TestWriteBufferUint16(unittest.TestCase):
         cdef bf.WriteBufferUint16 write_buffer = bf.WriteBufferUint16(8)
         self.assertEqual(write_buffer.size, 0)
         self.assertEqual(len(write_buffer.flush()), 0)
-        try:
+        with self.assertRaises(ValueError):
             write_buffer.write_uint8(np.zeros(1, dtype=np.uint8))
-        except ValueError:
-            pass
-        else:
-            self.assertTrue(False, msg='write_uint8 beyond buffer size does not raise ValueError')
         write_buffer.write_uint8(np.zeros(0, dtype=np.uint8))
         self.assertEqual(write_buffer.size, 0)
         self.assertEqual(list(write_buffer.flush()), [])

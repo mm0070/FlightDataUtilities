@@ -78,8 +78,6 @@ slices_to_array(length, slices)
 
 ## closest_unmasked_value
 '''
-
-
 import cython
 from libc.math cimport ceil, floor
 import numpy as np
@@ -94,7 +92,7 @@ from flightdatautilities.data cimport cython as cy, scalar as sc
 
 
 cpdef nearest_slice(array, Py_ssize_t idx, bint match=True):
-    cdef np.uint8_t[:] data = array.view(np.uint8)
+    cdef np.uint8_t[:] data = array
     idx = cy.array_wraparound_idx(idx, data.shape[0])
     cdef Py_ssize_t start_idx, stop_idx, nearest_idx = cy.nearest_idx_unsafe(data, idx, match=match)
     if nearest_idx == cy.NONE_IDX:
@@ -132,6 +130,7 @@ cpdef nearest_slice(array, Py_ssize_t idx, bint match=True):
 
     return slice(start_idx, stop_idx)
 
+
 def runs_of_ones(array, min_samples=None):
     '''
     Create slices where data evaluates to True. Optimised generator version of analysis_engine.library.runs_of_ones.
@@ -145,7 +144,7 @@ def runs_of_ones(array, min_samples=None):
     :ytype: slice
     '''
     cdef:
-        np.uint8_t[:] view = array.view(np.uint8)
+        np.uint8_t[:] view = array
         Py_ssize_t idx, min_samples_long = cy.none_idx(min_samples), start_idx = -1
 
     for idx in range(view.shape[0]):
@@ -176,7 +175,7 @@ cpdef slices_to_array(Py_ssize_t size, slices):
             stop = size
         for idx in range(start, stop):
             array[idx] = 1
-    return np.asarray(array).view(np.bool)
+    return np.frombuffer(array, dtype=np.bool)
 
 
 ################################################################################
@@ -271,6 +270,29 @@ cpdef Py_ssize_t longest_section(cy.np_types[:] data, cy.np_types value=0) nogil
     return max_samples if max_samples > current_samples else current_samples
 
 
+cpdef straighten(array, np.float64_t full_range):
+    '''
+    '''
+    if full_range <= 0:
+        raise ValueError('full_range must be positive')
+
+    cdef:
+        Py_ssize_t idx
+        np.float64_t[:] data = cy.astype(array)
+        np.float64_t diff, offset = 0, threshold = full_range * 0.75
+
+    for idx in range(1, data.shape[0]):
+        diff = data[idx] - data[idx - 1]
+        if diff > threshold:
+            offset -= full_range
+        elif diff < -threshold:
+            offset += full_range
+
+        data[idx] += offset
+
+    return data
+
+
 cpdef sum_arrays(arrays):
     '''
     Sums multiple numpy arrays together.
@@ -336,17 +358,24 @@ cpdef contract_runs(array, Py_ssize_t size, bint match=True):
     Contract runs of matching values within an array, e.g.
     contract_runs([False, True, True, True], 1) == [False, False, True, False]
     '''
-    return np.asarray(cy.contract_runs(array.view(np.uint8), size, match=match)).view(np.bool)
+    return np.frombuffer(cy.contract_runs(array, size, match=match), dtype=np.bool)
 
 
-cpdef remove_small_runs(array, np.float64_t seconds=10, np.float64_t hz=1, bint match=True):
+cpdef remove_small_runs(array, Py_ssize_t size, bint match=True):
     '''
     Remove small runs of matching values from a boolean array.
     '''
-    return np.asarray(cy.remove_small_runs(array.view(np.uint8), seconds, hz, match=match)).view(np.bool)
+    return np.frombuffer(cy.remove_small_runs(array, size, match=match), dtype=np.bool)
 
 
-cpdef section_overlap(a, b):
+cpdef remove_small_runs_hz(array, np.float64_t seconds, np.float64_t hz=1, bint match=True):
+    '''
+    Remove small runs of matching values from a boolean array.
+    '''
+    return np.frombuffer(cy.remove_small_runs_hz(array, seconds, hz, match=match), dtype=np.bool)
+
+
+cpdef section_overlap(const np.uint8_t[:] x, const np.uint8_t[:] y):
     '''
     Optimised version of ~O(N^2) (2.5 million times faster)
 >>> from analysis_engine.library import runs_of_ones, slices_overlap
@@ -366,8 +395,6 @@ cpdef section_overlap(a, b):
 >>> %timeit section_overlap(x, y)
 1000 loops, best of 3: 251 µs per loop
     '''
-    cdef np.uint8_t[:] x = a.view(np.uint8), y = b.view(np.uint8)
-
     if x.shape[0] != y.shape[0]:
         raise ValueError('array lengths do not match')
 
@@ -396,7 +423,57 @@ cpdef section_overlap(a, b):
             fill_either = False
         last_both_true = both_true
 
-    return np.asarray(out).view(np.bool)
+    return np.frombuffer(out, dtype=np.bool)
+
+
+@cython.cdivision(True)
+@cython.wraparound(False)
+cpdef np.uint8_t[:] merge_bool_arrays(arrays):
+    '''
+    Merge bool arrays of equal length.
+
+    OPT: for 10 arrays of 10,000 elements: ~8x faster than merge_masks(masks), ~5x faster than np.vstack(masks).any(0)
+    '''
+    cdef:
+        const np.uint8_t[:] array
+        np.uint8_t[:] output = cy.zeros_uint8(len(arrays[0]))
+        Py_ssize_t idx
+
+    for array in arrays:
+        for idx in range(output.shape[0]):
+            output[idx] |= array[idx]
+
+    return output
+
+
+@cython.cdivision(True)
+@cython.wraparound(False)
+cpdef np.uint8_t[:] merge_bool_arrays_upsample(arrays):
+    '''
+    Merge and upsample bool arrays.
+
+    OPT: upsampling 10 memoryviews to 10,000 elements: ~5x faster than merge_masks(upsample_arrays(masks))
+    '''
+    lengths = [len(a) for a in arrays]
+    cdef:
+        # can't use generator in max - "closures inside cpdef functions not yet supported"
+        Py_ssize_t max_length = max(lengths), min_length = min(lengths), output_idx
+        const np.uint8_t[:] array
+        np.uint8_t[:] output = cy.zeros_uint8(max_length)
+        np.float64_t step
+
+    for array in arrays:
+        if array.shape[0] == max_length:  # OPT: ~5x faster than applying step
+            for output_idx in range(output.shape[0]):
+                output[output_idx] |= array[output_idx]
+        elif array.shape[0] % min_length:
+            raise ValueError('array lengths must be multiples of the shortest')
+        else:
+            step = <np.float64_t>array.shape[0] / <np.float64_t>max_length
+            for output_idx in range(output.shape[0]):
+                output[output_idx] |= array[<Py_ssize_t>(output_idx * step)]
+
+    return output
 
 
 ## TODO
@@ -689,3 +766,25 @@ cpdef np.float64_t[:] align_interpolate(np.float64_t[:] input, np.float64_t slav
                 (input[<Py_ssize_t>ceil(input_pos)] - input[input_prev_idx]) * (input_pos - input_prev_idx))
 
     return output
+
+
+#cpdef np.uint8_t[:] align_bool(np.uint8_t[:] slave, master):
+    #cdef Py_ssize_t master_len = len(master)
+
+    #if master_len == slave.shape[0]:
+        #return slave
+
+    #cdef:
+        #np.uint8_t[:] output = cy.empty_uint8(master_len)
+        #Py_ssize_t bit_shift, idx
+
+    #if master_len > slave.shape[0]:
+        #bit_shift = step_bit_shift(master_len, slave.shape[0])
+        #for idx in range(output.shape[0]):
+            #output[idx] = slave[idx >> bit_shift]
+    #elif master_len < slave.shape[0]:
+        #bit_shift = step_bit_shift(slave.shape[0], master_len)
+        #for idx in range(slave.shape[0]):
+            #output[idx >> bit_shift] |= slave[idx]
+    #return output
+

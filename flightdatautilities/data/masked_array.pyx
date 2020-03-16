@@ -10,6 +10,8 @@ cimport numpy as np
 
 from flightdatautilities.data cimport cython as cy, operations as op
 
+np.import_array()  # required for calling PyArray_* functions
+
 
 cpdef Py_ssize_t first_idx_within_roc(np.float64_t[:] data, np.uint8_t[:] mask, np.float64_t limit,
                                       Py_ssize_t last_stable_idx, Py_ssize_t start_idx, Py_ssize_t stop_idx):
@@ -44,10 +46,7 @@ cdef np.uint8_t[:] getmaskarray1d(array):
 
     OPT: ~3x faster than np.ma.getmaskarray() when mask is a scalar, ~10% faster when mask is an array
     '''
-    if array.mask is np.False_:  # np.PyArray_CheckScalar(array.mask): # FIXME: used to be faster, but now segfaults
-        return cy.zeros_uint8(len(array))
-    else:
-        return array.mask.view(np.uint8)
+    return cy.zeros_uint8(len(array)) if np.PyArray_CheckScalar(array.mask) else array.mask
 
 
 ################################################################################
@@ -62,7 +61,8 @@ cpdef mask_ratio(mask):
         return 1
     elif not np.any(mask):  # False scalar
         return 0
-    return mask.sum() / float(len(mask))
+    else:
+        return mask.sum() / float(len(mask))
 
 
 cpdef percent_unmasked(mask):
@@ -75,9 +75,10 @@ cpdef percent_unmasked(mask):
 ################################################################################
 # Merge masks
 
+
 cpdef merge_masks(masks):
     '''
-    ORs multiple masks together. Could this be done in one step with numpy?
+    ORs multiple masks together. Q: Could this be done in one step with numpy?
 
     :param masks: Masks to OR together.
     :type masks: iterable of np.ma.masked_array.mask
@@ -91,52 +92,9 @@ cpdef merge_masks(masks):
     return merged_mask
 
 
-@cython.cdivision(True)
-@cython.wraparound(False)
-cpdef np.uint8_t[:] merge_masks_uint8(masks):
-    '''
-    OPT: for 10 arrays of 10,000 elements: ~8x faster than merge_masks(masks), ~5x faster than np.vstack(masks).any(0)
-    '''
-    cdef:
-        np.uint8_t[:] mask, output = cy.zeros_uint8(len(masks[0]))
-        Py_ssize_t idx
-
-    for mask in masks:
-        for idx in range(output.shape[0]):
-            output[idx] |= mask[idx]
-
-    return output
-
-
-@cython.cdivision(True)
-@cython.wraparound(False)
-cpdef np.uint8_t[:] merge_masks_upsample_uint8(masks):
-    '''
-    OPT: upsampling 10 memoryviews to 10,000 elements: ~5x faster than merge_masks(upsample_arrays(masks))
-    '''
-    lengths = [len(m) for m in masks]
-    cdef:
-        # can't use generator in max - "closures inside cpdef functions not yet supported"
-        Py_ssize_t max_length = max(lengths), min_length = min(lengths), output_idx
-        np.uint8_t[:] mask, output = cy.zeros_uint8(max_length)
-        np.float64_t step
-
-    for mask in masks:
-        if mask.shape[0] == max_length:  # OPT: ~5x faster than applying step
-            for output_idx in range(output.shape[0]):
-                output[output_idx] |= mask[output_idx]
-        elif mask.shape[0] % min_length:
-            raise ValueError('mask lengths should be multiples of the shortest')
-        else:
-            step = <np.float64_t>mask.shape[0] / <np.float64_t>max_length
-            for output_idx in range(output.shape[0]):
-                output[output_idx] |= mask[<Py_ssize_t>(output_idx * step)]
-
-    return output
-
-
 ################################################################################
 # Find unmasked values
+
 
 cpdef prev_unmasked_value(array, Py_ssize_t idx, Py_ssize_t start=0):
     return cy.array_idx_value(array, cy.prev_idx(getmaskarray1d(array), idx, match=False, start=start))
@@ -210,8 +168,9 @@ cdef void interpolate_range(cy.np_types[:] data, np.uint8_t[:] mask, Py_ssize_t 
 ################################################################################
 # Repair mask
 
+
 @cython.wraparound(False)
-cdef void repair_data_mask(np.float64_t[:] data, np.uint8_t[:] mask, RepairMethod method, Py_ssize_t max_samples,
+cdef void repair_data_mask(np.float64_t[:] data, np.uint8_t[:] mask, RepairMethod method, Py_ssize_t max_samples=-1,
                            bint extrapolate=False) nogil:
     '''
     Repairs data and mask memoryviews in-place with a specified RepairMethod.
@@ -237,7 +196,8 @@ cdef void repair_data_mask(np.float64_t[:] data, np.uint8_t[:] mask, RepairMetho
                         fill_range(data, mask, data[idx], 0, idx)
                 else:
                     if max_samples == -1 or idx - last_valid_idx <= max_samples:
-                        #if cy.np_types is np.float64_t:  # cannot create more complex condition, otherwise code is not pruned
+                        # XXX: cannot create more complex condition, otherwise code is not pruned
+                        #if cy.np_types is np.float64_t:
                         if method == RepairMethod.INTERPOLATE:
                             interpolate_range_unsafe(data, mask, last_valid_idx, idx)
                         else:  #if method == RepairMethod.FILL_START or method == RepairMethod.FILL_STOP:
@@ -246,16 +206,22 @@ cdef void repair_data_mask(np.float64_t[:] data, np.uint8_t[:] mask, RepairMetho
 
             last_valid_idx = idx
 
-    if (extrapolate or method == FILL_START) and last_valid_idx != -1 and last_valid_idx != idx and (max_samples == -1 or idx - last_valid_idx <= max_samples):
+    if (
+        (extrapolate or method == FILL_START) and
+        last_valid_idx != -1 and
+        last_valid_idx != idx and
+        (max_samples == -1 or idx - last_valid_idx <= max_samples)
+    ):
         fill_range(data, mask, data[last_valid_idx], last_valid_idx + 1, data.shape[0])
 
 
-cdef repair_mask(array, RepairMethod method=RepairMethod.INTERPOLATE, repair_duration=10, np.float64_t frequency=1, bint copy=False,
-                 bint extrapolate=False, bint raise_duration_exceedance=False, bint raise_entirely_masked=True):
+cdef repair_mask(array, RepairMethod method=RepairMethod.INTERPOLATE, repair_duration=10, np.float64_t frequency=1,
+                 bint copy=False, bint extrapolate=False, bint raise_duration_exceedance=False,
+                 bint raise_entirely_masked=True):
     '''
     TODO: find better solution for repair_above kwarg from original.
     '''
-    if array.mask.all():  # XXX: calling all and any is faster than calling np.ma.count once
+    if array.mask.all():  # OPT: calling all and any is faster than calling np.ma.count once
         if raise_entirely_masked:
             raise ValueError('Array cannot be repaired as it is entirely masked')
         return array
@@ -278,12 +244,13 @@ cdef repair_mask(array, RepairMethod method=RepairMethod.INTERPOLATE, repair_dur
     else:
         repair_samples = -1
 
-    repair_data_mask(array.data, array.mask.view(np.uint8), method, repair_samples, extrapolate=extrapolate)
+    repair_data_mask(array.data, getmaskarray1d(array), method, repair_samples, extrapolate=extrapolate)
     return array.astype(dtype, copy=False)
 
 
 ################################################################################
 # Aggregation
+
 
 def aggregate_values(Aggregate mode, np.float64_t[:] data, np.uint8_t[:] mask, np.uint8_t[:] matching):
     if data.shape[0] != mask.shape[0] or data.shape[0] != matching.shape[0]:
@@ -329,7 +296,7 @@ def aggregate_values(Aggregate mode, np.float64_t[:] data, np.uint8_t[:] mask, n
 
 
 cdef _aggregate_values(Aggregate mode, array, matching):
-    return aggregate_values(mode, cy.astype(array), getmaskarray1d(array), matching.view(np.uint8))
+    return aggregate_values(mode, cy.astype(array), getmaskarray1d(array), matching)
 
 
 cpdef max_values(array, matching):
@@ -369,7 +336,7 @@ cpdef align_interpolate(array, np.float64_t slave_frequency, np.float64_t slave_
 
     cdef:
         np.float64_t[:] array_data = cy.astype(array.data)
-        np.uint8_t[:] array_mask = np.ma.getmaskarray(array).view(np.uint8)  # FIXME: find out why getmaskarray1d(array) segfaults!?
+        np.uint8_t[:] array_mask = getmaskarray1d(array)  # FIXME: find out why getmaskarray1d(array) segfaults!?
 
     if slave_frequency == master_frequency and slave_offset == master_offset:
         return array_data, array_mask
@@ -413,7 +380,7 @@ cpdef align_nearest(array, np.float64_t slave_frequency, np.float64_t slave_offs
 
     cdef:
         np.uint32_t[:] array_data = cy.astype(array.data, np.uint32)
-        np.uint8_t[:] array_mask = np.ma.getmaskarray(array).view(np.uint8)  # FIXME: find out why getmaskarray1d(array) segfaults!?
+        np.uint8_t[:] array_mask = getmaskarray1d(array)
 
     if slave_frequency == master_frequency and fabs(slave_offset - master_offset) * slave_frequency < 0.5:
         return array_data, array_mask
@@ -435,3 +402,36 @@ cpdef align_nearest(array, np.float64_t slave_frequency, np.float64_t slave_offs
             output_mask[output_idx] = array_mask[array_idx]
 
     return output_data, output_mask
+
+
+cpdef straighten(array, np.float64_t full_range):
+    cdef:
+        Py_ssize_t idx
+        np.float64_t[:] data = cy.astype(array.data)
+        np.uint8_t[:] mask = getmaskarray1d(array)
+        np.float64_t diff, last_value, offset = 0, threshold = 0.75 * full_range
+
+    if not data.shape[0]:
+        return
+
+    for idx in range(data.shape[0]):
+        if not mask[idx]:
+            last_value = data[idx]
+            break
+    else:
+        return
+
+    for idx in range(idx + 1, data.shape[0]):
+        if mask[idx]:
+            continue
+
+        diff = data[idx] - last_value
+        if diff > threshold:
+            offset -= full_range
+        elif diff < threshold:
+            offset += full_range
+
+        last_value = data[idx]
+        data[idx] += offset
+
+    return data, mask

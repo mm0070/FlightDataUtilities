@@ -10,11 +10,12 @@ from numpy.ma.testutils import assert_array_equal
 
 from flightdatautilities import masked_array_testutils as ma_test
 from flightdatautilities.data cimport cython as cy, operations as op
-from flightdatautilities.data.operations import contract_runs, remove_small_runs, runs_of_ones
+from flightdatautilities.data import operations as op
 
 
 ################################################################################
 # Slice operations
+
 
 class TestNearestSlice(unittest.TestCase):
     def test_nearest_slice(self):
@@ -47,9 +48,9 @@ class TestRunsOfOnes(unittest.TestCase):
             mask=np.concatenate([np.zeros(14, dtype=np.bool), np.ones(4, dtype=np.bool)]),
             dtype=np.bool,
         )
-        self.assertEqual(list(runs_of_ones(data)), [slice(2, 3), slice(4, 9), slice(11, 14), slice(15, 18)])
-        self.assertEqual(list(runs_of_ones(data, min_samples=2)), [slice(4, 9), slice(11, 14), slice(15, 18)])
-        self.assertEqual(list(runs_of_ones(data, min_samples=3)), [slice(4, 9)])
+        self.assertEqual(list(op.runs_of_ones(data)), [slice(2, 3), slice(4, 9), slice(11, 14), slice(15, 18)])
+        self.assertEqual(list(op.runs_of_ones(data, min_samples=2)), [slice(4, 9), slice(11, 14), slice(15, 18)])
+        self.assertEqual(list(op.runs_of_ones(data, min_samples=3)), [slice(4, 9)])
 
 
 class TestSlicesToArray(unittest.TestCase):
@@ -69,6 +70,7 @@ class TestSlicesToArray(unittest.TestCase):
 
 ################################################################################
 # Type-inspecific array operations
+
 
 class TestAlignArrays(unittest.TestCase):
     def test_align_arrays(self):
@@ -129,6 +131,24 @@ class TestLongestSection(unittest.TestCase):
         self.assertEqual(op.longest_section[np.float64_t](data, 1.5), len(data))
 
 
+class TestStraighten(unittest.TestCase):
+    def test_straighten(self):
+        self.assertEqual(list(op.straighten(np.zeros(0), 360)), [])
+        self.assertEqual(list(op.straighten(np.zeros(1), 360)), [0])
+        self.assertEqual(list(op.straighten(np.zeros(5), 360)), [0] * 5)
+        self.assertEqual(list(op.straighten(np.ones(5), 360)), [1] * 5)
+        data = [100, 200, 300, 100]
+        self.assertEqual(list(op.straighten(np.array(data), 360)), data)
+        data = [300, 200, 100, 350]
+        self.assertEqual(list(op.straighten(np.array(data), 360)), data)
+        self.assertEqual(list(op.straighten(np.array([100, 200, 300, 10]), 360)), [100, 200, 300, 370])
+        self.assertEqual(list(op.straighten(np.array([250, 150, 50, 350]), 360)), [250, 150, 50, -10])
+        with self.assertRaises(ValueError):
+            op.straighten(np.zeros(5), 0)
+        with self.assertRaises(ValueError):
+            op.straighten(np.zeros(5), -10)
+
+
 class TestSwapBytes(unittest.TestCase):
     def test_swap_bytes(self):
         self.assertEqual(len(op.swap_bytes(np.ones(0, dtype=np.uint16))), 0)
@@ -147,12 +167,13 @@ class TestTwosComplement(unittest.TestCase):
 ################################################################################
 # Boolean array operations
 
-class TestRemoveSmallRuns(unittest.TestCase):
-    def test_remove_small_runs(self):
-        def call(x, *args, **kwargs):
-            return remove_small_runs(np.array(x, dtype=np.bool), *args, **kwargs).tolist()
+
+class TestRemoveSmallRunsHz(unittest.TestCase):
+    def test_remove_small_runs_hz(self):
+        def call(x, seconds, hz=1, match=True):
+            return op.remove_small_runs_hz(np.array(x, dtype=np.bool), seconds, hz, match=match).tolist()
         T, F = True, False
-        self.assertEqual(call([]), [])
+        self.assertEqual(call([], 0), [])
         self.assertEqual(call([F,T,F], 0), [F,T,F])
         self.assertEqual(call([F,T,F], 1), [F,F,F])
         self.assertEqual(call([T,F,T], 1, match=False), [T,T,T])
@@ -266,6 +287,7 @@ class TestSubarrayExistsUint8(unittest.TestCase):
 
 ################################################################################
 # Flight Data Recorder data operations
+
 
 class TestPack(unittest.TestCase):
     def test_pack(self):
