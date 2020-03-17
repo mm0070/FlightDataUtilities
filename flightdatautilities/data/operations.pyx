@@ -91,8 +91,10 @@ from flightdatautilities.data cimport cython as cy, scalar as sc
 # Slice operations
 
 
-cpdef nearest_slice(array, Py_ssize_t idx, bint match=True):
-    cdef np.uint8_t[:] data = array
+cpdef nearest_slice(const np.uint8_t[:] data, Py_ssize_t idx, bint match=True):
+    '''
+    Find the slice nearest to idx.
+    '''
     idx = cy.array_wraparound_idx(idx, data.shape[0])
     cdef Py_ssize_t start_idx, stop_idx, nearest_idx = cy.nearest_idx_unsafe(data, idx, match=match)
     if nearest_idx == cy.NONE_IDX:
@@ -103,7 +105,7 @@ cpdef nearest_slice(array, Py_ssize_t idx, bint match=True):
             if not data[stop_idx]:
                 break
         else:
-            stop_idx = data.shape[0]  # end of array (exclusive)
+            stop_idx = data.shape[0]  # end of data (exclusive)
 
         for start_idx in range(idx - 1, -1, -1):
             if not data[start_idx]:
@@ -131,32 +133,28 @@ cpdef nearest_slice(array, Py_ssize_t idx, bint match=True):
     return slice(start_idx, stop_idx)
 
 
-def runs_of_ones(array, min_samples=None):
+def runs_of_ones(const np.uint8_t[:] data, min_samples=None):
     '''
     Create slices where data evaluates to True. Optimised generator version of analysis_engine.library.runs_of_ones.
     ~12x faster for array of 10000 elements.
 
-    :param array: array with 8-bit datatype, e.g. np.bool or np.uint8
-    :type array: np.ndarray
     :param min_samples: minimum size of slice (stop - start > min_samples)
     :type min_samples: int or None
     :yields: slices where data evaluates to True
     :ytype: slice
     '''
-    cdef:
-        np.uint8_t[:] view = array
-        Py_ssize_t idx, min_samples_long = cy.none_idx(min_samples), start_idx = -1
+    cdef Py_ssize_t idx, min_samples_long = cy.none_idx(min_samples), start_idx = -1
 
-    for idx in range(view.shape[0]):
-        if view[idx] and start_idx == -1:
+    for idx in range(data.shape[0]):
+        if data[idx] and start_idx == -1:
             start_idx = idx
-        elif not view[idx] and start_idx != -1:
+        elif not data[idx] and start_idx != -1:
             if min_samples_long == cy.NONE_IDX or idx - start_idx > min_samples_long:
                 yield slice(start_idx, idx)
             start_idx = -1
 
-    if start_idx != -1 and (min_samples_long == cy.NONE_IDX or view.shape[0] - start_idx > min_samples_long):
-        yield slice(start_idx, view.shape[0])
+    if start_idx != -1 and (min_samples_long == cy.NONE_IDX or data.shape[0] - start_idx > min_samples_long):
+        yield slice(start_idx, data.shape[0])
 
 
 cpdef slices_to_array(Py_ssize_t size, slices):
@@ -173,8 +171,7 @@ cpdef slices_to_array(Py_ssize_t size, slices):
             start = 0
         if stop > size:
             stop = size
-        for idx in range(start, stop):
-            array[idx] = 1
+        array[start:stop] = 1
     return np.frombuffer(array, dtype=np.bool)
 
 
@@ -200,7 +197,7 @@ cpdef align_arrays(slave_array, master_array):
     if ratio == 1:
         # nothing to do
         return slave_array
-    if ratio > 1:
+    elif ratio > 1:
         # repeat slave to upsample
         # Q: Upsample using repeat good enough, or interpolate?
         return slave_array.repeat(ratio)

@@ -5,7 +5,7 @@ from flightdatautilities.data cimport cython as cy
 
 ################################################################################
 # Slice operations
-cpdef nearest_slice(array, Py_ssize_t idx, bint match=?)
+cpdef nearest_slice(const np.uint8_t[:] data, Py_ssize_t idx, bint match=?)
 cpdef slices_to_array(Py_ssize_t size, slices)
 ################################################################################
 # Type-inspecific array operations
