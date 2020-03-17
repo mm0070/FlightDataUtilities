@@ -9,6 +9,7 @@ from flightdatautilities.data cimport scalar as sc
 ################################################################################
 # Power of 2
 
+
 class TestIsPower2(unittest.TestCase):
     def test_is_power2(self):
         self.assertEqual([i for i in range(2000) if sc.is_power2(i)],
@@ -37,6 +38,7 @@ class TestIsPower2Fraction(unittest.TestCase):
 ################################################################################
 # Random
 
+
 class TestRandint(unittest.TestCase):
     def test_randint(self):
         self.assertEqual(sc.randint(0, 0), 0)
@@ -54,6 +56,16 @@ class TestRandint(unittest.TestCase):
 ################################################################################
 # Bits
 
+
+class TestFullRange(unittest.TestCase):
+    def test_full_range(self):
+        self.assertEqual(sc.full_range(0), 0)
+        self.assertEqual(sc.full_range(1), 2)
+        self.assertEqual(sc.full_range(2), 4)
+        self.assertEqual(sc.full_range(3), 8)
+        self.assertEqual(sc.full_range(4), 16)
+
+
 class TestSaturatedValue(unittest.TestCase):
     def test_saturated_value(self):
         self.assertEqual(sc.saturated_value(0), 0)
@@ -65,6 +77,7 @@ class TestSaturatedValue(unittest.TestCase):
 
 ################################################################################
 # Unit conversion
+
 
 class TestDegreesToRadians(unittest.TestCase):
     def test_degrees_to_radians(self):

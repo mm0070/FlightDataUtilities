@@ -195,25 +195,11 @@ cpdef align_arrays(slave_array, master_array):
     '''
     ratio = len(master_array) / len(slave_array)
     if ratio == 1:
-        # nothing to do
         return slave_array
     elif ratio > 1:
-        # repeat slave to upsample
-        # Q: Upsample using repeat good enough, or interpolate?
         return slave_array.repeat(ratio)
     else:
-        # take every other sample to downsample
         return slave_array[0::int(1 // ratio)]
-
-
-cpdef concatenate(memviews):
-    # TODO: change sum to generator once supported
-    concatenated = np.empty(sum([len(m) for m in memviews]), dtype=getattr(memviews[0], 'dtype', np.uint8))
-    idx = 0
-    for memview in memviews:
-        concatenated[idx:idx + len(memview)] = memview
-        idx += len(memview)
-    return concatenated
 
 
 @cython.wraparound(False)
@@ -269,6 +255,9 @@ cpdef Py_ssize_t longest_section(cy.np_types[:] data, cy.np_types value=0) nogil
 
 cpdef straighten(array, np.float64_t full_range):
     '''
+    Straighten array by detecting overflows.
+
+    Modifies array values in-place if no type conversion is required.
     '''
     if full_range <= 0:
         raise ValueError('full_range must be positive')
@@ -325,7 +314,7 @@ cpdef np.ndarray twos_complement(np.ndarray array, np.uint64_t bit_length):
     '''
     Convert the values from "sign bit" notation to "two's complement".
     '''
-    array[array > sc.saturated_value(bit_length - 1)] -= sc.saturated_value(bit_length) + 1
+    array[array > sc.saturated_value(bit_length - 1)] -= sc.full_range(bit_length)
     return array
 
 
@@ -544,7 +533,6 @@ cpdef subarray_idx_uint8(const np.uint8_t[:] array, const np.uint8_t[:] subarray
     TODO: change to cy.np_types fused type once Cython supports const with fused types
 
     :param start: start index to search within array (positive integer or 0)
-    :returns:
     '''
     return cy.idx_none(cy.subarray_idx_uint8(array, subarray, start=start))
 
@@ -738,6 +726,9 @@ cpdef load_compressed(path):
 cpdef np.float64_t[:] align_interpolate(np.float64_t[:] input, np.float64_t slave_frequency,
                                         np.float64_t slave_offset, np.float64_t master_frequency,
                                         np.float64_t master_offset=0):
+    '''
+    Align an array from one frequency and offset to another by interpolating values.
+    '''
     if slave_frequency <= 0 or master_frequency <= 0:
         raise ValueError('frequencies must be greater than 0')
 
@@ -748,40 +739,19 @@ cpdef np.float64_t[:] align_interpolate(np.float64_t[:] input, np.float64_t slav
         np.float64_t input_pos, idx_multiplier = slave_frequency / master_frequency, \
             frequency_multiplier = master_frequency / slave_frequency, \
             offset = frequency_multiplier * (slave_offset - master_offset)
-        Py_ssize_t input_prev_idx, output_idx
+        Py_ssize_t input_prev_idx, last_idx = input.shape[0] - 1, output_idx
         np.float64_t[:] output = cy.zeros_float64(<Py_ssize_t>(input.shape[0] * frequency_multiplier))
 
     for output_idx in range(output.shape[0]):
         input_pos = (output_idx * idx_multiplier) + offset
         if input_pos <= 0:
             value = input[0]
-        elif input_pos >= input.shape[0] - 1:
-            value = input[input.shape[0] - 1]
+        elif input_pos >= last_idx:
+            value = input[last_idx]
         else:
             input_prev_idx = <Py_ssize_t>floor(input_pos)
             output[output_idx] = input[input_prev_idx] + (
                 (input[<Py_ssize_t>ceil(input_pos)] - input[input_prev_idx]) * (input_pos - input_prev_idx))
 
     return output
-
-
-#cpdef np.uint8_t[:] align_bool(np.uint8_t[:] slave, master):
-    #cdef Py_ssize_t master_len = len(master)
-
-    #if master_len == slave.shape[0]:
-        #return slave
-
-    #cdef:
-        #np.uint8_t[:] output = cy.empty_uint8(master_len)
-        #Py_ssize_t bit_shift, idx
-
-    #if master_len > slave.shape[0]:
-        #bit_shift = step_bit_shift(master_len, slave.shape[0])
-        #for idx in range(output.shape[0]):
-            #output[idx] = slave[idx >> bit_shift]
-    #elif master_len < slave.shape[0]:
-        #bit_shift = step_bit_shift(slave.shape[0], master_len)
-        #for idx in range(slave.shape[0]):
-            #output[idx >> bit_shift] |= slave[idx]
-    #return output
 

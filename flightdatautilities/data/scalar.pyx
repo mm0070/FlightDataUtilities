@@ -56,18 +56,22 @@ cdef int randint(int min, int max) nogil:
 # Bits
 
 
-cdef np.uint64_t saturated_value(np.uint64_t bit_length) nogil:
-    return (2 ** bit_length) - 1
+cdef inline np.uint64_t full_range(np.uint64_t bit_length) nogil:
+    return 2 ** bit_length
+
+
+cdef inline np.uint64_t saturated_value(np.uint64_t bit_length) nogil:
+    return full_range(bit_length) - 1
 
 
 ################################################################################
 # Unit conversion
 
 
-cdef np.float64_t degrees_to_radians(np.float64_t degrees) nogil:
+cdef inline np.float64_t degrees_to_radians(np.float64_t degrees) nogil:
     return degrees * (PI / 180.0)
 
 
-cdef np.float64_t radians_to_degrees(np.float64_t radians) nogil:
+cdef inline np.float64_t radians_to_degrees(np.float64_t radians) nogil:
     return radians * (180.0 / PI)
 

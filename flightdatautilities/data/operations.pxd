@@ -10,7 +10,6 @@ cpdef slices_to_array(Py_ssize_t size, slices)
 ################################################################################
 # Type-inspecific array operations
 cpdef align_arrays(slave_array, master_array)
-cpdef concatenate(memviews)
 cpdef bint is_constant(cy.np_types[:] data) nogil
 cpdef bint is_constant_uint8(const np.uint8_t[:] data) nogil
 cpdef Py_ssize_t longest_section(cy.np_types[:] data, cy.np_types value=?) nogil
@@ -27,7 +26,8 @@ cpdef remove_small_runs_hz(array, np.float64_t seconds, np.float64_t hz=?, bint 
 cpdef section_overlap(const np.uint8_t[:] x, const np.uint8_t[:] y)
 ################################################################################
 # Uint8 array (bytes) operations
-cpdef bytes key_value(const np.uint8_t[:] array, const np.uint8_t[:] key, const np.uint8_t[:] delimiter, const np.uint8_t[:] separator, Py_ssize_t start=?)
+cpdef bytes key_value(const np.uint8_t[:] array, const np.uint8_t[:] key, const np.uint8_t[:] delimiter,
+                      const np.uint8_t[:] separator, Py_ssize_t start=?)
 cpdef np.uint8_t[:] merge_bool_arrays(masks)
 cpdef np.uint8_t[:] merge_bool_arrays_upsample(masks)
 cpdef bint subarray_exists_uint8(const np.uint8_t[:] array, const np.uint8_t[:] subarray, Py_ssize_t start=?) nogil
