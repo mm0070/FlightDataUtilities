@@ -954,6 +954,7 @@ UNIT_CORRECTIONS = {
     'litres': LITER,
     # Other:
     'DDM': DDM,
+    'ddm R': DDM,
     'GS-DDM': GS_DDM,
     'GSDDM': GS_DDM,
     'gsddm': GS_DDM,
