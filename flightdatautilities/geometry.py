@@ -6,6 +6,7 @@ import numpy as np
 
 from . import units as ut
 
+
 # https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html
 EARTH_RADIUS = 6371008  # volumetric mean radius (meters)
 

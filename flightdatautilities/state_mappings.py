@@ -2,9 +2,8 @@
 Multi-state Parameter State Value Mappings
 '''
 
-import re
-
 from flightdatautilities.patterns import wildcard_match
+
 
 PARAMETER_CORRECTIONS = {
     '115 VAC Standby Bus': {1: 'On'},
@@ -22,8 +21,12 @@ PARAMETER_CORRECTIONS = {
     'ADF (*) Selected (*)': {1: 'Selected'},
     'AP (*) Disconnect': {1: 'Disconnect'},
     'AP (*) Engaged': {1: 'Engaged'},
+    'AP Descend': {1: 'Engaged'},
+    'AP Altitude Capture': {1: 'Engaged'},
     'AP Backcourse': {1: 'Engaged'},
+    'AP Climb Mode': {1: 'Engaged'},
     'AP Collective Glideslope': {1: 'Armed'},
+    'AP Descend Mode': {1: 'Engaged'},
     'AP ILS Localizer': {1: 'Armed'},
     'AP Manual Disconnect': {1: 'Disconnect'},
     'AP Pitch Glideslope': {1: 'Armed'},
@@ -35,6 +38,7 @@ PARAMETER_CORRECTIONS = {
     'APU Oil Press Low': {1: 'Low Press'},
     'APU Oil Temp High': {1: 'High Temp'},
     'APU On': {1: 'On'},
+    'AT Climb Engaged': {1: 'Engaged'},
     'AT Engaged': {1: 'Engaged'},
     'AT FMC Speed': {1: 'Engaged'},
     'AT Go Around': {1: 'Engaged'},
@@ -53,6 +57,7 @@ PARAMETER_CORRECTIONS = {
     'Altitude Acquire Mode Armed': {1: 'Armed'},
     'Altitude Acquire': {1: 'Engaged'},
     'Altitude Alert': {1: 'Alert'},
+    'Altitude Capture': {1: 'Captured'},
     'Altitude Hold Push Button Light': {1: 'On'},
     'Altitude Hold': {1: 'Selected'},
     'Altitude Reference Active': {1: 'FMC', 0: 'MCP'},
@@ -97,9 +102,12 @@ PARAMETER_CORRECTIONS = {
     'Eng (*) Fire Handle Position (*)': {1: 'Pulled'},
     'Eng (*) Fuel Press Low': {1: 'Low Press'},
     'Eng (*) Hyd (*) Press Low': {1: 'Low Press'},
+    'Eng (*) N1 Overlimit': {1: 'Overlimit'},
+    'Eng (*) N2 Overlimit': {1: 'Overlimit'},
     'Eng (*) Oil Press Low Red Warning': {1: 'Warning'},
     'Eng (*) Oil Press Low': {1: 'Low Press'},
     'Eng (*) Overheat': {1: 'Overheat'},
+    'Eng (*) Overspeed': {1: 'Overspeed'},
     'Eng (*) Pylon Overheat': {1: 'Overheat'},
     'Eng (*) Running': {1: 'Running'},
     'Eng (*) Start Valve': {1: 'Open'},
@@ -138,6 +146,7 @@ PARAMETER_CORRECTIONS = {
     'Gear Up Selected (*)': {1: 'Up', 0: 'Down'},
     'Glidepath Engaged': {1: 'Engaged'},
     'Go Around Mode': {1: 'Engaged'},
+    'Ground Spoiler (*) (*) Deployed': {1: 'Deployed'},
     'Ground Station Data Selected (*)': {1: 'Selected'},
     'HUD Approach Warning': {1: 'Warning'},
     'HUD Combiner Position': {1: 'Active', 0: 'Stowed'},
@@ -224,7 +233,7 @@ PARAMETER_CORRECTIONS = {
     'Smoke Lower Deck Stowage Warning': {1: 'Smoke'},
     'Smoke Passenger Broadband (*) Warning': {1: 'Smoke'},
     'Speedbrake Armed': {1: 'Armed'},
-    'Speedbrake Deployed': {1: 'Deployed'},
+    'Speedbrake Deployed (*)': {1: 'Deployed'},
     'Speedbrake Do Not Arm': {1: 'Light On'},
     'Speedbrake Selected': {1: 'Deployed/Cmd Up'},
     'Spoiler (*) (*) Deployed': {1: 'Deployed'},

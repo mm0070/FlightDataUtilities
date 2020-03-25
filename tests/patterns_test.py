@@ -14,7 +14,7 @@ from flightdatautilities.patterns import (
 
 
 class TestMatchOptions(unittest.TestCase):
-    
+
     def test_match_options(self):
         self.assertEqual(match_options([], ['Altitude Radio',
                                             'Altitude Radio (L)',
@@ -33,7 +33,7 @@ class TestMatchOptions(unittest.TestCase):
 
 
 class TestExpandCombinations(unittest.TestCase):
-    
+
     def test_expand_combinations(self):
         alt_rads = ['Altitude Radio (A)',
                     'Altitude Radio (B)',
@@ -45,7 +45,7 @@ class TestExpandCombinations(unittest.TestCase):
 
 
 class TestWildcardMatch(unittest.TestCase):
-        
+
     def test_wildcard_match(self):
         params = [
             'Altitude Selected',
@@ -53,8 +53,8 @@ class TestWildcardMatch(unittest.TestCase):
             'Altitude Selected (FMC)',
             'Altitude Selected (Bad)',
             'Altitude STD',
-            'Brake (L) Pressure Inboard', 
-            'Brake (R) Pressure Ourboard', 
+            'Brake (L) Pressure Inboard',
+            'Brake (R) Pressure Ourboard',
             'ILS Localizer (L) (1)',
             'ILS Localizer (L) (2)',
             'ILS Localizer (L) (Capt)',
@@ -64,8 +64,8 @@ class TestWildcardMatch(unittest.TestCase):
             'ILS Localizer Beam Anomaly',
             'ILS Localizer Deviation Warning',
             'ILS Localizer Engaged',
-            'ILS Localizer Test Tube Inhibit', 
-            'ILS Localizer', 
+            'ILS Localizer Test Tube Inhibit',
+            'ILS Localizer',
             'Rate of Climb',
             'Gear Down',
             'Gear (R) Down',
@@ -80,7 +80,7 @@ class TestWildcardMatch(unittest.TestCase):
                          ['ILS Localizer',
                           'ILS Localizer (L)',
                           'ILS Localizer (R)'])
-        
+
         self.assertEqual(wildcard_match('ILS Localizer (*)', params, missing=False),
                          ['ILS Localizer (L)',
                           'ILS Localizer (R)'])
@@ -96,52 +96,52 @@ class TestWildcardMatch(unittest.TestCase):
                           'ILS Localizer (L) (Capt)',
                           'ILS Localizer (R)',
                           'ILS Localizer (R) (1)'])
-        
+
         self.assertEqual(wildcard_match('ILS Localizer (*) (*)', params,
                                         missing=False),
                          ['ILS Localizer (L) (1)',
                           'ILS Localizer (L) (2)',
                           'ILS Localizer (L) (Capt)',
                           'ILS Localizer (R) (1)'])
-        
+
         self.assertEqual(wildcard_match('ILS Localizer (L) (*)', params),
                          ['ILS Localizer (L)',
                           'ILS Localizer (L) (1)',
                           'ILS Localizer (L) (2)',
                           'ILS Localizer (L) (Capt)'])
-        
+
         self.assertEqual(wildcard_match('ILS Localizer (L) (*)', params,
                                         missing=False),
                          ['ILS Localizer (L) (1)',
                           'ILS Localizer (L) (2)',
                           'ILS Localizer (L) (Capt)'])
-        
+
         self.assertEqual(wildcard_match('Gear (*) Down', params),
                         ['Gear (L) Down',
                          'Gear (N) Down',
                          'Gear (R) Down',
                          'Gear Down'])
-        
+
         self.assertEqual(wildcard_match('Gear (*) Down', params, missing=False),
                         ['Gear (L) Down',
                          'Gear (N) Down',
                          'Gear (R) Down'])
-        
+
         self.assertEqual(wildcard_match('Altitude (*) Selected (*)', params),
                          ['Altitude Selected',
                           'Altitude Selected (1)',
                           'Altitude Selected (FMC)'])
-    
+
     def test_wildcard_match_multiple_chars(self):
         params = ['Spoiler (%d)' % n for n in range(1,13)]
         res = wildcard_match('Spoiler (*)', params)
         self.assertEqual(len(res), 12)
-        
+
         # ensure without (n) is found
         params.append('Spoiler')
         res = wildcard_match('Spoiler (*)', params)
         self.assertEqual(len(res), 13)
-    
+
     def test_wildcard_match_without_brackets(self):
         params = [
             'ILS Frequency',
@@ -151,7 +151,7 @@ class TestWildcardMatch(unittest.TestCase):
             'ILS (R) Frequency',
             'ILS (L) (Capt) Frequency',
         ]
-        
+
         res = wildcard_match('ILS (*) Frequency', params)
         self.assertIn('ILS Frequency', res)
         self.assertNotIn('ILS (L) (Capt) Frequency', res)
@@ -159,7 +159,7 @@ class TestWildcardMatch(unittest.TestCase):
 
 
 class TestGetPattern(unittest.TestCase):
-    
+
     def test_get_pattern(self):
         options = ['(1)', '(2)']
         self.assertEqual(get_pattern('Airspeed', options=options),
@@ -177,7 +177,7 @@ class TestGetPattern(unittest.TestCase):
 
 
 class TestGroupParameterNames(unittest.TestCase):
-    
+
     def test_group_parameter_names(self):
         options = ['(L)', '(R)']
         self.assertEqual(group_parameter_names(['Airspeed'], options=options),
@@ -199,7 +199,7 @@ class TestGroupParameterNames(unittest.TestCase):
 
 
 class TestParameterPatternMap(unittest.TestCase):
-    
+
     def test_parameter_pattern_map(self):
         options = ['(L)', '(R)']
         self.assertEqual(parameter_pattern_map(['Airspeed'], options=options),
@@ -221,7 +221,7 @@ class TestParameterPatternMap(unittest.TestCase):
 
 
 class TestParseOptions(unittest.TestCase):
-    
+
     def test_parse_options(self):
         self.assertEqual(parse_options('Airspeed'), [])
         self.assertEqual(parse_options('ILS Localizer (1)'), ['(1)'])
@@ -236,18 +236,18 @@ class TestParseOptions(unittest.TestCase):
             ['(1)'])
 
 class TestUniqueParameterCombinations(unittest.TestCase):
-    
+
     def test_unique_parameter_combinations(self):
         self.assertEqual(
             unique_parameter_combinations([['Airspeed'],
                                            ['Airspeed', 'Pitch'],
                                            ['Airspeed', 'Airspeed']]),
-            [['Airspeed'], 
+            [['Airspeed'],
              ['Airspeed', 'Pitch']])
 
 
 class TestFindCombinations(unittest.TestCase):
-    
+
     def test_find_combinations(self):
         parameters = [
             'Airspeed',
@@ -264,11 +264,11 @@ class TestFindCombinations(unittest.TestCase):
             'Heading',
             'Pitch',
         ]
-        
+
         self.assertEqual(find_combinations(['Heading', 'Airspeed'], parameters,
                                            additional_patterns=['Flap Angle (L)']),
                          [])
-        
+
         self.assertEqual(
             find_combinations(['Airspeed', 'Heading'], parameters),
             [['Airspeed', 'Heading']])

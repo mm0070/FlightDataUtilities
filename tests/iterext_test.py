@@ -3,6 +3,7 @@ Flight Data Utilities: Iter Extensions: Unit Tests
 '''
 
 import logging
+import numpy as np
 import unittest
 
 from flightdatautilities import iterext
@@ -43,3 +44,4 @@ class TestNestedGroupby(unittest.TestCase):
     @unittest.skip('Not implemented.')
     def test_nested_groupby(self):
         pass
+

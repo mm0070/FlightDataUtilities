@@ -8,6 +8,7 @@ import operator
 
 from datetime import date, datetime, time, timedelta
 
+
 __all__ = ['is_day', 'range']
 
 

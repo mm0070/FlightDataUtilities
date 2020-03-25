@@ -20,7 +20,7 @@ OPTIONS_GROUP = '(?: \\((?:%s)+\\))' % '|'.join(o.strip('()') for o in OPTIONS)
 def pattern_regex(pattern, missing=True, prefix=False):
     '''
     Create a regex which matches the pattern.
-    
+
     :param pattern: Wildcard pattern to match
     :type pattern: String
     :param missing: Whether or not to match variations of the pattern where wildcard options are missing.
@@ -31,14 +31,14 @@ def pattern_regex(pattern, missing=True, prefix=False):
     :rtype: list
     '''
     return re.escape(pattern).replace(
-        WILDCARD_ESCAPE, '%s%s' % (OPTIONS_GROUP, '?' if missing else '')) + ('' if prefix else '\Z(?ms)')
+        WILDCARD_ESCAPE, '%s%s' % (OPTIONS_GROUP, '?' if missing else '')) + ('' if prefix else r'\Z')
 
 
 def wildcard_match(pattern, keys, missing=True, prefix=False):
     '''
     Return subset of keys where wildcard (*) pattern matches.
     Also matches keys where " (*)" is not in the string.
-    
+
     :param pattern: Wildcard pattern to match
     :type pattern: String
     :param keys: Keys to search within
@@ -56,7 +56,7 @@ def wildcard_match(pattern, keys, missing=True, prefix=False):
         return sorted({key for key in keys if key.startswith(pattern)})
     else:
         return [pattern] if pattern in keys else []
-    re_obj = re.compile(pattern_regex(pattern, missing=missing, prefix=prefix))
+    re_obj = re.compile(f'(?ms){pattern_regex(pattern, missing=missing, prefix=prefix)}')
     return sorted({key for key in keys if re_obj.match(key)})
 
 
@@ -70,7 +70,7 @@ def is_pattern(pattern):
 def get_pattern(name, options=OPTIONS):
     '''
     Creates a parameter pattern from name replacing options with wildcards.
-    
+
     :param name: Parameter name.
     :type name: str
     '''
@@ -84,7 +84,7 @@ def parse_options(name, options=OPTIONS):
     '''
     :param options: Optional valid options.
     '''
-    matched_options = re.findall('(?P<option>\(\w+\))', name)
+    matched_options = re.findall(r'(?P<option>\(\w+\))', name)
     if options:
         # The following line loses option ordering.
         #return list(set(matched_options) & set(options))
@@ -108,7 +108,7 @@ def group_parameter_names(names, options=OPTIONS):
     for name in names:
         pattern = get_pattern(name, options=options)
         pattern_to_names[pattern].append(name)
-    
+
     return pattern_to_names
 
 
@@ -129,7 +129,7 @@ def parameter_pattern_map(names, options=OPTIONS):
 def match_options(options, names):
     '''
     Find names which match options.
-    
+
     :param options: Options to match.
     :type options: [str]
     :param names: Names containing options.
@@ -148,44 +148,44 @@ def match_options(options, names):
 def find_combinations(required_patterns, names,
                       additional_patterns=[]):
     '''
-    
+
     Examples (parameter matches after pattern matching):
-    
+
     Test: ['Airspeed']
     Reference: ['Heading']
     Result: [['Airspeed', 'Heading']]
-    
+
     Test: ['Airspeed']
     Reference: ['Heading']
     Additional 1: ['Acceleration Normal']
     Result: [['Airspeed', 'Heading', 'Acceleration Normal']]
-    
+
     # Expand test if reference is not a pattern.
     Test: ['Eng (1) N1', 'Eng (2) N1'] # 'Eng (*) N1'
     Reference: ['Heading']
     Additional 1: ['Acceleration Normal']
     Result: [['Eng (1) N1', 'Heading', 'Acceleration Normal'],
              ['Eng (2) N1', 'Heading', 'Acceleration Normal']]
-    
+
     Test: ['Heading']
     Reference: ['Eng (1) N1', 'Eng (2) N1'] # 'Eng (*) N1'
     Additional 1: ['Acceleration Normal']
     Result: [['Heading', 'Eng (1) N1', 'Acceleration Normal'],
              ['Heading', 'Eng (2) N1', 'Acceleration Normal']]
-    
+
     # Do not expand additional parameters, instead match first.
     Test: ['Heading']
     Reference: ['Airspeed']
     Additional 1: ['Eng (1) N1', 'Eng (2) N1'] # 'Eng (*) N1'
     Result: [['Heading', 'Airspeed', 'Eng (1) N1']]
-    
+
     # Match test and reference parameters.
     Test: ['Eng (1) N1', 'Eng (2) N1'] # 'Eng (*) N1'
     Reference: ['Eng (1) Gas Temp', 'Eng (2) Gas Temp'] # 'Eng (*) Gas Temp'
     Additional 1: ['Airspeed']
     Result: [['Eng (1) N1', 'Eng (1) Gas Temp', 'Airspeed'],
              ['Eng (2) N1', 'Eng (2) Gas Temp', 'Airspeed']]
-    
+
     # Match test and additional parameter patterns.
     Test: ['Eng (1) N1', 'Eng (2) N1'] # 'Eng (*) N1'
     Reference: ['Heading']
@@ -193,7 +193,7 @@ def find_combinations(required_patterns, names,
     Additional 2: ['Eng (1) Fuel Flow', 'Eng (2) Fuel Flow'] # 'Eng (*) Fuel Flow'
     Result: [['Eng (1) N1', 'Heading', 'Airspeed', 'Eng (1) Fuel Flow'],
              ['Eng (2) N1', 'Heading', 'Airspeed', 'Eng (2) Fuel Flow']]
-    
+
     # Match test, reference and additional parameter patterns.
     Test: ['Eng (1) N1', 'Eng (2) N1'] # 'Eng (*) N1'
     Reference: ['Eng (1) Gas Temp', 'Eng (2) Gas Temp'] # 'Eng (*) Gas Temp'
@@ -201,7 +201,7 @@ def find_combinations(required_patterns, names,
     Additional 2: ['Eng (1) Fuel Flow', 'Eng (2) Fuel Flow'] # 'Eng (*) Fuel Flow'
     Result: [['Eng (1) N1', 'Eng (1) Gas Temp', 'Airspeed', 'Eng (1) Fuel Flow'],
              ['Eng (2) N1', 'Eng (2) Gas Temp', 'Airspeed', 'Eng (2) Fuel Flow']]
-    
+
     # Expand duplicate test and reference patterns.
     Test: ['Altitude Radio (*)', 'Altitude Radio (*)']
     Reference: ['Eng (1) Gas Temp', 'Eng (2) Gas Temp']
@@ -211,7 +211,7 @@ def find_combinations(required_patterns, names,
              ['Altitude Radio (A)', 'Altitude Radio (C)'],
              ['Altitude Radio (B)', 'Altitude Radio (C)']]
     '''
-    
+
     def find_matching_parameter(options, pattern, parameters):
         if pattern:
             try:
@@ -219,9 +219,9 @@ def find_combinations(required_patterns, names,
             except IndexError:
                 return None
         else:
-            
+
             return parameters[0]
-    
+
     def find_matching_parameters(options, patterns, parameter_lists):
         matches = []
         for pattern, parameters in zip(patterns, parameter_lists):
@@ -231,36 +231,36 @@ def find_combinations(required_patterns, names,
                 return None
             matches.append(match)
         return matches
-    
+
     # Remove None values.
     required_patterns = [r for r in required_patterns if r]
-    
+
     additional_patterns = [a for a in additional_patterns if a]
-    
+
     required_parameter_lists = [wildcard_match(r, names)
                                 for r in required_patterns]
-    
+
     additional_parameter_lists = [wildcard_match(a, names)
                                   for a in additional_patterns]
-    
+
     required_pattern_count = \
         len([r for r in required_patterns if is_pattern(r)])
-    
+
     all_patterns = list(itertools.chain(required_patterns,
                                         additional_patterns))
-    
+
     all_parameter_lists = list(itertools.chain(required_parameter_lists,
                                                additional_parameter_lists))
-    
+
     if not all(all_parameter_lists):
         return []
-    
+
     first_parameters = unique_parameter_combinations(
         [[p[0] for p in all_parameter_lists]])
-    
+
     if required_pattern_count == 0:
         return first_parameters
-    
+
     if all([p == required_patterns[0] for p in required_patterns[1:]]):
         # Expand patterns if they are the same.
         combinations = expand_combinations(len(required_patterns),
@@ -269,7 +269,7 @@ def find_combinations(required_patterns, names,
         for combination in combinations:
             combination.extend(additional_parameters)
         return unique_parameter_combinations(combinations)
-    
+
     for required_pattern, required_parameters in zip(required_patterns,
                                                      required_parameter_lists):
         if not is_pattern(required_pattern):
@@ -280,19 +280,19 @@ def find_combinations(required_patterns, names,
             if parameter_options:
                 options.append(parameter_options[0])
         break
-    
+
     if not options:
         # No need for pattern matching.
         # e.g. 'Flap Lever (*)' pattern, but only 'Flap Lever' parameter exists.
         return first_parameters
-    
+
     combinations = []
     for option in options:
         combination = find_matching_parameters([option], all_patterns,
                                                all_parameter_lists)
         if combination:
             combinations.append(combination)
-    
+
     return unique_parameter_combinations(combinations)
 
 
@@ -313,7 +313,7 @@ def unique_parameter_combinations(combinations):
 def expand_combinations(pattern_count, parameters):
     '''
     Expand parameters into unique combinations.
-    
+
     expand_combinations(2, ['Altitude Radio (A)',
                             'Altitude Radio (B)',
                             'Altitude Radio (C)'])
@@ -334,16 +334,16 @@ def expand_combinations(pattern_count, parameters):
 
 if __name__ == '__main__':
     import argparse
-    
+
     parser = argparse.ArgumentParser()
-    
+
     parser.add_argument('pattern')
     parser.add_argument('keys', nargs='+')
-    
+
     args = parser.parse_args()
-    
+
     matches = wildcard_match(args.pattern, args.keys)
-    
+
     if matches:
         print('Matches:')
         for match in matches:

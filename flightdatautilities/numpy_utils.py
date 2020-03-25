@@ -1,12 +1,13 @@
 '''
 Upgrading from Python 2.7 to Python 3.7 and using numpy versions past 1.10.x
 requires helper methods to help maintain consistent behaviour from an existing
-codebase. 
+codebase.
 '''
 
 # Python 3 and Numpy 1.15+ upgrade helpers
 import math
 import numpy as np
+
 
 def py2round(x, d=0):
     '''

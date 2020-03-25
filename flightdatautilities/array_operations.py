@@ -19,8 +19,7 @@ def extrap1d(interpolator):
         if x < xs[0]:
             return ys[0] + (x - xs[0]) * (ys[1] - ys[0]) / (xs[1] - xs[0])
         elif x > xs[-1]:
-            return (ys[-1] + (x - xs[-1]) * (ys[-1] - ys[-2])
-                    / (xs[-1] - xs[-2]))
+            return ys[-1] + (x - xs[-1]) * (ys[-1] - ys[-2]) / (xs[-1] - xs[-2])
         else:
             return interpolator(x)
 
@@ -129,7 +128,7 @@ def upsample_arrays(arrays):
             raise ValueError(
                 "The largest array length should be a multiple of all others "
                 "'%s'." % lengths)
-    
+
     upsampled_arrays = []
     for array, length in zip(arrays, lengths):
         # XXX: Hack to fix MappedArray values mapping being stripped by repeat.
@@ -176,7 +175,7 @@ def save_compressed(path, array):
     Save either a MappedArray, np.ma.MaskedArray or np.ndarray in a compressed archive.
     '''
     try:
-        from hdfaccess.parameter import MappedArray
+        from flightdataaccessor import MappedArray
     except ImportError:
         pass
     else:
@@ -203,7 +202,7 @@ def load_compressed(path):
     array_dict = np.load(path, allow_pickle=True)
     array_count = len(array_dict.keys())
     if array_count == 3:
-        from hdfaccess.parameter import MappedArray
+        from flightdataaccessor import MappedArray
         values_mapping = array_dict['arr_0'].item()
         raw_array = np.ma.masked_array(array_dict['arr_1'], mask=array_dict['arr_2'])
         array = MappedArray(raw_array, values_mapping=values_mapping)

@@ -466,7 +466,7 @@ THROTTLE_LEVER_RANGE_MODEL_MAP = {}
 ##############################################################################
 # Gear Transition times
 
-# This is the list of tables required for calculating gear extending/retracting 
+# This is the list of tables required for calculating gear extending/retracting
 # phases for aircraft with only one source recorded.
 # Entries below should be made in the format
 #    'name': (retraction time, extention time),   # Source of values

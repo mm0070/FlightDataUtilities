@@ -31,7 +31,7 @@ def indent(rows, hasHeader=False, headerChar='-', delim=' | ', justify='left',
     # break each logical row into one or more physical ones
     logicalRows = [rowWrapper(row) for row in rows]
     # columns of physical rows
-    columns = itertools.zip_longest(*functools.reduce(operator.add,logicalRows))
+    columns = itertools.zip_longest(*functools.reduce(operator.add, logicalRows))
     # get the maximum of each column by the string length of its items
     maxWidths = [max([len(str(item)) for item in column]) for column in columns]
     rowSeparator = headerChar * (len(prefix) + len(postfix) + sum(maxWidths) + \

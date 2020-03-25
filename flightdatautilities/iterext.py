@@ -5,7 +5,8 @@ Flight Data Utilities: Iter Extensions
 import itertools
 import operator
 
-__all__ = ['batch', 'droplast', 'nested_groupby']
+
+__all__ = ['batch', 'droplast', 'iter_islast', 'nested_groupby']
 
 
 ##############################################################################
@@ -67,3 +68,34 @@ def nested_groupby(iterable, function_list, manipulate=None, output=list):
         (k, nested_groupby(v, function_list[1:], manipulate, output))
         for k, v in itertools.groupby(iterable, function_list[0])
     )
+
+
+def iter_islast(iterable):
+    '''
+    Wraps an iterable and yields a tuple for each item containing the item and whether or not it is the last item.
+
+    Based on http://code.activestate.com/recipes/392015-finding-the-last-item-in-a-loop/
+
+    :ytype: (object, bool)
+    '''
+    it = iter(iterable)
+    prev = next(it)
+    for item in it:
+        yield prev, False
+        prev = item
+    yield prev, True
+
+
+def is_empty(iterable):
+    '''
+    Returns both the iterable and whether or not it is empty.
+
+    :rtype: (iterable, bool)
+    '''
+    it = iter(iterable)
+    try:
+        first = next(it)
+    except StopIteration:
+        return iterable, True
+    else:
+        return itertools.chain((first,), it), False
