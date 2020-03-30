@@ -17,8 +17,10 @@ import logging
 from logging import LogRecord
 from logging.handlers import BufferingHandler
 from typing import Iterable, List
+import numpy as np
 
 from analysis_engine.utils import list_parameters
+import flightdataaccessor as fda
 
 from flightdatautilities.validation_tools.parameter_lists import PARAMETERS_FROM_FILES
 from flightdatautilities.patterns import wildcard_match
@@ -291,8 +293,8 @@ def validate_data_type(parameter) -> List[LogRecord]:
         logger.info("'%s' data has a dtype of: %s", parameter.name,
                     parameter.array.data.dtype)
         if parameter.data_type in ['ASCII', ]:
-            if 'string' not in parameter.array.dtype.name:
-                logger.error("'%s' data type is %s. It should be a string "
+            if 'bytes' not in parameter.array.dtype.name:
+                logger.error("'%s' data type is %s. It should be a byte string "
                              "for '%s' parameters.", parameter.name,
                              parameter.array.dtype.name, parameter.data_type)
                 return buffer.get()
@@ -370,7 +372,7 @@ def validate_name(parameter, name) -> List[LogRecord]:
                      "name as the parameter group. name: %s, parameter "
                      "group: %s", parameter.name, name)
     else:
-        logger.info("''name': Attribute is present and name is the same "
+        logger.info("'name': Attribute is present and name is the same "
                     "name as the parameter group.")
     return buffer.get()
 
@@ -381,7 +383,7 @@ def validate_units(parameter) -> List[LogRecord]:
     and reports the value and if it is valid unit name.
     """
     logger.info("Checking parameter attribute: units")
-    if parameter.data_type in ('Discrete', 'Multi-state',
+    if parameter.data_type in ('Discrete', 'Multi-state', 'ASCII',
                                'Enumerated Discrete'):
         return buffer.get()
     if parameter.units is None:
@@ -420,3 +422,76 @@ def validate_units(parameter) -> List[LogRecord]:
     return buffer.get()
 
 
+def inf_nan_check(parameter) -> List[LogRecord]:
+    '''
+    Check the dataset for NaN or inf values
+    '''
+    def _report(count, parameter, unmasked, val_str):
+        '''
+        log as warning if all are masked, error if not
+        '''
+        if count:
+            msg = "Found %s %s values in the data of '%s'. " \
+                % (count, val_str, parameter.name)
+            nan_percent = (float(count) / len(parameter.array.data)) * 100
+            msg += "This represents %.2f%% of the data. " % (nan_percent, )
+            if unmasked:
+                msg += "%s are not masked." % (unmasked,)
+                logger.error(msg)
+            else:
+                msg += "All of these values are masked."
+                logger.warning(msg)
+
+    logger.info("Checking parameter dataset for inf and NaN values.")
+    if 'int' in parameter.array.dtype.name or \
+       'float' in parameter.array.dtype.name:
+
+        nan_unmasked = np.ma.masked_equal(
+            np.isnan(parameter.array), False).count()
+        nan_count = np.ma.masked_equal(
+            np.isnan(parameter.array.data), False).count()
+        inf_unmasked = np.ma.masked_equal(
+            np.isinf(parameter.array), False).count()
+        inf_count = np.ma.masked_equal(
+            np.isinf(parameter.array.data), False).count()
+
+        _report(nan_count, parameter, nan_unmasked, 'NaN')
+        _report(inf_count, parameter, inf_unmasked, 'inf')
+
+        if nan_count == inf_count == 0:
+            logger.info("Dataset does not have any inf or NaN values.")
+    return buffer.get()
+
+
+def validate_dataset(parameter) -> List[LogRecord]:
+    """Check the data for size, unmasked inf/NaN values."""
+    logs = inf_nan_check(parameter)
+
+    if parameter.array.data.size != parameter.array.mask.size:
+        logger.error("The data and mask sizes are different. (Data is %s, "
+                     "Mask is %s)", parameter.array.data.size,
+                     parameter.array.mask.size)
+    else:
+        logger.info("Data and Mask both have the size of %s elements.",
+                    parameter.array.data.size)
+
+    logger.info("Checking dataset type and shape.")
+    masked_array = isinstance(parameter.array, np.ma.core.MaskedArray)
+    mapped_array = isinstance(parameter.array, fda.MappedArray)
+    if not masked_array and not mapped_array:
+        logger.error("Data for %s is not a MaskedArray or MappedArray. "
+                     "Type is %s", parameter.name, type(parameter.array))
+    else:
+        # check shape, it should be 1 dimensional arrays for data and mask
+        if len(parameter.array.shape) != 1:
+            logger.error("The data and mask are not in a 1 dimensional "
+                         "array. The data's shape is %s ",
+                         parameter.array.shape)
+        else:
+            logger.info("Data is in a %s with a shape of %s",
+                        type(parameter.array).__name__, parameter.array.shape)
+    if parameter.array.mask.all():
+        logger.warning("Data for '%s' is entirely masked. Is it meant to be?",
+                       parameter.name)
+    logs.extend(buffer.get())
+    return logs
