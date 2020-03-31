@@ -23,7 +23,7 @@ from analysis_engine.utils import list_parameters
 import flightdataaccessor as fda
 
 from flightdatautilities.validation_tools.parameter_lists import PARAMETERS_FROM_FILES
-from flightdatautilities.patterns import wildcard_match
+from flightdatautilities.patterns import wildcard_match, WILDCARD
 from flightdatautilities.state_mappings import PARAMETER_CORRECTIONS
 from flightdatautilities import units as ut
 
@@ -358,7 +358,7 @@ def validate_lfl(parameter) -> List[LogRecord]:
     return buffer.get()
 
 
-def validate_name(parameter, name) -> List[LogRecord]:
+def validate_name(parameter, group_name) -> List[LogRecord]:
     """
     Checks the parameter attribute name exists (It is required)
     and report if name matches the parameter's group name.
@@ -366,14 +366,29 @@ def validate_name(parameter, name) -> List[LogRecord]:
     logger.info("Checking parameter attribute: name")
     if parameter.name is None:
         logger.error("'name': No attribute for '%s'. Attribute is Required.",
-                     name)
-    elif parameter.name != name:
+                     group_name)
+    elif parameter.name != group_name:
         logger.error("'name': Attribute is present, but is not the same "
                      "name as the parameter group. name: %s, parameter "
-                     "group: %s", parameter.name, name)
+                     "group: %s", parameter.name, group_name)
     else:
         logger.info("'name': Attribute is present and name is the same "
                     "name as the parameter group.")
+
+    for polaris_name in PARAMETER_LIST:
+        if WILDCARD in polaris_name:
+            found = wildcard_match(polaris_name, [parameter.name], missing=False)
+        else:
+            found = parameter.name == polaris_name
+        if found:
+            logger.info("Parameter '%s' is recognised by POLARIS.", parameter.name)
+            break
+    else:
+        logger.warning("Parameter '%s' is not recognised by POLARIS.", parameter.name)
+
+    if parameter.name in PARAMETERS_CORE:
+        logger.info("Parameter '%s' is a core parameter required for "
+                    "analysis.", parameter.name)
     return buffer.get()
 
 
