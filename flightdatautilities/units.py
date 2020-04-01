@@ -838,6 +838,7 @@ UNIT_CORRECTIONS = {
     # Temperature:
     b'\xb0C': CELSIUS,
     '°C': CELSIUS,
+    '\ufffdC': CELSIUS,  # �C is probably °C (see AE-2886)
     b'\xf8C': CELSIUS,
     'DEGC': CELSIUS,
     'DEG C': CELSIUS,
