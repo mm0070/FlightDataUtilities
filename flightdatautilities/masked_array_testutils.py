@@ -6,6 +6,7 @@ These build on the functions provided in the ``numpy.ma.testutils`` module.
 
 import numpy as np
 from numpy.ma.testutils import approx, almost, operator, assert_, assert_array_equal, assert_array_compare
+from numpy.testing import assert_equal
 
 
 ##############################################################################
@@ -59,3 +60,21 @@ def assert_mask_equivalent(m1, m2, err_msg=''):
     if m2 is np.ma.nomask or not np.any(m2):
         assert_(m1 is np.ma.nomask or not np.any(m1), msg=err_msg)
     assert_array_equal(m1, m2, err_msg=err_msg)
+
+
+def assert_mapped_array_equal(m1, m2, err_msg="", verbose=True):
+    """
+    Checks that two mapped arrays are the same, ie. they have the same underlying
+    buffer, the same mask and the same values_mapping.
+
+    This is useful for unittesting as we usually want to assert that an expected
+    mapped array is the same as a resulting mapped array.
+    """
+    assert_masked_array_equal(
+        m1.raw, m2.raw, err_msg="Mapped array data are not equivalent"
+    )
+    assert_equal(
+        m1.values_mapping,
+        m2.values_mapping,
+        err_msg="Values mapping are not equivalent",
+    )
