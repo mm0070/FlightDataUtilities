@@ -26,18 +26,27 @@ US_PROFILE = 'US'
 # [2] Conflicts with an SI unit we're unlikely to use.
 # [3] We standardise on US fluid pints and quarts, etc.
 
+
+# This is the list of the standard forms for each unit.
+# See also a list of non-standard but accepted forms below.
+
 # Acceleration:
 G = 'g'  # [2]
 FPS2 = 'ft/s/s'
 MPS2 = 'm/s/s'
-DEGREE_S2 = 'deg/s/s'
 KT_S = 'kt/s'
 
 # Angles:
 DEGREE = 'deg'  # [1]
 RADIAN = 'rad'
+
+# Angular velocity
 DEGREE_S = 'deg/s'  # [1]
 RADIAN_S = 'rad/s'
+
+# Angular acceleration:
+RPM_S = 'rpm/s'
+DEGREE_S2 = 'deg/s/s'
 
 # Density:
 KG_LITER = 'kg/l'
@@ -58,15 +67,19 @@ KJ = 'kJ'
 MJ = 'MJ'
 
 # Flow (Mass):
-LB_H = 'lb/h'
+LB_S = 'lb/s'
 LB_MIN = 'lb/min'
+LB_H = 'lb/h'
+KG_S = 'kg/s'
 KG_H = 'kg/h'
 TONNE_H = 't/h'
 
 # Flow (Volume):
 PINT_H = 'pt/h'  # [3]
 QUART_H = 'qt/h'  # [3]
+GALLON_S = 'gal/s'
 GALLON_H = 'gal/h'  # [3]
+CUFT_M = 'cu.ft/min'
 LITER_H = 'l/h'
 
 # Force:
@@ -75,14 +88,18 @@ KGF = 'kgf'
 DECANEWTON = 'daN'
 NEWTON = 'N'
 
+# Power:
+KW = 'kW'
+
 # Frequency:
 HZ = 'Hz'
-KHZ = 'KHz'
+KHZ = 'kHz'
 MHZ = 'MHz'
 GHZ = 'GHz'
 
 # Length:
 FT = 'ft'
+FL = 'fl'
 METER = 'm'
 KM = 'km'
 MILE = 'mi'
@@ -147,7 +164,7 @@ QUART = 'qt'  # [3]
 GALLON = 'gal'  # [3]
 LITER = 'l'
 
-# Other:
+# Non-dimensional:
 DDM = 'ddm'
 GS_DDM = 'gs-ddm'
 LOC_DDM = 'loc-ddm'
@@ -155,14 +172,14 @@ DOTS = 'dots'
 TRIM = 'trim'
 CYCLES = 'cycles'
 PERCENT = '%'
-NM_KG = 'NM/kg'
-#COUNTS = 'counts'#Readout
 DU = 'du'
 DI = 'di'
-# UNITS = 'units'#Readout
-# CU = 'cu'#Readout
-# SCALAR = 'scalar'#Readout
-# EPR = 'epr'#Readout
+MODE = 'mode' # e.g. autopilot mode enumeration
+NUM = 'number' # e.g. engine serial numbers
+UNITS = 'units'
+CU = 'cu'
+SCALAR = 'scalar'
+EPR = 'epr'
 
 
 CONVERSION_MULTIPLIERS = {
@@ -191,46 +208,90 @@ CONVERSION_MULTIPLIERS = {
         KJ: 1000,
     },
     # Flow (Mass):
-    LB_H: {
-        LB_MIN: 0.0166666667,
-        KG_H: 0.45359237,
-        TONNE_H: 0.00045359237,
+    LB_S: {
+        LB_MIN: 60.0,
+        LB_H: 3600.0,
+        KG_S: 0.45359237,
+        KG_H: 1632.932532,
+        TONNE_H: 1.632932532,
     },
     LB_MIN: {
+        LB_S: 0.0166666667,
         LB_H: 60,
+        KG_S: 0.007559873,
         KG_H: 27.2155422,
         TONNE_H: 0.0272155422,
     },
+    LB_H: {
+        LB_S: 0.0002777777777777778,
+        LB_MIN: 0.0166666667,
+        KG_S: 0.00012599788055555556,
+        KG_H: 0.45359237,
+        TONNE_H: 0.00045359237,
+    },
+    KG_S: {
+        LB_S: 2.204622622,
+        LB_MIN: 132.2773573,
+        LB_H: 7936.641439,
+        KG_H: 3600.0,
+        TONNE_H: 3.6,
+    },
     KG_H: {
-        LB_H: 2.204622622,
+        LB_S: 0.000612395,
         LB_MIN: 0.0367437104,
+        LB_H: 2.204622622,
+        KG_H: 0.0002777777777777778,
         TONNE_H: 0.001,
     },
     TONNE_H: {
-        LB_H: 2204.622621849,
+        LB_S: 0.612395173,
         LB_MIN: 36.7437104,
+        LB_H: 2204.622621849,
+        KG_S: 0.2777777777777778,
         KG_H: 1000.0,
     },
     # Flow (Volume):
     PINT_H: {
         QUART_H: 0.5,
+        GALLON_S: 450.0,
         GALLON_H: 0.125,
+        CUFT_M: 0.0002785,
         LITER_H: 0.473176,
     },
     QUART_H: {
         PINT_H: 2,
+        GALLON_S: 900.0,
         GALLON_H: 0.25,
+        CUFT_M: 0.000557,
         LITER_H: 0.946353,
+    },
+    GALLON_S: {
+        PINT_H: 0.002222222,
+        QUART_H: 0.001111111,
+        GALLON_H: 0.000277778,
+        CUFT_M: 6.18889E-07,
+        LITER_H: 0.001051503,
     },
     GALLON_H: {
         PINT_H: 8,
         QUART_H: 4,
+        GALLON_S: 3600.0,
+        CUFT_M: 0.002228,
         LITER_H: 3.78541,
+    },
+    CUFT_M: {
+        PINT_H: 3590.664273,
+        QUART_H: 1795.332136,
+        GALLON_S: 1615798.923,
+        GALLON_H: 448.8330341,
+        LITER_H: 1.699,
     },
     LITER_H: {
         PINT_H: 2.11338,
         QUART_H: 1.05669,
+        GALLON_S: 951.0198367,
         GALLON_H: 0.264172,
+        CUFT_M: 0.0005886,
     },
     # Force:
     LBF: {
@@ -276,14 +337,24 @@ CONVERSION_MULTIPLIERS = {
     },
     # Length:
     FT: {
+        FL: 0.01,
         METER: 0.3048,
         KM: 0.0003048,
         MILE: 0.00018939,
         NM: 0.000164579,
         MILLIMETER: 304.8,
     },
+    FL: {
+        FT: 100.0,
+        METER: 30.48,
+        KM: 0.03048,
+        MILE: 0.018939,
+        NM: 0.0164579,
+        MILLIMETER: 30480.0,
+    },
     METER: {
         FT: 3.280839895,
+        FL: 0.03280839895,
         KM: 0.001,
         MILE: 0.000621371,
         NM: 0.000539957,
@@ -291,6 +362,7 @@ CONVERSION_MULTIPLIERS = {
     },
     KM: {
         FT: 3280.839895013,
+        FL: 32.80839895013,
         METER: 1000,
         MILE: 0.621371192,
         NM: 0.539956803,
@@ -298,6 +370,7 @@ CONVERSION_MULTIPLIERS = {
     },
     MILE: {
         FT: 5280,
+        FL: 52.8,
         METER: 1609.344,
         KM: 1.609344,
         NM: 0.868976242,
@@ -305,6 +378,7 @@ CONVERSION_MULTIPLIERS = {
     },
     NM: {
         FT: 6076.11548554,
+        FL: 60.7611548554,
         METER: 1852,
         KM: 1.852,
         MILE: 1.150779448,
@@ -312,6 +386,7 @@ CONVERSION_MULTIPLIERS = {
     },
     MILLIMETER: {
         FT: 0.003280839895,
+        FL: 0.00003280839895,
         METER: 0.001,
         KM: 0.000001,
         MILE: 0.000000621371,
@@ -570,7 +645,10 @@ UNIT_DISPLAY = {
     LB_FT2: 'lb/ft²',
 }
 
-
+UNIT_CORRECTIONS = {}
+"""
+# This is the list of alternative forms of the units,
+# mapped against the identifier for the standard form.
 UNIT_CORRECTIONS = {
     # Acceleration:
     'G': G,
@@ -621,6 +699,8 @@ UNIT_CORRECTIONS = {
     'radian/sec': RADIAN_S,
     'radians/s': RADIAN_S,
     'radians/sec': RADIAN_S,
+    # Angular acceleration:
+    'rpm/sec': RPM_S,
     # Density:
     'kilogram/liter': KG_LITER,
     'kilogram/litre': KG_LITER,
@@ -658,6 +738,8 @@ UNIT_CORRECTIONS = {
     'kilojoule': KJ,
     'megajoule': MJ,
     # Flow (Mass):
+    'PPS': LB_S,
+    'pps': LB_S,
     'lb/hr': LB_H,
     'lbs/h': LB_H,
     'lbs/hr': LB_H,
@@ -670,6 +752,7 @@ UNIT_CORRECTIONS = {
     'LBS/MIN': LB_MIN,
     'ppm': LB_MIN,
     'PPM': LB_MIN,
+    'KG/S' : KG_S,
     'kg/hr': KG_H,
     'kgs/h': KG_H,
     'kgs/hr': KG_H,
@@ -1013,27 +1096,29 @@ UNIT_CORRECTIONS = {
     'Di': DI,
     'DI': DI,
 }
-
+"""
 
 UNIT_CATEGORIES = {
     'Acceleration': (G, FPS2, MPS2, DEGREE_S2, KT_S),
     'Angles': (DEGREE, RADIAN, DEGREE_S, RADIAN_S),
+    'Angular acceleration': (RPM_S,),
     'Density': (KG_LITER, LB_GALLON),
     'Electricity': (AMP, VOLT, KVA, OHM, MILLIVOLT, MICROAMP, MILLIAMP),
     'Energy': (JOULE, KJ, MJ),
-    'Flow (Mass)': (LB_H, LB_MIN, KG_H, TONNE_H),
-    'Flow (Volume)': (PINT_H, QUART_H, GALLON_H, LITER_H),
+    'Flow (Mass)': (LB_S, LB_MIN, LB_H, KG_S, KG_H, TONNE_H),
+    'Flow (Volume)': (PINT_H, QUART_H, GALLON_S, GALLON_H, CUFT_M, LITER_H),
     'Force': (LBF, KGF, DECANEWTON, NEWTON),
     'Frequency': (HZ, KHZ, MHZ, GHZ),
-    'Length': (FT, METER, KM, MILE, NM, INCH, MILLIMETER),
+    'Length': (FT, FL, METER, KM, MILE, NM, INCH, MILLIMETER),
     'Mass': (LB, KG, SLUG, TONNE),
+    'Power': (KW,),
     'Pressure': (INHG, PASCAL, HECTOPASCAL, BAR, MILLIBAR, PSI, PSIA, PSID, PSIG, PSI_MINUTE, LB_FT2),
     'Speed': (KT, MPH, FPM, FPS, IPS, METER_S, MACH, MILLIMACH, RPM),
     'Temperature': (CELSIUS, FAHRENHEIT, KELVIN, RANKINE),
     'Time': (HOUR, MINUTE, SECOND, DAY, WEEK, MONTH, YEAR),
     'Torque': (FT_LB, IN_LB, IN_OZ),
     'Volume': (PINT, QUART, GALLON, LITER),
-    'Other': (DDM, GS_DDM, LOC_DDM, DOTS, TRIM, CYCLES, PERCENT, NM_KG, DU, DI, MIL), #COUNTS, CU, SCALAR, UNITS, EPR #Readout,
+    'Other': (DDM, GS_DDM, LOC_DDM, DOTS, TRIM, CYCLES, PERCENT, DU, DI, MIL, CU, SCALAR, MODE, NUM, UNITS, EPR),
 }
 
 
@@ -1049,6 +1134,8 @@ UNIT_DESCRIPTIONS = {
     RADIAN: 'radians',
     DEGREE_S: 'degrees per second',
     RADIAN_S: 'radians per second',
+    # Angular acceleration:
+    RPM_S: 'rpm per second',
     # Density:
     KG_LITER: 'kilograms per liter',
     LB_GALLON: 'pounds per gallon',
@@ -1065,20 +1152,26 @@ UNIT_DESCRIPTIONS = {
     KJ: 'kilojoule',
     MJ: 'megajoule',
     # Flow (Mass):
-    LB_H: 'pounds per hour',
+    LB_S: 'pounds per second',
     LB_MIN: 'pounds per minute',
-    KG_H: 'pounds per kilogram',
+    LB_H: 'pounds per hour',
+    KG_S: 'kilograms per second',
+    KG_H: 'kilograms per hour',
     TONNE_H: 'tonnes per hour',
     # Flow (Volume):
     PINT_H: 'pints per hour',
     QUART_H: 'quarts per hour',
+    GALLON_S: 'gallons per second',
     GALLON_H: 'gallons per hour',
+    CUFT_M: 'cubic feet per minute',
     LITER_H: 'liters per hour',
     # Force:
     LBF: 'pound-force',
     KGF: 'kilogram-force',
     DECANEWTON: 'decanewton',
     NEWTON: 'newton',
+    # Power:
+    KW: 'kW',
     # Frequency:
     HZ: 'hertz',
     KHZ: 'kilohertz',
@@ -1086,6 +1179,7 @@ UNIT_DESCRIPTIONS = {
     GHZ: 'gigahertz',
     # Length:
     FT: 'feet',
+    FL: 'flight level',
     METER: 'meters',
     KM: 'kilometers',
     MILE: 'miles',
@@ -1150,14 +1244,14 @@ UNIT_DESCRIPTIONS = {
     TRIM: 'trim',
     CYCLES: 'cycles',
     PERCENT: 'percent',
-    NM_KG: 'nautical miles per kilogram',
     DU: 'display unit',
     DI: 'direction/deviation indicator',
-    # COUNTS: 'counts',#Readout
-    # CU: 'control units',#Readout
-    # SCALAR: 'scalar',#Readout
-    # UNITS: 'units',#Readout
-    # EPR: 'engine pressure ratio',
+    CU: 'control units',
+    SCALAR: 'scalar',
+    MODE: 'mode',
+    NUM: 'number',
+    UNITS: 'units',
+    EPR: 'engine pressure ratio',
 }
 
 
