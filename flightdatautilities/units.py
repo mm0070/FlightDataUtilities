@@ -172,6 +172,7 @@ DOTS = 'dots'
 TRIM = 'trim'
 CYCLES = 'cycles'
 PERCENT = '%'
+NM_KG = 'NM/kg'
 DU = 'du'
 DI = 'di'
 MODE = 'mode' # e.g. autopilot mode enumeration
@@ -1118,7 +1119,7 @@ UNIT_CATEGORIES = {
     'Time': (HOUR, MINUTE, SECOND, DAY, WEEK, MONTH, YEAR),
     'Torque': (FT_LB, IN_LB, IN_OZ),
     'Volume': (PINT, QUART, GALLON, LITER),
-    'Other': (DDM, GS_DDM, LOC_DDM, DOTS, TRIM, CYCLES, PERCENT, DU, DI, MIL, CU, SCALAR, MODE, NUM, UNITS, EPR),
+    'Other': (DDM, GS_DDM, LOC_DDM, DOTS, TRIM, CYCLES, PERCENT, NM_KG, DU, DI, MIL, CU, SCALAR, MODE, NUM, UNITS, EPR),
 }
 
 
@@ -1244,6 +1245,7 @@ UNIT_DESCRIPTIONS = {
     TRIM: 'trim',
     CYCLES: 'cycles',
     PERCENT: 'percent',
+    NM_KG: 'nautical miles per kilogram',
     DU: 'display unit',
     DI: 'direction/deviation indicator',
     CU: 'control units',
