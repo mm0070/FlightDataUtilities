@@ -646,8 +646,7 @@ UNIT_DISPLAY = {
     LB_FT2: 'lb/ft²',
 }
 
-UNIT_CORRECTIONS = {}
-"""
+
 # This is the list of alternative forms of the units,
 # mapped against the identifier for the standard form.
 UNIT_CORRECTIONS = {
@@ -1097,7 +1096,7 @@ UNIT_CORRECTIONS = {
     'Di': DI,
     'DI': DI,
 }
-"""
+
 
 UNIT_CATEGORIES = {
     'Acceleration': (G, FPS2, MPS2, DEGREE_S2, KT_S),
