@@ -49,6 +49,7 @@ __all__ = (
     'get_tail_rotor_pedal_range',
     'get_throttle_lever_range',
     'get_gear_transition_times',
+    'get_fuel_imbalance_limits',
 )
 
 
@@ -1099,4 +1100,33 @@ def get_gear_transition_times(model=None, series=None, family=None):
             return m[k]
 
     message = "No Gear transition times for model '%s', series '%s', family '%s'."
+    raise KeyError(message % keys)
+
+
+def get_fuel_imbalance_limits(model=None, series=None, family=None):
+    '''
+    Accessor for fetching fuel imbalance limits based on total wing fuel quantity.
+
+    Returns a tuple of tuples in the following form::
+
+        ((total fuel qt low, total fuel qt high), (imbalance limit high, imbalance limit low))
+
+    :param model: Aircraft series e.g. B737-888
+    :type model: string
+    :param series: Aircraft series e.g. B737-800
+    :type series: string
+    :param family: Aircraft family e.g. B737 NG
+    :type family: string
+    :raises: KeyError if no limits found
+    :returns: tuple of total wing fuel quantity limits and imbalance limits
+    :rtype: tuple
+    '''
+    keys = model, series, family
+    maps = mi.FUEL_IMBALANCE_LIMITS_MODEL_MAP, mi.FUEL_IMBALANCE_LIMITS_SERIES_MAP, mi.FUEL_IMBALANCE_LIMITS_FAMILY_MAP
+
+    for k, m in zip(keys, maps):
+        if k in m:
+            return m[k]
+
+    message = "No fuel imbalance limit for model '%s', series '%s', family '%s'."
     raise KeyError(message % keys)

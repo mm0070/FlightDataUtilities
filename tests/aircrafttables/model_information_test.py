@@ -249,3 +249,16 @@ class TestStabilizerInformation(unittest.TestCase):
         self.assertIsInstance(x, tuple)
         self.assertTrue(all(isinstance(v, (float, int)) for v in x))
         self.assertEqual(len(x), 2)
+
+class TestFuelImbalanceLimits(unittest.TestCase):
+
+    def test_invalid_arguments(self):
+        self.assertRaises(KeyError, at.get_fuel_imbalance_limits, None, None, None)
+        self.assertRaises(KeyError, at.get_fuel_imbalance_limits, '', '', '')
+
+    def test_b767(self):
+        x = at.get_fuel_imbalance_limits(None, None, 'B767')
+        self.assertIsInstance(x, tuple)
+        self.assertTrue(len(x), 2)
+        self.assertTrue(all(isinstance(value, (float, int)) for tup in x for value in tup))
+

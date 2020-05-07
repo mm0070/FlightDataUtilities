@@ -482,3 +482,21 @@ GEAR_TRANSITION_TIME_SERIES_MAP = {}
 GEAR_TRANSITION_TIME_FAMILY_MAP = {
     'B737 Classic': (6, 8),
     }
+
+
+###############################################################################
+# Fuel Imbalance limits
+
+# This is the list of fuel imbalance limits. Fuel imbalance limit is calculated
+# based on the total wing fuel quantity (L + R). For each aircraft family, we would
+# find the first tuple describing the low and high total fuel quantity. The second tuple
+# shows the respective high and low imbalance limit. When the total fuel is between
+# the low and high total wing fuel quantity, the fuel imbalance limit is interpolated.
+
+FUEL_IMBALANCE_LIMITS_MODEL_MAP = {}
+
+FUEL_IMBALANCE_LIMITS_SERIES_MAP = {}
+
+FUEL_IMBALANCE_LIMITS_FAMILY_MAP = {
+    'B767': ((21_772, 36_197), (1_134, 680)),
+}
