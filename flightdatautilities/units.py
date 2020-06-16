@@ -57,6 +57,7 @@ AMP = 'A'
 VOLT = 'V'
 KVA = 'kVA'
 OHM = 'ohm'  # [1]
+MICROVOLT = 'microV'
 MILLIVOLT = 'mV'
 MILLIAMP = 'mA'
 MICROAMP = 'uA'  # [1]
@@ -542,6 +543,9 @@ CONVERSION_MULTIPLIERS = {
     LOC_DDM: {
         DOTS: 12.903225806451614,
     },
+    MICROVOLT: {
+        DOTS: 0.00001333333333333,
+    },
     MILLIVOLT: {
         DOTS: 0.01333333333333333,
     },
@@ -670,6 +674,7 @@ UNIT_CORRECTIONS = {
     '°': DEGREE,
     'DEG': DEGREE,
     'Deg': DEGREE,
+    'Degree': DEGREE,
     'Degrees': DEGREE,
     'Degrees E of N': DEGREE,
     'Degrees R': DEGREE,
@@ -816,6 +821,7 @@ UNIT_CORRECTIONS = {
     'miles': MILE,
     'MILE': MILE,
     'MILES': MILE,
+    'Nm': NM,
     'nm': NM,
     'inch': INCH,
     'inches': INCH,
