@@ -50,6 +50,7 @@ AMP = 'A'
 VOLT = 'V'
 KVA = 'kVA'
 OHM = 'ohm'  # [1]
+MICROVOLT = 'microV'
 MILLIVOLT = 'mV'
 MILLIAMP = 'mA'
 MICROAMP = 'uA'  # [1]
@@ -468,6 +469,9 @@ CONVERSION_MULTIPLIERS = {
     LOC_DDM: {
         DOTS: 12.903225806451614,
     },
+    MICROVOLT: {
+        DOTS: 0.00001333333333333,
+    },
     MILLIVOLT: {
         DOTS: 0.01333333333333333,
     },
@@ -522,6 +526,7 @@ STANDARD_CONVERSIONS = {
     RADIAN: DEGREE,
     # Electricity:
     MICROAMP: DOTS,
+    MICROVOLT: DOTS,
     MILLIVOLT: DOTS,
     # Flow (Mass):
     LB_H: KG_H,
@@ -600,7 +605,9 @@ UNIT_CORRECTIONS = {
     'Degrees Right': DEGREE,
     'Degrees upward': DEGREE,
     'degs.': DEGREE,
+    'Degree': DEGREE,
     'degree': DEGREE,
+    'Degrees': DEGREE,
     'degrees': DEGREE,
     'radian': RADIAN,
     'radians': RADIAN,
@@ -735,6 +742,7 @@ UNIT_CORRECTIONS = {
     'miles': MILE,
     'MILE': MILE,
     'MILES': MILE,
+    'Nm': NM,
     'nm': NM,
     'inch': INCH,
     'inches': INCH,
@@ -762,6 +770,7 @@ UNIT_CORRECTIONS = {
     'tonnes': TONNE,
     # Pressure:
     'IN-HG': INHG,
+    'in Hg': INHG,
     'in-Hg': INHG,
     'in.Hg': INHG,
     'inhg': INHG,
@@ -841,6 +850,8 @@ UNIT_CORRECTIONS = {
     b'\xb0C': CELSIUS,
     '\xb0C': CELSIUS,
     b'\xf8C': CELSIUS,
+    '° C': CELSIUS,
+    'C° deg': CELSIUS,
     'DEGC': CELSIUS,
     'DEG C': CELSIUS,
     'Degrees Celsius': CELSIUS,
@@ -881,6 +892,7 @@ UNIT_CORRECTIONS = {
     'MINS': MINUTE,
     'MINUTE': MINUTE,
     'MINUTES': MINUTE,
+    'Minutes': MINUTE,
     'mon': MONTH,
     'mth': MONTH,
     'month': MONTH,
@@ -1057,6 +1069,7 @@ UNIT_DESCRIPTIONS = {
     VOLT: 'volts',
     KVA: 'kilovolt-amps',
     OHM: 'ohms',
+    MICROVOLT: 'microvolts',
     MILLIVOLT: 'millivolts',
     MILLIAMP: 'milliamperes',
     MICROAMP: 'microamperes',
