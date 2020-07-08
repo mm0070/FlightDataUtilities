@@ -28,6 +28,10 @@ US_PROFILE = 'US'
 # [2] Conflicts with an SI unit we're unlikely to use.
 # [3] We standardise on US fluid pints and quarts, etc.
 
+
+# This is the list of the standard forms for each unit.
+# See also a list of non-standard but accepted forms below.
+
 # Acceleration:
 G = 'g'  # [2]
 FPS2 = 'ft/s/s'
@@ -38,8 +42,14 @@ KT_S = 'kt/s'
 # Angles:
 DEGREE = 'deg'  # [1]
 RADIAN = 'rad'
+
+# Angular velocity
 DEGREE_S = 'deg/s'  # [1]
 RADIAN_S = 'rad/s'
+
+# Angular acceleration:
+RPM_S = 'rpm/s'
+DEGREE_S2 = 'deg/s/s'
 
 # Density:
 KG_LITER = 'kg/l'
@@ -61,15 +71,19 @@ KJ = 'kJ'
 MJ = 'MJ'
 
 # Flow (Mass):
-LB_H = 'lb/h'
+LB_S = 'lb/s'
 LB_MIN = 'lb/min'
+LB_H = 'lb/h'
+KG_S = 'kg/s'
 KG_H = 'kg/h'
 TONNE_H = 't/h'
 
 # Flow (Volume):
 PINT_H = 'pt/h'  # [3]
 QUART_H = 'qt/h'  # [3]
+GALLON_S = 'gal/s'
 GALLON_H = 'gal/h'  # [3]
+CUFT_M = 'cu.ft/min'
 LITER_H = 'l/h'
 
 # Force:
@@ -78,14 +92,18 @@ KGF = 'kgf'
 DECANEWTON = 'daN'
 NEWTON = 'N'
 
+# Power:
+KW = 'kW'
+
 # Frequency:
 HZ = 'Hz'
-KHZ = 'KHz'
+KHZ = 'kHz'
 MHZ = 'MHz'
 GHZ = 'GHz'
 
 # Length:
 FT = 'ft'
+FL = 'fl'
 METER = 'm'
 KM = 'km'
 MILE = 'mi'
@@ -106,6 +124,7 @@ MILLIBAR = 'mb'
 BAR = 'bar'
 PASCAL = 'Pa'
 HECTOPASCAL = 'hPa'
+KILOPASCAL = 'kPa'
 PSI = 'psi'
 PSIA = 'psia'
 PSID = 'psid'
@@ -150,7 +169,7 @@ QUART = 'qt'  # [3]
 GALLON = 'gal'  # [3]
 LITER = 'l'
 
-# Other:
+# Non-dimensional:
 DDM = 'ddm'
 GS_DDM = 'gs-ddm'
 LOC_DDM = 'loc-ddm'
@@ -159,13 +178,14 @@ TRIM = 'trim'
 CYCLES = 'cycles'
 PERCENT = '%'
 NM_KG = 'NM/kg'
-#COUNTS = 'counts'#Readout
 DU = 'du'
 DI = 'di'
-# UNITS = 'units'#Readout
-# CU = 'cu'#Readout
-# SCALAR = 'scalar'#Readout
-# EPR = 'epr'#Readout
+MODE = 'mode' # e.g. autopilot mode enumeration
+NUM = 'number' # e.g. engine serial numbers
+UNITS = 'units'
+CU = 'cu'
+SCALAR = 'scalar'
+EPR = 'epr'
 
 
 CONVERSION_MULTIPLIERS = {
@@ -194,46 +214,90 @@ CONVERSION_MULTIPLIERS = {
         KJ: 1000,
     },
     # Flow (Mass):
-    LB_H: {
-        LB_MIN: 0.0166666667,
-        KG_H: 0.45359237,
-        TONNE_H: 0.00045359237,
+    LB_S: {
+        LB_MIN: 60.0,
+        LB_H: 3600.0,
+        KG_S: 0.45359237,
+        KG_H: 1632.932532,
+        TONNE_H: 1.632932532,
     },
     LB_MIN: {
+        LB_S: 0.0166666667,
         LB_H: 60,
+        KG_S: 0.007559873,
         KG_H: 27.2155422,
         TONNE_H: 0.0272155422,
     },
+    LB_H: {
+        LB_S: 0.0002777777777777778,
+        LB_MIN: 0.0166666667,
+        KG_S: 0.00012599788055555556,
+        KG_H: 0.45359237,
+        TONNE_H: 0.00045359237,
+    },
+    KG_S: {
+        LB_S: 2.204622622,
+        LB_MIN: 132.2773573,
+        LB_H: 7936.641439,
+        KG_H: 3600.0,
+        TONNE_H: 3.6,
+    },
     KG_H: {
-        LB_H: 2.204622622,
+        LB_S: 0.000612395,
         LB_MIN: 0.0367437104,
+        LB_H: 2.204622622,
+        KG_H: 0.0002777777777777778,
         TONNE_H: 0.001,
     },
     TONNE_H: {
-        LB_H: 2204.622621849,
+        LB_S: 0.612395173,
         LB_MIN: 36.7437104,
+        LB_H: 2204.622621849,
+        KG_S: 0.2777777777777778,
         KG_H: 1000.0,
     },
     # Flow (Volume):
     PINT_H: {
         QUART_H: 0.5,
+        GALLON_S: 450.0,
         GALLON_H: 0.125,
+        CUFT_M: 0.0002785,
         LITER_H: 0.473176,
     },
     QUART_H: {
         PINT_H: 2,
+        GALLON_S: 900.0,
         GALLON_H: 0.25,
+        CUFT_M: 0.000557,
         LITER_H: 0.946353,
+    },
+    GALLON_S: {
+        PINT_H: 0.002222222,
+        QUART_H: 0.001111111,
+        GALLON_H: 0.000277778,
+        CUFT_M: 6.18889E-07,
+        LITER_H: 0.001051503,
     },
     GALLON_H: {
         PINT_H: 8,
         QUART_H: 4,
+        GALLON_S: 3600.0,
+        CUFT_M: 0.002228,
         LITER_H: 3.78541,
+    },
+    CUFT_M: {
+        PINT_H: 3590.664273,
+        QUART_H: 1795.332136,
+        GALLON_S: 1615798.923,
+        GALLON_H: 448.8330341,
+        LITER_H: 1.699,
     },
     LITER_H: {
         PINT_H: 2.11338,
         QUART_H: 1.05669,
+        GALLON_S: 951.0198367,
         GALLON_H: 0.264172,
+        CUFT_M: 0.0005886,
     },
     # Force:
     LBF: {
@@ -279,14 +343,24 @@ CONVERSION_MULTIPLIERS = {
     },
     # Length:
     FT: {
+        FL: 0.01,
         METER: 0.3048,
         KM: 0.0003048,
         MILE: 0.00018939,
         NM: 0.000164579,
         MILLIMETER: 304.8,
     },
+    FL: {
+        FT: 100.0,
+        METER: 30.48,
+        KM: 0.03048,
+        MILE: 0.018939,
+        NM: 0.0164579,
+        MILLIMETER: 30480.0,
+    },
     METER: {
         FT: 3.280839895,
+        FL: 0.03280839895,
         KM: 0.001,
         MILE: 0.000621371,
         NM: 0.000539957,
@@ -294,6 +368,7 @@ CONVERSION_MULTIPLIERS = {
     },
     KM: {
         FT: 3280.839895013,
+        FL: 32.80839895013,
         METER: 1000,
         MILE: 0.621371192,
         NM: 0.539956803,
@@ -301,6 +376,7 @@ CONVERSION_MULTIPLIERS = {
     },
     MILE: {
         FT: 5280,
+        FL: 52.8,
         METER: 1609.344,
         KM: 1.609344,
         NM: 0.868976242,
@@ -308,6 +384,7 @@ CONVERSION_MULTIPLIERS = {
     },
     NM: {
         FT: 6076.11548554,
+        FL: 60.7611548554,
         METER: 1852,
         KM: 1.852,
         MILE: 1.150779448,
@@ -315,6 +392,7 @@ CONVERSION_MULTIPLIERS = {
     },
     MILLIMETER: {
         FT: 0.003280839895,
+        FL: 0.00003280839895,
         METER: 0.001,
         KM: 0.000001,
         MILE: 0.000000621371,
@@ -364,6 +442,7 @@ CONVERSION_MULTIPLIERS = {
         INHG: 0.0002952998,
         MILLIBAR: 0.01,
         HECTOPASCAL: 0.01,
+        KILOPASCAL: 0.001,
         PSI: 0.00014503774,
     },
     HECTOPASCAL: {
@@ -371,6 +450,12 @@ CONVERSION_MULTIPLIERS = {
         MILLIBAR: 1,
         PASCAL: 100,
         PSI: 0.014503774,
+    },
+    KILOPASCAL: {
+        INHG: 0.2952998,
+        MILLIBAR: 10,
+        PASCAL: 1000,
+        PSI: 0.14503774,
     },
     PSI: {
         INHG: 2.036020375,
@@ -495,6 +580,13 @@ CONVERSION_FUNCTIONS = {
     RADIAN: {
         DEGREE: np.degrees,
     },
+    # Angular velocity
+    DEGREE_S: {
+        RADIAN_S: np.radians,
+    },
+    RADIAN_S: {
+        DEGREE_S: np.degrees,
+    },
     # Temperature:
     CELSIUS: {
         FAHRENHEIT: lambda v: v * 9.0 / 5.0 + 32.0,
@@ -524,6 +616,8 @@ STANDARD_CONVERSIONS = {
     MPS2: G,
     # Angle:
     RADIAN: DEGREE,
+    # Angular velocity
+    RADIAN_S: DEGREE_S,
     # Electricity:
     MICROAMP: DOTS,
     MICROVOLT: DOTS,
@@ -547,6 +641,7 @@ STANDARD_CONVERSIONS = {
     BAR: PSI,
     INHG: MILLIBAR,
     HECTOPASCAL: MILLIBAR,
+    KILOPASCAL: MILLIBAR,
     # Speed:
     MILLIMACH: MACH,
     # Temperature:
@@ -578,31 +673,48 @@ UNIT_DISPLAY = {
 }
 
 
+# This is the list of alternative forms of the units,
+# mapped against the identifier for the standard form.
 UNIT_CORRECTIONS = {
     # Acceleration:
     'G': G,
+    'G\'S': G,
     'G\'s': G,
     'g\'s': G,
+    'Std G': G,
     'ft/sec^2': FPS2,
     'ft/sec/sec': FPS2,
     'm/s²': MPS2,
+    'm/s2': MPS2,
     b'm/s\xc2\xb2': MPS2,
     'kt/sec': KT_S,
     'kts/sec': KT_S,
     'kts/s': KT_S,
+    '°/s2': DEGREE_S2,
+    'Degree/Sec2': DEGREE_S2,
     'deg/s^2': DEGREE_S2,
+    'Deg/S2': DEGREE_S2,
     'deg/s2': DEGREE_S2,
     'deg/sec/sec': DEGREE_S2,
     'deg/sec2': DEGREE_S2,
     'deg/sec^2': DEGREE_S2,
     # Angles:
     '\xb0': DEGREE,  # degree symbol
+    '°': DEGREE,
+    '0': DEGREE,
+    '°surface': DEGREE,
+    '0surface': DEGREE,
+    '0 surface': DEGREE,
     'DEG': DEGREE,
     'Deg': DEGREE,
+    'deg sync': DEGREE,
+    'DegSuf': DEGREE,
+    'Degree': DEGREE,
     'Degrees': DEGREE,
     'Degrees E of N': DEGREE,
     'Degrees R': DEGREE,
     'Degrees Right': DEGREE,
+    'Degrees RVDT': DEGREE,
     'Degrees upward': DEGREE,
     'degs.': DEGREE,
     'Degree': DEGREE,
@@ -611,16 +723,25 @@ UNIT_CORRECTIONS = {
     'degrees': DEGREE,
     'radian': RADIAN,
     'radians': RADIAN,
+    '°/s': DEGREE_S,
     'DEG/S': DEGREE_S,
     'DEG/SEC': DEGREE_S,
     'DPS': DEGREE_S,
     'Degrees/sec': DEGREE_S,
+    'Deg/S': DEGREE_S,
+    'Deg P/S': DEGREE_S,
+    'Deg\s': DEGREE_S,
+    'deg\'s': DEGREE_S,
+    'Deg/s': DEGREE_S,
     'deg/se': DEGREE_S,
+    'Deg/Sec': DEGREE_S,
     'deg/sec': DEGREE_S,
     'degree/s': DEGREE_S,
+    'Degree/Sec': DEGREE_S,
     'degree/sec': DEGREE_S,
     'degrees/s': DEGREE_S,
     'degrees/sec': DEGREE_S,
+    'Degrees P/S': DEGREE_S,
     'RAD/S': RADIAN_S,
     'RAD/SEC': RADIAN_S,
     'RPS': RADIAN_S,
@@ -630,6 +751,8 @@ UNIT_CORRECTIONS = {
     'radian/sec': RADIAN_S,
     'radians/s': RADIAN_S,
     'radians/sec': RADIAN_S,
+    # Angular acceleration:
+    'rpm/sec': RPM_S,
     # Density:
     'kilogram/liter': KG_LITER,
     'kilogram/litre': KG_LITER,
@@ -642,18 +765,26 @@ UNIT_CORRECTIONS = {
     'lbs/gallon': LB_GALLON,
     'lbs/gal': LB_GALLON,
     'lb/gallon': LB_GALLON,
+    'LBS Per Gal': LB_GALLON,
     # Electricity:
+    'Amp': AMP,
     'amp': AMP,
     'amps': AMP,
+    'Amps': AMP,
     'AMPS': AMP,
     'amperes': AMP,
     'kilovolt-amps': KVA,
     'KVA': KVA,
     'v': VOLT,
+    'Volt': VOLT,
     'volt': VOLT,
+    'Volts': VOLT,
     'volts': VOLT,
     'voltage': VOLT,
+    'Volts RMS': VOLT,
+    'Volts AC': VOLT,
     'VAC': VOLT,
+    'Volts DC': VOLT,
     'VDC': VOLT,
     'ohms': OHM,
     'mv': MILLIVOLT,
@@ -667,6 +798,8 @@ UNIT_CORRECTIONS = {
     'kilojoule': KJ,
     'megajoule': MJ,
     # Flow (Mass):
+    'PPS': LB_S,
+    'pps': LB_S,
     'lb/hr': LB_H,
     'lbs/h': LB_H,
     'lbs/hr': LB_H,
@@ -675,10 +808,15 @@ UNIT_CORRECTIONS = {
     'LBS/H': LB_H,
     'LBS/HR': LB_H,
     'PPH': LB_H,
+    'Pounds Per Hour': LB_H,
+    'Lbs/Min': LB_MIN,
     'lbs/min': LB_MIN,
     'LBS/MIN': LB_MIN,
     'ppm': LB_MIN,
     'PPM': LB_MIN,
+    'KG/S' : KG_S,
+    'Kg/Hour': KG_H,
+    'Kg/h': KG_H,
     'kg/hr': KG_H,
     'kgs/h': KG_H,
     'kgs/hr': KG_H,
@@ -696,6 +834,9 @@ UNIT_CORRECTIONS = {
     'tonnes/h': TONNE_H,
     'tonnes/hr': TONNE_H,
     # Force:
+    'LBF': LBF,
+    'Pounds Force': LBF,
+    'Pounds-Force': LBF,
     'pound-force': LBF,
     'kilogram-force': KGF,
     'kilopond': KGF,
@@ -704,10 +845,12 @@ UNIT_CORRECTIONS = {
     'dan': DECANEWTON,
     'DAN': DECANEWTON,
     'Newton': NEWTON,
+    'Newtons': NEWTON,
     'newton': NEWTON,
     'n': NEWTON,
     # Frequency:
     'hertz': HZ,
+    'KHz': KHZ,
     'kilohertz': KHZ,
     'megahertz': MHZ,
     'gigahertz': GHZ,
@@ -729,8 +872,13 @@ UNIT_CORRECTIONS = {
     'feet': FT,
     'FEET': FT,
     'Feet': FT,
+    'Feet AGL': FT,
+    'Feet MSL': FT,
+    'Feets': FT,
     'foot': FT,
     'metre': METER,
+    'Meters': METER,
+    'Metres': METER,
     'metres': METER,
     'meter': METER,
     'meters': METER,
@@ -739,12 +887,19 @@ UNIT_CORRECTIONS = {
     'kilometer': KM,
     'kilometers': KM,
     'mile': MILE,
+    'Miles': MILE,
     'miles': MILE,
     'MILE': MILE,
     'MILES': MILE,
+    'Nautical Miles': NM,
+    'N Miles': NM,
     'Nm': NM,
     'nm': NM,
+    'Inch LVDT': INCH,
+    'Inches LVDT': INCH,
+    'Inches LVDT Disp': INCH,
     'inch': INCH,
+    'Inches': INCH,
     'inches': INCH,
     'IN': INCH,
     'MM': MILLIMETER,
@@ -764,11 +919,15 @@ UNIT_CORRECTIONS = {
     'Lbs': LB,
     'lbs': LB,
     'lbs.': LB,
+    'Pounds': LB,
     'Slugs': SLUG,
     'slugs': SLUG,
     'tonne': TONNE,
     'tonnes': TONNE,
     # Pressure:
+    'Inches HG': INHG,
+    'Inches Hg': INHG,
+    'in Hg': INHG,
     'IN-HG': INHG,
     'in Hg': INHG,
     'in-Hg': INHG,
@@ -782,6 +941,7 @@ UNIT_CORRECTIONS = {
     'In.Hg': INHG,
     'IN HG': INHG,
     'pa': PASCAL,
+    'hPA': HECTOPASCAL,
     'hpa': HECTOPASCAL,
     'Hpa': HECTOPASCAL,
     'HPa': HECTOPASCAL,
@@ -789,7 +949,9 @@ UNIT_CORRECTIONS = {
     'MB': MILLIBAR,
     'Mb': MILLIBAR,
     'mB': MILLIBAR,
+    'mBar': MILLIBAR,
     'mbar': MILLIBAR,
+    'Millibars': MILLIBAR,
     'PSI': PSI,
     'Psi': PSI,
     'PSIA': PSIA,
@@ -820,13 +982,17 @@ UNIT_CORRECTIONS = {
     'Ft/min': FPM,
     'Ft/minute': FPM,
     'FEET/MIN': FPM,
+    'Feet/Min': FPM,
     'feet/min': FPM,
     'FPM': FPM,
+    'Feet P/M': FPM,
     'ft/s': FPS,
     'ft/sec': FPS,
     'feet/sec': FPS,
+    'Feet Per Second': FPS,
     'FPS': FPS,
     'in/s': IPS,
+    'In/Sec': IPS,
     'in/sec': IPS,
     'inch/sec': IPS,
     'IPS': IPS,
@@ -843,19 +1009,31 @@ UNIT_CORRECTIONS = {
     'M': MACH,
     'MACH': MACH,
     'mach': MACH,
+    'Millimach': MILLIMACH,
     'millimach': MILLIMACH,
     'RPM': RPM,
     'Rpm': RPM,
     # Temperature:
     b'\xb0C': CELSIUS,
     '\xb0C': CELSIUS,
-    b'\xf8C': CELSIUS,
+    '°C': CELSIUS,
     '° C': CELSIUS,
+    '0C': CELSIUS,
+    '\ufffdC': CELSIUS,  # �C is probably °C (see AE-2886)
+    b'\xf8C': CELSIUS,
+    'C Degrees': CELSIUS,
     'C° deg': CELSIUS,
     'DEGC': CELSIUS,
+    'DEG.C': CELSIUS,
     'DEG C': CELSIUS,
+    'Deg C': CELSIUS,
+    'Deg \'C': CELSIUS,
+    'Deg  \'C': CELSIUS,
+    'Degress Celsius': CELSIUS,
+    'Degrees Celcius': CELSIUS,
     'Degrees Celsius': CELSIUS,
     'degree C': CELSIUS,
+    'Degrees C': CELSIUS,
     'degrees C': CELSIUS,
     'deg. C': CELSIUS,
     'degs. C': CELSIUS,
@@ -864,7 +1042,10 @@ UNIT_CORRECTIONS = {
     'degree F': FAHRENHEIT,
     'degrees F': FAHRENHEIT,
     'deg. F': FAHRENHEIT,
+    'Deg F': FAHRENHEIT,
     'deg F': FAHRENHEIT,
+    'Fahrenheit': FAHRENHEIT,
+    'Deg K': KELVIN,
     'degree K': KELVIN,
     'degrees K': KELVIN,
     'deg. K': KELVIN,
@@ -872,6 +1053,7 @@ UNIT_CORRECTIONS = {
     'deg R': RANKINE,
     'degRankine': RANKINE,
     # Time:
+    'Day': DAY,
     'day': DAY,
     'days': DAY,
     'DAY': DAY,
@@ -879,11 +1061,14 @@ UNIT_CORRECTIONS = {
     'DD': DAY,
     'hr': HOUR,
     'hrs': HOUR,
+    'Hour': HOUR,
     'hour': HOUR,
+    'Hours': HOUR,
     'hours': HOUR,
     'HH': HOUR,
     'HR': HOUR,
     'HRS': HOUR,
+    'Hrs': HOUR,
     'HOUR': HOUR,
     'HOURS': HOUR,
     'mn': MINUTE,
@@ -893,17 +1078,21 @@ UNIT_CORRECTIONS = {
     'MINUTE': MINUTE,
     'MINUTES': MINUTE,
     'Minutes': MINUTE,
+    'Mon': MONTH,
     'mon': MONTH,
     'mth': MONTH,
+    'Month': MONTH,
     'month': MONTH,
     'months': MONTH,
     'MM': MONTH,
     'MON': MONTH,
     'MONTH': MONTH,
     'MONTHS': MONTH,
+    'Sec': SECOND,
     'sec': SECOND,
     'secs': SECOND,
     'second': SECOND,
+    'Seconds': SECOND,
     'seconds': SECOND,
     'SEC': SECOND,
     'SECS': SECOND,
@@ -914,6 +1103,7 @@ UNIT_CORRECTIONS = {
     'week': WEEK,
     'weeks': WEEK,
     'yrs': YEAR,
+    'Year': YEAR,
     'year': YEAR,
     'years': YEAR,
     'Years': YEAR,
@@ -922,6 +1112,7 @@ UNIT_CORRECTIONS = {
     'YEAR': YEAR,
     'YEARS': YEAR,
     # Torque:
+    'FT-LBS': FT_LB,
     'ft-lb': FT_LB,
     'ft-lbs': FT_LB,
     'ft.lbs': FT_LB,
@@ -943,15 +1134,19 @@ UNIT_CORRECTIONS = {
     'qts': QUART,
     'Qts': QUART,
     'QT': QUART,
+    'Qt': QUART,
     'QTS': QUART,
     'QT US': QUART,
     'QT. US': QUART,
     'qt (US)': QUART,
     'Us/Qt': QUART,
+    'Quart': QUART,
     'quart': QUART,
     'quarts': QUART,
     'QUART': QUART,
     'QUARTS': QUART,
+    'US QUARTS': QUART,
+    'US Quarts': QUART,
     'US QRT': QUART,
     'US Qt': QUART,
     'Gal': GALLON,
@@ -962,12 +1157,16 @@ UNIT_CORRECTIONS = {
     'gallons': GALLON,
     'lt': LITER,
     'Lt': LITER,
+    'Liter': LITER,
     'liter': LITER,
     'liters': LITER,
     'litre': LITER,
     'litres': LITER,
+    # Flow (Volume)
+    'Pints/Hr': PINT_H,
     # Other:
     'DDM': DDM,
+    'ddm R': DDM,
     'GS-DDM': GS_DDM,
     'GSDDM': GS_DDM,
     'gsddm': GS_DDM,
@@ -979,9 +1178,18 @@ UNIT_CORRECTIONS = {
     'Trim': TRIM,
     'cycle': CYCLES,
     'Cycle': CYCLES,
+    'Percent': PERCENT,
+    'Percent Open': PERCENT,
     'percent': PERCENT,
+    '% Full': PERCENT,
     '% N1': PERCENT,
+    '% N1 RPM': PERCENT,
+    '% N2 RPM': PERCENT,
+    '% N3 RPM': PERCENT,
+    '% Load': PERCENT,
+    '% Open': PERCENT,
     '% MAC': PERCENT,
+    '% Mean': PERCENT,
     '% RPM': PERCENT,
     '% n1': PERCENT,
     '% mac': PERCENT,
@@ -998,6 +1206,7 @@ UNIT_CORRECTIONS = {
     '%N1': PERCENT,
     '%Mac': PERCENT,
     'MAC': PERCENT,
+    'MAC %': PERCENT,
     '%Load': PERCENT,
     'LOAD': PERCENT,
     '%LOAD': PERCENT,
@@ -1005,6 +1214,7 @@ UNIT_CORRECTIONS = {
     '%open': PERCENT,
     '%stroke': PERCENT,
     '% Open': PERCENT,
+    '% Open/Degrees': PERCENT,
     '% OPEN': PERCENT,
     '%full': PERCENT,
     '% full': PERCENT,
@@ -1018,8 +1228,8 @@ UNIT_CORRECTIONS = {
     # 'UNITS': UNITS,#Readout
     # 'Units': UNITS,#Readout
     # 'Unit': UNITS,#Readout
-    # 'Cu': CU, #Readout
-    # 'CU': CU, #Readout
+    'Cu': CU,
+    'CU': CU,
     'Du': DU,
     'DU': DU,
     'Di': DI,
@@ -1030,22 +1240,24 @@ UNIT_CORRECTIONS = {
 UNIT_CATEGORIES = {
     'Acceleration': (G, FPS2, MPS2, DEGREE_S2, KT_S),
     'Angles': (DEGREE, RADIAN, DEGREE_S, RADIAN_S),
+    'Angular acceleration': (RPM_S,),
     'Density': (KG_LITER, LB_GALLON),
-    'Electricity': (AMP, VOLT, KVA, OHM, MILLIVOLT, MICROAMP, MILLIAMP),
+    'Electricity': (AMP, VOLT, KVA, OHM, MICROVOLT, MILLIVOLT, MICROAMP, MILLIAMP),
     'Energy': (JOULE, KJ, MJ),
-    'Flow (Mass)': (LB_H, LB_MIN, KG_H, TONNE_H),
-    'Flow (Volume)': (PINT_H, QUART_H, GALLON_H, LITER_H),
+    'Flow (Mass)': (LB_S, LB_MIN, LB_H, KG_S, KG_H, TONNE_H),
+    'Flow (Volume)': (PINT_H, QUART_H, GALLON_S, GALLON_H, CUFT_M, LITER_H),
     'Force': (LBF, KGF, DECANEWTON, NEWTON),
     'Frequency': (HZ, KHZ, MHZ, GHZ),
-    'Length': (FT, METER, KM, MILE, NM, INCH, MILLIMETER),
+    'Length': (FT, FL, METER, KM, MILE, NM, INCH, MILLIMETER),
     'Mass': (LB, KG, SLUG, TONNE),
-    'Pressure': (INHG, PASCAL, HECTOPASCAL, BAR, MILLIBAR, PSI, PSIA, PSID, PSIG, PSI_MINUTE, LB_FT2),
+    'Power': (KW,),
+    'Pressure': (INHG, PASCAL, HECTOPASCAL, KILOPASCAL, BAR, MILLIBAR, PSI, PSIA, PSID, PSIG, PSI_MINUTE, LB_FT2),
     'Speed': (KT, MPH, FPM, FPS, IPS, METER_S, MACH, MILLIMACH, RPM),
     'Temperature': (CELSIUS, FAHRENHEIT, KELVIN, RANKINE),
     'Time': (HOUR, MINUTE, SECOND, DAY, WEEK, MONTH, YEAR),
     'Torque': (FT_LB, IN_LB, IN_OZ),
     'Volume': (PINT, QUART, GALLON, LITER),
-    'Other': (DDM, GS_DDM, LOC_DDM, DOTS, TRIM, CYCLES, PERCENT, NM_KG, DU, DI, MIL), #COUNTS, CU, SCALAR, UNITS, EPR #Readout,
+    'Other': (DDM, GS_DDM, LOC_DDM, DOTS, TRIM, CYCLES, PERCENT, NM_KG, DU, DI, MIL, CU, SCALAR, MODE, NUM, UNITS, EPR),
 }
 
 
@@ -1061,6 +1273,8 @@ UNIT_DESCRIPTIONS = {
     RADIAN: 'radians',
     DEGREE_S: 'degrees per second',
     RADIAN_S: 'radians per second',
+    # Angular acceleration:
+    RPM_S: 'rpm per second',
     # Density:
     KG_LITER: 'kilograms per liter',
     LB_GALLON: 'pounds per gallon',
@@ -1078,20 +1292,26 @@ UNIT_DESCRIPTIONS = {
     KJ: 'kilojoule',
     MJ: 'megajoule',
     # Flow (Mass):
-    LB_H: 'pounds per hour',
+    LB_S: 'pounds per second',
     LB_MIN: 'pounds per minute',
-    KG_H: 'pounds per kilogram',
+    LB_H: 'pounds per hour',
+    KG_S: 'kilograms per second',
+    KG_H: 'kilograms per hour',
     TONNE_H: 'tonnes per hour',
     # Flow (Volume):
     PINT_H: 'pints per hour',
     QUART_H: 'quarts per hour',
+    GALLON_S: 'gallons per second',
     GALLON_H: 'gallons per hour',
+    CUFT_M: 'cubic feet per minute',
     LITER_H: 'liters per hour',
     # Force:
     LBF: 'pound-force',
     KGF: 'kilogram-force',
     DECANEWTON: 'decanewton',
     NEWTON: 'newton',
+    # Power:
+    KW: 'kW',
     # Frequency:
     HZ: 'hertz',
     KHZ: 'kilohertz',
@@ -1099,6 +1319,7 @@ UNIT_DESCRIPTIONS = {
     GHZ: 'gigahertz',
     # Length:
     FT: 'feet',
+    FL: 'flight level',
     METER: 'meters',
     KM: 'kilometers',
     MILE: 'miles',
@@ -1115,6 +1336,7 @@ UNIT_DESCRIPTIONS = {
     INHG: 'inches of mercury',
     PASCAL: 'pascals',
     HECTOPASCAL: 'hectopascals',
+    KILOPASCAL: 'kilopascals',
     MILLIBAR: 'millibars',
     PSI: 'pounds per square inch',
     PSIA: 'pounds per square inch (absolute)',
@@ -1166,11 +1388,12 @@ UNIT_DESCRIPTIONS = {
     NM_KG: 'nautical miles per kilogram',
     DU: 'display unit',
     DI: 'direction/deviation indicator',
-    # COUNTS: 'counts',#Readout
-    # CU: 'control units',#Readout
-    # SCALAR: 'scalar',#Readout
-    # UNITS: 'units',#Readout
-    # EPR: 'engine pressure ratio',
+    CU: 'control units',
+    SCALAR: 'scalar',
+    MODE: 'mode',
+    NUM: 'number',
+    UNITS: 'units',
+    EPR: 'engine pressure ratio',
 }
 
 
