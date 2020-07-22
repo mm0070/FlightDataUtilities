@@ -800,6 +800,7 @@ UNIT_CORRECTIONS = {
     # Flow (Mass):
     'PPS': LB_S,
     'pps': LB_S,
+    'lb / hr': LB_H,
     'lb/hr': LB_H,
     'lbs/h': LB_H,
     'lbs/hr': LB_H,
@@ -940,6 +941,7 @@ UNIT_CORRECTIONS = {
     'In-Hg': INHG,
     'In.Hg': INHG,
     'IN HG': INHG,
+    'Hg': INHG,
     'pa': PASCAL,
     'hPA': HECTOPASCAL,
     'hpa': HECTOPASCAL,
@@ -1068,6 +1070,7 @@ UNIT_CORRECTIONS = {
     'HH': HOUR,
     'HR': HOUR,
     'HRS': HOUR,
+    'Hr': HOUR,
     'Hrs': HOUR,
     'HOUR': HOUR,
     'HOURS': HOUR,
