@@ -32,6 +32,52 @@ cpdef Py_ssize_t first_idx_within_roc(np.float64_t[:] data, np.uint8_t[:] mask, 
     return -1
 
 
+cpdef blend_parameters_weighting(array, np.float64_t wt):
+    '''
+    A small function to relate masks to weights. Used by
+    blend_parameters_cubic above.
+
+    :param array: array to compute weights for
+    :type array: numpy masked array
+    :param wt: weighting factor =  ratio of sample rates
+    :type wt: float
+    '''
+    cdef:
+        np.uint8_t[:] param_weight = (~np.ma.getmaskarray(array)).view(np.uint8)
+        Py_ssize_t array_size = <Py_ssize_t>(param_weight.shape[0] * wt)
+        np.float64_t[:] result_weight = cy.zeros_float64(array_size), \
+            final_weight = cy.zeros_float64(array_size)
+        np.float64_t wt_reciprocal = 1.0 / wt
+        Py_ssize_t idx, weight_idx
+
+    result_weight[0] = param_weight[0] / wt
+    result_weight[-1] = param_weight[-1] / wt
+
+    for idx in range(1, param_weight.shape[0] - 1):
+        weight_idx = <Py_ssize_t>(idx * wt)
+        if not param_weight[idx]:
+            result_weight[weight_idx] = 0.0
+            continue
+
+        if not param_weight[idx - 1] or not param_weight[idx + 1]:
+            # Low weight to tail of valid data. Non-zero to avoid problems of overlapping invalid sections.
+            result_weight[weight_idx] = 0.1
+            continue
+
+        result_weight[weight_idx] = wt_reciprocal
+
+    for idx in range(1, result_weight.shape[0] - 1):
+        if not result_weight[idx - 1] or not result_weight[idx + 1]:
+            final_weight[idx] = result_weight[idx] / 2
+        else:
+            final_weight[idx] = result_weight[idx]
+
+    final_weight[0] = result_weight[0]
+    final_weight[-1] = result_weight[-1]
+
+    return np.ma.masked_array(final_weight)
+
+
 ################################################################################
 # Utility functions
 
