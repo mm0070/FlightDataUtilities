@@ -30,6 +30,37 @@ class TestFirstIndexWithinROC(unittest.TestCase):
         self.assertEqual(ma.first_idx_within_roc(array.data, array.mask, 25, 0, 2, 8), 4)
 
 
+class TestBlendParametersWeighting(unittest.TestCase):
+    def test_weighting(self):
+        self.assertEqual(
+            list(ma.blend_parameters_weighting(np.ma.array(data=[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                                                           mask=[1, 1, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0]), 1.0)),
+            [0.0, 0.0, 0.05, 0.0, 0.05, 1.0, 0.05, 0.0, 0.0, 0.0, 0.05, 1.0, 1.0],
+        )
+
+    def test_weighting_increased_freq(self):
+        self.assertEqual(
+            list(ma.blend_parameters_weighting(np.ma.array(data=[0, 0, 0, 0, 0, 0],
+                                                           mask=[1, 1, 1, 0, 0, 0]), 2.0)),
+            [0.0, 0.0, 0.0, 0.0, 0.0, 0.05, 0.1, 0.3, 0.5, 0.5, 0.5, 0.5],
+        )
+
+    def test_weighting_decreased_freq(self):
+        self.assertEqual(
+            list(ma.blend_parameters_weighting(np.ma.array(data=[0, 0, 0, 0, 0, 0],
+                                                           mask=[1, 1, 1, 0, 0, 0]), 0.5)),
+            [0.0, 0.05, 2.0],
+        )
+
+
+    def test_weighting_decreased_freq_odd_samples(self):
+        self.assertEqual(
+            list(ma.blend_parameters_weighting(np.ma.array(data=[0, 0, 0, 0, 0, 0, 0],
+                                                           mask=[1, 1, 1, 0, 0, 0, 0]), 0.5)),
+            [0.0, 0.05, 2.0],
+        )
+
+
 ################################################################################
 # Utility functions
 
