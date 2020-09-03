@@ -157,7 +157,7 @@ class ElasticsearchHandler(logging.Handler):
             try:
                 elasticsearch.helpers.bulk(
                     client=self.client,
-                    actions=({'_index': index_name, '_type': 'log', '_source': record} for record in self._buffer.drain()),
+                    actions=({'_index': index_name, '_source': record} for record in self._buffer.drain()),
                     stats_only=True,
                 )
             except Exception as e:
