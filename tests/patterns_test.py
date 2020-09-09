@@ -6,6 +6,7 @@ from flightdatautilities.patterns import (
     get_pattern,
     group_parameter_names,
     match_options,
+    param_matches,
     parameter_pattern_map,
     parse_options,
     unique_parameter_combinations,
@@ -307,3 +308,20 @@ class TestFindCombinations(unittest.TestCase):
         self.assertEqual(find_combinations(['Elevator (L)', 'Elevator (*)'],
                                            ['Elevator (L)', 'Elevator (R)']),
                          [['Elevator (L)', 'Elevator (R)']])
+
+class TestParamMatches:
+    def test_match(self):
+        param = 'Altitude Radio'
+        pattern = 'Altitude Radio (*) (*)'
+        assert param_matches(pattern, param)
+
+    def test_no_match(self):
+        param = 'Altitude Radio A'
+        pattern = 'Altitude Radio (*) (*)'
+        assert not param_matches(pattern, param)
+
+    def test_match_strictly(self):
+        param = 'Altitude Radio'
+        pattern = 'Altitude Radio (*) (*)'
+        assert not param_matches(pattern, param, missing=False)
+        assert param_matches(pattern, 'Altitude Radio (A) (1)', missing=False)

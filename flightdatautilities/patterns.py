@@ -60,6 +60,26 @@ def wildcard_match(pattern, keys, missing=True, prefix=False):
     return sorted({key for key in keys if re_obj.match(key)})
 
 
+def param_matches(pattern, param,  missing=True, prefix=False):
+    '''
+    Check if param matches the pattern.
+
+    :param pattern: Wildcard pattern to match
+    :type pattern: String
+    :param param: parameter name
+    :type param: String
+    :param missing: Whether or not to match variations of the pattern where wildcard options are missing.
+    :type missing: bool
+    :param prefix: Whether to allow strings that start with the pattern to match.
+    :type prefix: bool
+    :returns: param matches the pattern
+    :rtype: bool
+    '''
+    return bool(
+        re.match(f'(?ms){pattern_regex(pattern, missing=missing, prefix=prefix)}', param)
+    )
+
+
 def is_pattern(pattern):
     '''
     Test if a pattern contains a wildcard.
