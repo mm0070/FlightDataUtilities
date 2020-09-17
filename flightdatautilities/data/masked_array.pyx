@@ -377,6 +377,12 @@ cpdef align(array, np.float64_t slave_frequency, np.float64_t slave_offset, np.f
 @cython.wraparound(False)
 cpdef align_interpolate(array, np.float64_t slave_frequency, np.float64_t slave_offset, np.float64_t master_frequency,
                         np.float64_t master_offset=0):
+    '''
+    Align slave array to the master frequency and offset by interpolating values between samples accounting for the frequency and
+    offset difference.
+
+    OPT: This is a more efficient version of library.align_args(..., interpolate=False).
+    '''
     if slave_frequency <= 0 or master_frequency <= 0:
         raise ValueError('frequencies must be greater than 0')
 
@@ -390,7 +396,7 @@ cpdef align_interpolate(array, np.float64_t slave_frequency, np.float64_t slave_
     cdef:
         np.float64_t array_pos, idx_multiplier = slave_frequency / master_frequency, \
             frequency_multiplier = master_frequency / slave_frequency, \
-            offset = frequency_multiplier * (slave_offset - master_offset)
+            offset = idx_multiplier * (slave_offset - master_offset)
         Py_ssize_t array_prev_idx, array_next_idx, output_idx, \
             output_size = <Py_ssize_t>(array_data.shape[0] * frequency_multiplier)
         np.float64_t[:] output_data = cy.zeros_float64(output_size)
@@ -421,6 +427,22 @@ cpdef align_interpolate(array, np.float64_t slave_frequency, np.float64_t slave_
 @cython.wraparound(False)
 cpdef align_nearest(array, np.float64_t slave_frequency, np.float64_t slave_offset, np.float64_t master_frequency,
                     np.float64_t master_offset=0):
+    '''
+    Align slave array to the master frequency and offset by selecting the nearest sample based on the midpoint between two
+    samples accounting for frequency and offset differences.
+
+           0   1
+           V   V
+    0--------|--------1
+    0s   0.4s 0.6s    1s
+
+    OPT: This is a more efficient version of library.align_args(..., interpolate=True) - worst case ~1000x faster.
+    >>> array = fda.MappedArray(np.random.random(1000000).round().astype(np.uint32), values_mapping={1: 'Up', 0: 'Down'})
+    >>> %timeit align_args(array, 1, 0.1, 2, 0.2, interpolate=False)
+    14 s ± 159 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+    >>> %timeit align_nearest(array, 1, 0.1, 2, 0.2)
+    8.98 ms ± 21.1 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
+    '''
     if slave_frequency <= 0 or master_frequency <= 0:
         raise ValueError('frequencies must be greater than 0')
 
@@ -434,7 +456,7 @@ cpdef align_nearest(array, np.float64_t slave_frequency, np.float64_t slave_offs
     cdef:
         np.float64_t idx_multiplier = slave_frequency / master_frequency, \
             frequency_multiplier = master_frequency / slave_frequency, \
-            offset = frequency_multiplier * (slave_offset - master_offset)
+            offset = idx_multiplier * (master_offset - slave_offset)
         Py_ssize_t array_idx, output_idx, output_size = <Py_ssize_t>(array_data.shape[0] * frequency_multiplier)
         np.uint32_t[:] output_data = cy.zeros_uint32(output_size)
         np.uint8_t[:] output_mask = cy.empty_uint8(output_size)
@@ -481,3 +503,4 @@ cpdef straighten(array, np.float64_t full_range):
         data[idx] += offset
 
     return data, mask
+
