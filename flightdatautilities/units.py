@@ -705,6 +705,7 @@ UNIT_CORRECTIONS = {
     '0 surface': DEGREE,
     'DEG': DEGREE,
     'Deg': DEGREE,
+    'Deg Angle': DEGREE,
     'deg sync': DEGREE,
     'DegSuf': DEGREE,
     'Degree': DEGREE,
@@ -789,6 +790,7 @@ UNIT_CORRECTIONS = {
     'millivolts': MILLIVOLT,
     'ua': MICROAMP,
     'microamps': MICROAMP,
+    'mA': MILLIAMP,
     'ma': MILLIAMP,
     'milliamps': MILLIAMP,
     # Energy:
