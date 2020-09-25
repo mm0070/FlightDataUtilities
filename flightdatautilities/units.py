@@ -790,7 +790,6 @@ UNIT_CORRECTIONS = {
     'millivolts': MILLIVOLT,
     'ua': MICROAMP,
     'microamps': MICROAMP,
-    'mA': MILLIAMP,
     'ma': MILLIAMP,
     'milliamps': MILLIAMP,
     # Energy:
