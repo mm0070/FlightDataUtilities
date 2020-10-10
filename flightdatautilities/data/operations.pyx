@@ -79,7 +79,7 @@ slices_to_array(length, slices)
 ## closest_unmasked_value
 '''
 import cython
-from libc.math cimport ceil, floor
+from libc.math cimport ceil, fabs, floor
 import numpy as np
 cimport numpy as np
 

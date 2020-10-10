@@ -30,8 +30,7 @@ cpdef next_unmasked_value(array, Py_ssize_t idx, Py_ssize_t stop=?)
 cpdef nearest_unmasked_value(array, Py_ssize_t idx, Py_ssize_t start=?, Py_ssize_t stop=?)
 ################################################################################
 # Fill range
-cdef void fill_range(cy.np_types[:] data, np.uint8_t[:] mask, cy.np_types value, Py_ssize_t start,
-                     Py_ssize_t stop) nogil
+cdef void fill_range(cy.np_types[:] data, np.uint8_t[:] mask, cy.np_types value, Py_ssize_t start, Py_ssize_t stop) nogil
 ################################################################################
 # Interpolate range
 cdef void interpolate_range_unsafe(cy.np_types[:] data, np.uint8_t[:] mask, Py_ssize_t start, Py_ssize_t stop) nogil
@@ -40,8 +39,8 @@ cdef void interpolate_range(cy.np_types[:] data, np.uint8_t[:] mask, Py_ssize_t 
 # Repair mask
 cdef void repair_data_mask(np.float64_t[:] data, np.uint8_t[:] mask, RepairMethod method, Py_ssize_t max_samples=?,
                            bint extrapolate=?) nogil
-cdef repair_mask(array, RepairMethod method=?, repair_duration=?, np.float64_t frequency=?, bint copy=?,
-                 bint extrapolate=?, bint raise_duration_exceedance=?, bint raise_entirely_masked=?)
+cdef repair_mask(array, RepairMethod method=?, repair_duration=?, np.float64_t frequency=?, bint copy=?, bint extrapolate=?,
+                 bint raise_duration_exceedance=?, bint raise_entirely_masked=?)
 ################################################################################
 # Aggregate functions
 cpdef max_values(array, matching)
@@ -50,9 +49,11 @@ cpdef max_abs_values(array, matching)
 cpdef min_abs_values(array, matching)
 ################################################################################
 # Alignment
-cpdef align(array, np.float64_t slave_frequency, np.float64_t slave_offset, np.float64_t master_frequency,
-            np.float64_t master_offset=?)
-cpdef align_interpolate(array, np.float64_t slave_frequency, np.float64_t slave_offset, np.float64_t master_frequency,
-                        np.float64_t master_offset=?)
-cpdef align_nearest(array, np.float64_t slave_frequency, np.float64_t slave_offset, np.float64_t master_frequency,
-                    np.float64_t master_offset=?)
+cpdef align(array, np.float64_t source_frequency, np.float64_t source_offset, np.float64_t target_frequency,
+            np.float64_t target_offset=?)
+cpdef align_interpolate(array, np.float64_t source_frequency, np.float64_t source_offset, np.float64_t target_frequency,
+                        np.float64_t target_offset=?)
+cpdef align_mask(mask, np.float64_t source_frequency, np.float64_t source_offset, np.float64_t target_frequency,
+                 np.float64_t target_offset=?)
+cpdef align_nearest(array, np.float64_t source_frequency, np.float64_t source_offset, np.float64_t target_frequency,
+                    np.float64_t target_offset=?)

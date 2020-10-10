@@ -365,38 +365,38 @@ cpdef min_abs_values(array, matching):
 # Alignment
 
 
-cpdef align(array, np.float64_t slave_frequency, np.float64_t slave_offset, np.float64_t master_frequency,
-            np.float64_t master_offset=0):
+cpdef align(array, np.float64_t source_frequency, np.float64_t source_offset, np.float64_t target_frequency,
+            np.float64_t target_offset=0):
     return np.ma.masked_array(*
-        (align_nearest(array, slave_frequency, slave_offset, master_frequency, master_offset)
+        (align_nearest(array, source_frequency, source_offset, target_frequency, target_offset)
          if np.PyArray_ISINTEGER(array.data) else
-         align_interpolate(array, slave_frequency, slave_offset, master_frequency, master_offset)))
+         align_interpolate(array, source_frequency, source_offset, target_frequency, target_offset)))
 
 
 @cython.cdivision(True)
 @cython.wraparound(False)
-cpdef align_interpolate(array, np.float64_t slave_frequency, np.float64_t slave_offset, np.float64_t master_frequency,
-                        np.float64_t master_offset=0):
+cpdef align_interpolate(array, np.float64_t source_frequency, np.float64_t source_offset, np.float64_t target_frequency,
+                        np.float64_t target_offset=0):
     '''
-    Align slave array to the master frequency and offset by interpolating values between samples accounting for the frequency and
-    offset difference.
+    Align source array to the target frequency and offset by interpolating values between samples accounting for the frequency
+    and offset difference.
 
-    OPT: This is a more efficient version of library.align_args(..., interpolate=False).
+    OPT: This is a more efficient version of library.align_args(..., interpolate=True).
     '''
-    if slave_frequency <= 0 or master_frequency <= 0:
+    if source_frequency <= 0 or target_frequency <= 0:
         raise ValueError('frequencies must be greater than 0')
 
     cdef:
         np.float64_t[:] array_data = cy.astype(array.data)
         np.uint8_t[:] array_mask = getmaskarray1d(array)  # FIXME: find out why getmaskarray1d(array) segfaults!?
 
-    if slave_frequency == master_frequency and slave_offset == master_offset:
+    if source_frequency == target_frequency and source_offset == target_offset:
         return array_data, array_mask
 
     cdef:
-        np.float64_t array_pos, idx_multiplier = slave_frequency / master_frequency, \
-            frequency_multiplier = master_frequency / slave_frequency, \
-            offset = idx_multiplier * (slave_offset - master_offset)
+        np.float64_t array_pos, idx_multiplier = source_frequency / target_frequency, \
+            frequency_multiplier = target_frequency / source_frequency, \
+            offset = idx_multiplier * (source_offset - target_offset)
         Py_ssize_t array_prev_idx, array_next_idx, output_idx, \
             output_size = <Py_ssize_t>(array_data.shape[0] * frequency_multiplier)
         np.float64_t[:] output_data = cy.zeros_float64(output_size)
@@ -425,10 +425,45 @@ cpdef align_interpolate(array, np.float64_t slave_frequency, np.float64_t slave_
 
 @cython.cdivision(True)
 @cython.wraparound(False)
-cpdef align_nearest(array, np.float64_t slave_frequency, np.float64_t slave_offset, np.float64_t master_frequency,
-                    np.float64_t master_offset=0):
+cpdef align_mask(mask, np.float64_t source_frequency, np.float64_t source_offset, np.float64_t target_frequency,
+                 np.float64_t target_offset=0):
     '''
-    Align slave array to the master frequency and offset by selecting the nearest sample based on the midpoint between two
+    Align source mask to the target frequency and offset by selecting the nearest sample based on the midpoint between two
+    samples accounting for frequency and offset differences.
+
+           0   1
+           V   V
+    0--------|--------1
+    0s   0.4s 0.6s    1s
+    '''
+    if source_frequency <= 0 or target_frequency <= 0:
+        raise ValueError('frequencies must be greater than 0')
+
+    if source_frequency == target_frequency and fabs(source_offset - target_offset) * source_frequency < 0.5:
+        return mask
+
+    cdef np.uint8_t[:] data = mask.view(np.uint8)
+
+    cdef:
+        np.float64_t idx_multiplier = source_frequency / target_frequency, \
+            frequency_multiplier = target_frequency / source_frequency, \
+            offset = idx_multiplier * (target_offset - source_offset)
+        Py_ssize_t mask_idx, output_idx
+        np.uint8_t[:] output = cy.zeros_uint8(<Py_ssize_t>(data.shape[0] * frequency_multiplier))
+
+    for output_idx in range(output.shape[0]):
+        mask_idx = <Py_ssize_t>ceil(((output_idx * idx_multiplier) + offset) - 0.5)
+        output[output_idx] = 1 if mask_idx < 0 or mask_idx >= data.shape[0] else data[mask_idx]
+
+    return output.base.view(np.uint8)
+
+
+@cython.cdivision(True)
+@cython.wraparound(False)
+cpdef align_nearest(array, np.float64_t source_frequency, np.float64_t source_offset, np.float64_t target_frequency,
+                    np.float64_t target_offset=0):
+    '''
+    Align source array to the target frequency and offset by selecting the nearest sample based on the midpoint between two
     samples accounting for frequency and offset differences.
 
            0   1
@@ -436,40 +471,40 @@ cpdef align_nearest(array, np.float64_t slave_frequency, np.float64_t slave_offs
     0--------|--------1
     0s   0.4s 0.6s    1s
 
-    OPT: This is a more efficient version of library.align_args(..., interpolate=True) - worst case ~1000x faster.
+    OPT: This is a more efficient version of library.align_args(..., interpolate=False) - worst case ~1000x faster.
     >>> array = fda.MappedArray(np.random.random(1000000).round().astype(np.uint32), values_mapping={1: 'Up', 0: 'Down'})
     >>> %timeit align_args(array, 1, 0.1, 2, 0.2, interpolate=False)
     14 s ± 159 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
     >>> %timeit align_nearest(array, 1, 0.1, 2, 0.2)
     8.98 ms ± 21.1 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
     '''
-    if slave_frequency <= 0 or master_frequency <= 0:
+    if source_frequency <= 0 or target_frequency <= 0:
         raise ValueError('frequencies must be greater than 0')
 
     cdef:
         np.uint32_t[:] array_data = cy.astype(array.data, np.uint32)
         np.uint8_t[:] array_mask = getmaskarray1d(array)
 
-    if slave_frequency == master_frequency and fabs(slave_offset - master_offset) * slave_frequency < 0.5:
-        return array_data, array_mask
+    if source_frequency == target_frequency and fabs(source_offset - target_offset) * source_frequency < 0.5:
+        return array_data.base, array_mask.base
 
     cdef:
-        np.float64_t idx_multiplier = slave_frequency / master_frequency, \
-            frequency_multiplier = master_frequency / slave_frequency, \
-            offset = idx_multiplier * (master_offset - slave_offset)
+        np.float64_t idx_multiplier = source_frequency / target_frequency, \
+            frequency_multiplier = target_frequency / source_frequency, \
+            offset = idx_multiplier * (target_offset - source_offset)
         Py_ssize_t array_idx, output_idx, output_size = <Py_ssize_t>(array_data.shape[0] * frequency_multiplier)
         np.uint32_t[:] output_data = cy.zeros_uint32(output_size)
         np.uint8_t[:] output_mask = cy.empty_uint8(output_size)
 
     for output_idx in range(output_data.shape[0]):
-        array_idx = <Py_ssize_t>floor(0.5 + ((output_idx * idx_multiplier) + offset))
+        array_idx = <Py_ssize_t>ceil(((output_idx * idx_multiplier) + offset) - 0.5)
         if array_idx < 0 or array_idx >= array_data.shape[0]:
             output_mask[output_idx] = True
         else:
             output_data[output_idx] = array_data[array_idx]
             output_mask[output_idx] = array_mask[array_idx]
 
-    return output_data, output_mask
+    return output_data.base, output_mask.base.view(np.bool)
 
 
 cpdef straighten(array, np.float64_t full_range):

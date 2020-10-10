@@ -358,13 +358,33 @@ class TestAlign(unittest.TestCase):
         )
 
 
+class TestAlignMask(unittest.TestCase):
+    def test_align_mask(self):
+        mask = np.ma.array([0, 0, 1, 0, 1, 0, 0], dtype=bool)
+        aligned = ma.align_mask(mask, 0.25, 0.24, 1, 0)
+        np.testing.assert_array_equal(
+            aligned,
+            [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+        )
+        aligned = ma.align_mask(mask, 0.25, 2, 1, 0)
+        np.testing.assert_array_equal(
+            aligned,
+            [1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0],
+        )
+        aligned = ma.align_mask(mask, 0.25, 2.01, 1, 0)
+        np.testing.assert_array_equal(
+            aligned,
+            [1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0],
+        )
+
+
 class TestAlignNearest(unittest.TestCase):
     def test_align_nearest(self):
-        array = np.ma.array([0, 0, 1, 0, 1, 0, 0])
+        array = np.ma.array([0, 0, 1, 0, 2, 0, 0])
         aligned_data, aligned_mask = ma.align_nearest(array, 0.25, 0.24, 1, 0)
         np.testing.assert_array_equal(
             aligned_data,
-            [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         )
         np.testing.assert_array_equal(
             aligned_mask,
@@ -373,16 +393,16 @@ class TestAlignNearest(unittest.TestCase):
         aligned_data, aligned_mask = ma.align_nearest(array, 0.25, 2, 1, 0)
         np.testing.assert_array_equal(
             aligned_data,
-            [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0],
         )
         np.testing.assert_array_equal(
             aligned_mask,
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         )
         aligned_data, aligned_mask = ma.align_nearest(array, 0.25, 2.01, 1, 0)
         np.testing.assert_array_equal(
             aligned_data,
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0],
         )
         np.testing.assert_array_equal(
             aligned_mask,
